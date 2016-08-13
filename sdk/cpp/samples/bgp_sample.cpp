@@ -16,9 +16,7 @@
 
 #include <iostream>
 
-#include "ydk/providers.h"
-#include "ydk/services.h"
-#include "ydk/make_unique.h"
+#include "ydk/ydk.hpp"
 
 #include "ydk/models/bgp/bgp.h"
 
