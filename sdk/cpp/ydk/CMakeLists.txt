@@ -1,42 +1,110 @@
 cmake_minimum_required(VERSION 3.6)
 cmake_policy(SET CMP0048 NEW)
-project(ydk_cpp VERSION 0.4.2)
-message ("Generating project ${PROJECT_NAME} ${PROJECT_VERSION}")
+project(ydk VERSION 0.5.0)
 
-set (CMAKE_CXX_FLAGS "-Wall -std=c++0x")
-set (YDK_DIR ${CMAKE_SOURCE_DIR}/ydk)
-set (src_files ${YDK_DIR}/netconf_client.h ${YDK_DIR}/netconf_client.cpp)
 
-find_package(Boost COMPONENTS python REQUIRED)
-find_package(PythonLibs 2.7 REQUIRED)
+set(YDK_DESCRIPTION "YANG Development Kit Library. The library for  YDK API.")
 
+# set version
+set(YDK_MAJOR_VERSION 0)
+set(YDK_MINOR_VERSION 5)
+set(YDK_SERVICE_VERSION 0)
+set(YDK_VERSION ${YDK_MAJOR_VERSION}.${YDK_MINOR_VERSION}.${YDK_SERVICE_VERSION})
+set(YDK_CORE_SOVERSION ${YDK_MAJOR_VERSION}.${YDK_MINOR_VERSION})
+
+# include custom Modules
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules/")
+
+if(NOT LIB_INSTALL_DIR)
+	set(LIB_INSTALL_DIR lib)
+endif()
+
+if(NOT INCLUDE_INSTALL_DIR)
+	set(INCLUDE_INSTALL_DIR include/ydk)
+endif()
+
+# set default build type if not specified by user
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE debug)
+endif()
+
+set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0")
+
+if(CMAKE_BUILD_TYPE STREQUAL debug)
+	option(ENABLE_BUILD_TESTS "Build tests" ON)
+	option(ENABLE_VALGRIND_TESTS "Build tests with valgrind" ON)
+else()
+	option(ENABLE_BUILD_TESTS "Build tests" OFF)
+	option(ENABLE_VALGRIND_TESTS "Build tests with valgrind" OFF)
+endif()
+
+set(libydk_src src/netconf.cpp src/crud.cpp src/core.cpp)
+set(libydk_headers src/ydk.hpp src/netconf.hpp src/core.hpp)
+
+# Find dependent libraries
 find_library(netconf_location netconf)
-find_library(python_location python2.7)
-find_library(boost_python_location boost_python)
 find_library(xml2_location xml2)
 find_library(curl_location curl)
 find_library(ssh_location ssh)
 find_library(ssh_threads_location ssh_threads)
 find_library(xslt_location xslt)
-
-add_library(ydk_client STATIC ${src_files})
+find_package(LibYANG REQUIRED)
+find_package(BOOST REQUIRED)
 
 include_directories(
 	${Boost_INCLUDE_DIRS}
-	${PYTHON_INCLUDE_DIRS}
+        ${LIBYANG_INCLUDE_DIRS}
 )
 
-target_link_libraries(ydk_client 
+add_library(ydk STATIC ${libydk_src})
+
+target_link_libraries(ydk 
 	${Boost_LIBRARIES}
-	${PYTHON_LIBRARIES}
 	${netconf_location}
-	${python_location}
-	${boost_python_location}
 	${xml2_location}
 	${curl_location}
 	${ssh_location}
 	${ssh_threads_location}
 	${xslt_location}
+        ${LIBYANG_LIBRARIES}
 )
 
-install(TARGETS ydk_client DESTINATION .)
+
+
+#set_target_properties(ydk PROPERTIES VERSION ${YDK_VERSION} SOVERSION ${YDK_SOVERSION})
+
+set_property(TARGET ydk PROPERTY CXX_STANDARD 11)
+set_property(TARGET ydk PROPERTY CXX_STANDARD_REQUIRED ON)
+
+# find YANG library
+
+install(TARGETS ydk DESTINATION ${LIB_INSTALL_DIR})
+install(FILES ${libydk_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
+
+
+# generate doxygen documentation for ydk_core API
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+	set(DOXYGEN_SKIP_DOT TRUE)
+	add_custom_target(doc
+			COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+	configure_file(Doxyfile.in Doxyfile)
+endif()
+
+add_subdirectory(samples)
+
+# clean cmake cache
+add_custom_target(cclean
+		COMMAND make clean
+		COMMAND find . -iname '*cmake*' -not -name CMakeLists.txt -not -path './CMakeModules*' -exec rm -rf {} +
+		COMMAND rm -rf Makefile Doxyfile
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(ENABLE_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif(ENABLE_BUILD_TESTS)
+
