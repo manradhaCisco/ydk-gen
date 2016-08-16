@@ -44,7 +44,10 @@ std::unique_ptr<T> make_unique( Args&& ...args )
 
 namespace ydk {
   class Entity {
-  	virtual std::string get_ydk_path() = 0;
+	  public:
+	  	virtual ~Entity(){}
+
+		virtual std::string get_ydk_path() = 0;
   };
 
 typedef unsigned short uint8;
