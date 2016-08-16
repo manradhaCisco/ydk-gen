@@ -60,14 +60,13 @@ class ClassPathMethodPrinter(object):
             current_owner = current_owner.owner
 
         path = ''
-        segments = ''
-        if len(owners) > 0:
-            segments = '/%s:' % owners[-1].module.arg
-        if len(owners) == 0 or len(owner_key_props) == 0:
-            for owner in reversed(owners):
-                segments = "%s%s/" % (segments, owner.stmt.arg)
+        objs = list(reversed(owners)) + [clazz]
+        for obj in objs:
+            if path is '':
+                path = "\"/%s:" % (obj.module.arg)
+            path = "%s%s/" % (path, obj.stmt.arg)
 
-        path = "\"%s%s\"" % (segments, clazz.stmt.arg)
+        path = path.rstrip('/') + '"'
 
         predicates = ''
         insert_token = ' << '
@@ -79,7 +78,6 @@ class ClassPathMethodPrinter(object):
             predicates += insert_token
             predicates += key_prop.name + insert_token + '"\']"'
 
-        self.ctx.bline()
         self.ctx.writeln('std::ostringstream path;')
         self.ctx.writeln('path << %s%s;' % (path, predicates))
         self.ctx.writeln('return path.str();')
