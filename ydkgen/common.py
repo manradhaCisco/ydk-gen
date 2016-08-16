@@ -121,7 +121,7 @@ def merge_file_path_segments(segs):
 
 
 def iskeyword(word):
-    return keyword.iskeyword(word) or word in ('None', 'parent', 'operator')
+    return keyword.iskeyword(word) or word in ('None', 'parent', 'operator', 'inline')
 
 
 def get_sphinx_ref_label(named_element):

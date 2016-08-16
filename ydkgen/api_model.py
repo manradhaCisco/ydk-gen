@@ -208,6 +208,17 @@ class NamedElement(Element):
             element = element.owner
         return '::'.join(reversed(names))
 
+    def fully_qualified_cpp_name(self):
+        ''' get the C++ qualified name '''
+        names = []
+        element = self
+        while element is not None:
+            if isinstance(element, Deviation):
+                element = element.owner
+            names.append(element.name)
+            element = element.owner
+        return '::'.join(reversed(names))
+
 
 class Package(NamedElement):
 
