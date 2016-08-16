@@ -30,6 +30,7 @@
 #include <libnetconf_ssh.h>
 
 #include "netconf_private.hpp"
+#include "entity.hpp"
 
 #include <fstream>
 #include <iostream>

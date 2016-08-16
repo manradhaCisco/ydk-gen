@@ -45,8 +45,9 @@ class HeaderPrinter(FilePrinter):
         self.ctx.writeln('#include <memory>')
         self.ctx.writeln('#include <vector>')
         self.ctx.writeln('#include <string>')
-        self.ctx.writeln('#include "ydk/entity.h"')
-        self.ctx.writeln('#include "ydk/types.h"')
+        self.ctx.writeln('#include <sstream>')
+        self.ctx.writeln('#include <iostream>')
+        self.ctx.writeln('#include "../src/entity.hpp"')
         self.ctx.bline()
 
     def _print_unique_imports(self, package):
@@ -94,15 +95,26 @@ class HeaderPrinter(FilePrinter):
         self.ctx.lvl_inc()
 
     def _print_class_body(self, clazz):
+        self._print_class_default_constructor(clazz)
         child_classes = [nested_class for nested_class in clazz.owned_elements if isinstance(nested_class, Class)]
+        if len(child_classes) > 0:
+            self._print_classes(child_classes)
+        self._print_class_inits(clazz)
+        self.ctx.lvl_inc()
+        self._print_class_path_method(clazz)
+        self.ctx.lvl_dec()
+
+    def _print_class_default_constructor(self, clazz):
         self.ctx.writeln('public:')
         self.ctx.lvl_inc()
         self.ctx.writeln(clazz.name + '();')
         self.ctx.lvl_dec()
         self.ctx.bline()
-        if len(child_classes) > 0:
-            self._print_classes(child_classes)
 
+    def _print_class_path_method(self, clazz):
+        self.ctx.writeln('std::string get_ydk_path();')
+
+    def _print_class_inits(self, clazz):
         if clazz.is_identity() and len(clazz.extends) == 0:
             self.ctx.bline()
         else:
