@@ -1,0 +1,15 @@
+{
+    "name": "ydktest",
+    "version": "0.4.0",
+    "Author": "Cisco",
+    "Copyright": "Cisco",
+    "Description": "YDK Test Profile",
+    "models": {
+	"dir": [
+	    "/sdk/cpp/ydk/tests/models/openconfig",
+	    "/sdk/cpp/ydk/tests/models/ydk",
+	    "/sdk/cpp/ydk/tests/models/test"
+        ]
+    }
+}
+
