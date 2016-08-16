@@ -16,13 +16,14 @@
 
 #include <iostream>
 
-#include "ydk/ydk.hpp"
+#include "ydk/src/entity.hpp"
+#include "ydk/src/ydk.hpp"
 
-#include "ydk/models/bgp/bgp.h"
+#include "ydk/models/openconfig_bgp.h"
 
 using namespace std;
 using namespace ydk;
-using namespace ydk::bgp;
+using namespace ydk::openconfig_bgp;
 
 int main(int argc, char* argv[])
 {
@@ -59,9 +60,9 @@ int main(int argc, char* argv[])
 	nbr_ipv4->afi_safis->afi_safi.push_back(move(nbr_ipv4_afsf));
 	bgp->neighbors->neighbor.push_back(move(nbr_ipv4));
 
-	NetconfServiceProvider provider{{"127.0.0.1", "12022", "admin", "admin"}};
-
-	CRUDService crud{};
-	crud.create(provider, *bgp);
+//	NetconfServiceProvider provider{{"127.0.0.1", "12022", "admin", "admin"}};
+//
+//	CRUDService crud{};
+//	crud.create(provider, *bgp);
 
 }

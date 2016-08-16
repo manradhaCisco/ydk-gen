@@ -48,7 +48,6 @@ class SourcePrinter(FilePrinter):
     def print_body(self, package):
         self._print_classes([clazz for clazz in package.owned_elements if isinstance(clazz, Class)])
 
-
     def _print_classes(self, clazzes):
         sorted_classes = sort_classes_at_same_level(clazzes, self.sort_clazz)
         for clazz in sorted_classes:
@@ -57,7 +56,6 @@ class SourcePrinter(FilePrinter):
 
     def _print_class(self, clazz):
         self._print_classes([nested_class for nested_class in clazz.owned_elements if isinstance(nested_class, Class)])
-
         self._print_class_body(clazz)
 
     def _print_class_body(self, clazz):

@@ -16,9 +16,9 @@
 
 SDK_DIR         = `pwd`
 MODELS_DIR      = $(SDK_DIR)/ydk/models
-BGP_MODEL       = $(MODELS_DIR)/bgp/bgp.cpp
-PROVIDERS       = $(SDK_DIR)/ydk/providers.cpp
-SERVICES        = $(SDK_DIR)/ydk/services.cpp
+BGP_MODEL       = $(MODELS_DIR)/openconfig_bgp.cpp
+PROVIDERS       = $(SDK_DIR)/ydk/src/netconf.cpp
+#SERVICES        = $(SDK_DIR)/ydk/services.cpp
 
 LIBNETCONF_LIB  = $(SDK_DIR)/.libs/libnetconf.a
 LIBNETCONF_DIR  = $(SDK_DIR)/.libs/libnetconf
@@ -39,7 +39,7 @@ all : $(MODELS_LIST)
 	@$(CXX) $(CXXFLAGS) $(LDFLAGS)  -I/$(SDK_DIR) -o ydk_cpp.so $^
 
 bgp_sample : samples/bgp_sample.cpp
-	@$(CXX) $(CXXFLAGS) -o bgp_sample $(PROVIDERS) $(SERVICES) $(BGP_MODEL) $<
+	@$(CXX) -I/$(SDK_DIR) $(CXXFLAGS) -o bgp_sample $(PROVIDERS) $(BGP_MODEL) -lnetconf $<
 
 $(LIBNETCONF_LIB) : .
 	@printf "Checking out and compiling libnetconf\n\n"
