@@ -95,7 +95,7 @@ class HeaderPrinter(FilePrinter):
         self.ctx.lvl_inc()
 
     def _print_class_body(self, clazz):
-        self._print_class_default_constructor(clazz)
+        self._print_constructor_destructor(clazz)
         child_classes = [nested_class for nested_class in clazz.owned_elements if isinstance(nested_class, Class)]
         if len(child_classes) > 0:
             self._print_classes(child_classes)
@@ -104,10 +104,11 @@ class HeaderPrinter(FilePrinter):
         self._print_class_path_method(clazz)
         self.ctx.lvl_dec()
 
-    def _print_class_default_constructor(self, clazz):
+    def _print_constructor_destructor(self, clazz):
         self.ctx.writeln('public:')
         self.ctx.lvl_inc()
         self.ctx.writeln(clazz.name + '();')
+        self.ctx.writeln('virtual ~' + clazz.name + '();')
         self.ctx.lvl_dec()
         self.ctx.bline()
 

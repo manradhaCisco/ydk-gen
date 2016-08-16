@@ -60,8 +60,11 @@ class SourcePrinter(FilePrinter):
 
         self._print_class_body(clazz)
 
-
     def _print_class_body(self, clazz):
+        self._print_class_constructor(clazz)
+        self._print_class_destructor(clazz)
+
+    def _print_class_constructor(self, clazz):
         self.ctx.writeln(clazz.qualified_cpp_name() + '::' + clazz.name + '() {')
         self.ctx.lvl_inc()
         if clazz.is_identity() and len(clazz.extends) == 0:
@@ -73,6 +76,11 @@ class SourcePrinter(FilePrinter):
 
         self.ctx.bline()
         self.ctx.lvl_dec()
+        self.ctx.writeln('}')
+        self.ctx.bline()
+
+    def _print_class_destructor(self, clazz):
+        self.ctx.writeln(clazz.qualified_cpp_name() + '::~' + clazz.name + '() {')
         self.ctx.writeln('}')
         self.ctx.bline()
 
