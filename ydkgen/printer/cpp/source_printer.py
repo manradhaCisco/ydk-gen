@@ -36,10 +36,12 @@ class SourcePrinter(FilePrinter):
         self.ctx.writeln('#include "{0}.h"'.format(package.name))
         self.ctx.bline()
         self.ctx.writeln('namespace ydk {')
+        self.ctx.writeln('namespace %s {' % package.name)
         self.ctx.bline()
 
     def print_trailer(self, package):
         self.ctx.bline()
+        self.ctx.writeln('}')
         self.ctx.writeln('}')
         self.ctx.bline()
 

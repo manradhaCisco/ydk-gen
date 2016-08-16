@@ -34,6 +34,7 @@ class HeaderPrinter(FilePrinter):
         self._print_include_guard_header(package)
         self._print_imports(package)
         self.ctx.writeln('namespace ydk {')
+        self.ctx.writeln('namespace %s {' % package.name)
         self.ctx.bline()
 
     def _print_imports(self, package):
@@ -66,6 +67,7 @@ class HeaderPrinter(FilePrinter):
     def print_trailer(self, package):
         self.ctx.bline()
         self.ctx.writeln('}')
+        self.ctx.writeln('}')
         self._print_include_guard_trailer(package)
         self.ctx.bline()
 
@@ -85,7 +87,7 @@ class HeaderPrinter(FilePrinter):
     def _print_class_header(self, clazz):
         parents = 'object'
         if len(clazz.extends) > 0:
-            parents = ', '.join([sup.qualified_cpp_name() for sup in clazz.extends])
+            parents = ', '.join([sup.fully_qualified_cpp_name() for sup in clazz.extends])
             self.ctx.writeln('class ' + clazz.name + ' : public ' + parents + ' {')
         else:
             self.ctx.writeln('class ' + clazz.name + ' : public Entity {')
@@ -121,13 +123,13 @@ class HeaderPrinter(FilePrinter):
 
     def _print_class_inits_is_many(self, prop):
         if isinstance(prop.property_type, Class):
-            self.ctx.writeln('std::vector< std::unique_ptr<%s> > %s;' % (prop.property_type.qualified_cpp_name(), prop.name))
+            self.ctx.writeln('std::vector< std::unique_ptr<%s> > %s;' % (prop.property_type.fully_qualified_cpp_name(), prop.name))
         else:
             self.ctx.writeln('std::vector<std::string> %s;' % (prop.name))
 
     def _print_class_inits_unique(self, prop):
         if isinstance(prop.property_type, Class) and not prop.property_type.is_identity():
-            self.ctx.writeln('std::unique_ptr<%s> %s;' % (prop.property_type.qualified_cpp_name(), prop.name,))
+            self.ctx.writeln('std::unique_ptr<%s> %s;' % (prop.property_type.fully_qualified_cpp_name(), prop.name,))
             # instantiate the class only if it is not a presence class
             '''stmt = prop.property_type.stmt
             if stmt.search_one('presence') is None:
