@@ -22,6 +22,7 @@
 #include <string>
 
 #include "ydk.hpp"
+#include "entity.hpp"
 
 namespace ydk {
 

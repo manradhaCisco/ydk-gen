@@ -1,4 +1,8 @@
-/// YANG Development Kit
+//
+// @file entity.hpp
+// @brief Header for ydk entity
+//
+// YANG Development Kit
 // Copyright 2016 Cisco Systems. All rights reserved
 //
 ////////////////////////////////////////////////////////////////
@@ -21,40 +25,42 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#include "ydk.hpp"
-#include "entity.hpp"
+#ifndef ENTITY_HPP
+#define ENTITY_HPP
 
-using namespace std;
+#include <string>
+#include <vector>
+#include <memory>
+
+namespace std {
+
+template<typename T, typename ...Args>
+std::unique_ptr<T> make_unique( Args&& ...args )
+{
+    return std::unique_ptr<T>( new T( std::forward<Args>(args)... ) );
+}
+
+}
 
 namespace ydk {
-CRUDService::CRUDService()
-{
+  class Entity {
+  	virtual std::string get_ydk_path() = 0;
+  };
+
+typedef unsigned short uint8;
+typedef unsigned int uint16;
+typedef unsigned int uint32;
+typedef unsigned long long uint64;
+
+typedef signed short int8;
+typedef signed int int16;
+typedef signed int int32;
+typedef signed long long int64;
+
+typedef struct Empty {
+    bool set;
+} Empty;
 
 }
 
-bool CRUDService::create(ServiceProvider & provider, Entity & entity)
-{
-	string payload = provider.encode(entity);
-	return provider.execute_payload(payload);
-}
-
-std::unique_ptr<Entity> CRUDService::read(ServiceProvider & provider, Entity & entity)
-{
-	string payload = provider.encode(entity);
-	provider.execute_payload(payload);
-	string reply="";
-	return provider.decode(reply);
-}
-
-bool CRUDService::update(ServiceProvider & provider, Entity & entity)
-{
-	string payload = provider.encode(entity);
-	return provider.execute_payload(payload);
-}
-
-bool CRUDService::del(ServiceProvider & provider, Entity & entity)
-{
-	string payload = provider.encode(entity);
-	return provider.execute_payload(payload);
-}
-}
+#endif /* ENTITY_HPP */

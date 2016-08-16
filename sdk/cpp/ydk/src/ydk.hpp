@@ -32,6 +32,8 @@
 #include <vector>
 #include <memory>
 
+#include "entity.hpp"
+
 namespace std {
 
 template<typename T, typename ...Args>
@@ -43,9 +45,6 @@ std::unique_ptr<T> make_unique( Args&& ...args )
 }
 
 namespace ydk {
-  class Entity {
-
-  };
 
 class ServiceProvider {
 	public:
@@ -67,23 +66,6 @@ class CRUDService : public Service {
 		bool update(ServiceProvider & provider, Entity & entity);
 		bool del(ServiceProvider & provider, Entity & entity);
 };
-
-
-typedef unsigned short uint8;
-typedef unsigned int uint16;
-typedef unsigned int uint32;
-typedef unsigned long long uint64;
-
-typedef signed short int8;
-typedef signed int int16;
-typedef signed int int32;
-typedef signed long long int64;
-
-typedef struct Empty {
-    bool set;
-} Empty;
-
-
 
 }
 

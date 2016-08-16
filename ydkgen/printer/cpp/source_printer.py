@@ -23,6 +23,7 @@ source_printer.py
 from ydkgen.api_model import Class
 from ydkgen.common import sort_classes_at_same_level
 from ydkgen.printer.file_printer import FilePrinter
+from .class_method_printer import ClassPathMethodPrinter
 
 
 class SourcePrinter(FilePrinter):
@@ -31,7 +32,6 @@ class SourcePrinter(FilePrinter):
         self.sort_clazz = sort_clazz
 
     def print_header(self, package):
-        self.ctx.writeln('#include "ydk/make_unique.h"')
         self.ctx.bline()
         self.ctx.writeln('#include "{0}.h"'.format(package.name))
         self.ctx.bline()
@@ -48,15 +48,18 @@ class SourcePrinter(FilePrinter):
     def print_body(self, package):
         self._print_classes([clazz for clazz in package.owned_elements if isinstance(clazz, Class)])
 
+
     def _print_classes(self, clazzes):
         sorted_classes = sort_classes_at_same_level(clazzes, self.sort_clazz)
         for clazz in sorted_classes:
             self._print_class(clazz)
+            self._print_class_get_path(clazz)
 
     def _print_class(self, clazz):
         self._print_classes([nested_class for nested_class in clazz.owned_elements if isinstance(nested_class, Class)])
 
         self._print_class_body(clazz)
+
 
     def _print_class_body(self, clazz):
         self.ctx.writeln(clazz.qualified_cpp_name() + '::' + clazz.name + '() {')
@@ -80,3 +83,10 @@ class SourcePrinter(FilePrinter):
     def _print_class_inits_unique(self, prop):
         if isinstance(prop.property_type, Class) and not prop.property_type.is_identity():
             self.ctx.writeln('%s = std::make_unique<%s>();' % (prop.name, prop.property_type.qualified_cpp_name()))
+
+    def _print_class_get_path(self, clazz):
+        self.ctx.writeln('std::string')
+        self.ctx.writeln(clazz.qualified_cpp_name() + '::get_ydk_path() {')
+        ClassPathMethodPrinter(self.ctx).print_output(clazz)
+        self.ctx.writeln('}')
+        self.ctx.bline()
