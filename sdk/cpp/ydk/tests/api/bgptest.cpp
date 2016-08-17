@@ -1,3 +1,26 @@
+/// YANG Development Kit
+// Copyright 2016 Cisco Systems. All rights reserved
+//
+////////////////////////////////////////////////////////////////
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
+//////////////////////////////////////////////////////////////////
+
 #define BOOST_TEST_MODULE OCBgpTest
 #include <boost/test/unit_test.hpp>
 #include <iostream>
@@ -56,7 +79,8 @@ std::vector<ydk::core::Capability> test_openconfig {
     {"openconfig-policy-types", ""},
     {"openconfig-routing-policy", ""},
     {"openconfig-types", ""},
-    {"ietf-interfaces", ""}
+    {"ietf-interfaces", ""},
+    {"ydk", ""}
     
 };
 
@@ -128,6 +152,11 @@ BOOST_AUTO_TEST_CASE( bgp )
 
     auto s = ydk::core::CodecService{};
     auto xml = s.encode(bgp, ydk::core::CodecService::Format::XML, true);
+    
+    BOOST_TEST_MESSAGE(xml);
+    
+    std::cout << xml << std::endl;
+    
     auto json = s.encode(bgp, ydk::core::CodecService::Format::JSON, true);
    
     BOOST_CHECK_MESSAGE( !xml.empty(),
@@ -146,8 +175,8 @@ BOOST_AUTO_TEST_CASE( bgp )
     //}
 
     //TODO fix rpc
-    //std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("ydk:create") };
-    //create_rpc->input()->create("config", xml);
+    std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("/ydk:create") };
+    create_rpc->input()->create("entity", xml);
 
     //call create
     //(*create_rpc)(sp);
