@@ -874,7 +874,9 @@ namespace ydk {
             virtual DataNode* operator()(const ServiceProvider& provider) = 0;
             
             
-            virtual DataNode* input() const;
+            virtual DataNode* input() const = 0;
+            
+            virtual SchemaNode* schema() const = 0;
             
             //std::string xml() const;
             

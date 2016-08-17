@@ -122,12 +122,12 @@ std::vector<ydk::core::SchemaNode*>
 ydk::core::SchemaNodeImpl::find(const std::string& path) const
 {
 	if(path.empty()) {
-		throw std::invalid_argument{"path is empty"};
+		throw ydk::core::YDKInvalidArgumentException{"path is empty"};
 	}
 
 	//has to be a relative path
 	if(path.at(0) == '/') {
-		throw std::invalid_argument{"path must be a relative path"};
+		throw ydk::core::YDKInvalidArgumentException{"path must be a relative path"};
 	}
 
     std::vector<SchemaNode*> ret;
@@ -255,12 +255,12 @@ std::vector<ydk::core::SchemaNode*>
 ydk::core::RootSchemaNodeImpl::find(const std::string& path) const
 {
 	if(path.empty()) {
-		throw std::invalid_argument{"path is empty"};
+		throw ydk::core::YDKInvalidArgumentException{"path is empty"};
 	}
 
 	//has to be a relative path
 	if(path.at(0) == '/') {
-		throw std::invalid_argument{"path must be a relative path"};
+		throw ydk::core::YDKInvalidArgumentException{"path must be a relative path"};
 	}
 
 	std::vector<SchemaNode*> ret;
@@ -293,7 +293,7 @@ ydk::core::RootSchemaNodeImpl::create(const std::string& path) const
 ydk::core::DataNode*
 ydk::core::RootSchemaNodeImpl::create(const std::string& path, const std::string& value) const
 {
-	RootDataImpl* rd = new RootDataImpl{this};
+	RootDataImpl* rd = new RootDataImpl{this, m_ctx, "/"};
 
 	if (rd){
 		return rd->create(path, value);
@@ -305,7 +305,7 @@ ydk::core::DataNode*
 ydk::core::RootSchemaNodeImpl::from_xml(const std::string& xml) const
 {
 	struct lyd_node *root = lyd_parse_mem(m_ctx, xml.c_str(), LYD_XML, 0);
-	RootDataImpl* rd = new RootDataImpl{this};
+	RootDataImpl* rd = new RootDataImpl{this, m_ctx, "/"};
 	DataNodeImpl* nodeImpl = new DataNodeImpl{rd,root};
 
 	return nodeImpl;
@@ -317,22 +317,31 @@ ydk::core::RootSchemaNodeImpl::from_xml(const std::string& xml) const
 ydk::core::Rpc*
 ydk::core::RootSchemaNodeImpl::rpc(const std::string& path) const
 {
-	//TODO
-	return nullptr;
+	
+    struct lyd_node* node = lyd_new_path(nullptr, m_ctx, path.c_str(), "", 0);
+    
+    if(node == nullptr) {
+        throw YDKInvalidArgumentException{"Path is invalid"};
+    }
+    
+    SchemaNodeImpl* sn = new SchemaNodeImpl{this, node->schema};
+    struct ly_ctx* ctx = node->schema->module->ctx;
+    lyd_free(node);
+    
+    return new RpcImpl{sn, ctx};
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // class ydk::RootDataImpl
 //////////////////////////////////////////////////////////////////////////
-ydk::core::RootDataImpl::RootDataImpl(const RootSchemaNodeImpl* schema) : m_schema{schema}
+ydk::core::RootDataImpl::RootDataImpl(const SchemaNode* schema, struct ly_ctx* ctx, const std::string path) : DataNodeImpl{nullptr, nullptr}, m_schema{schema}, m_ctx{ctx}, m_path{path}
 {
 
 }
 
 ydk::core::RootDataImpl::~RootDataImpl()
 {
-    for(auto c : children())
-        delete c;
+    m_node = nullptr;
 }
 
 const ydk::core::SchemaNode*
@@ -344,80 +353,81 @@ ydk::core::RootDataImpl::schema() const
 std::string
 ydk::core::RootDataImpl::path() const
 {
-	return "/";
+    return m_schema->path();
 }
 
 ydk::core::DataNode*
 ydk::core::RootDataImpl::create(const std::string& path, const std::string& value)
 {
     if(path.empty()){
-        throw std::invalid_argument{"Path is empty"};
+        throw ydk::core::YDKInvalidArgumentException{"Path is empty"};
         
     }
     //path should not start with /
     if(path.at(0) == '/'){
-        throw std::invalid_argument{"Path starts with /"};
+        throw ydk::core::YDKInvalidArgumentException{"Path starts with /"};
     }
-    
     std::vector<std::string> segments = segmentalize(path);
-    auto iter =  m_childmap.find(segments[0]);
     
-    DataNode* startdn = nullptr;
-    bool created = false;
-    if( m_childmap.end() == iter ){
-        //we don't have a child for this segment
-        std::string p{"/"};
-        p+=path;
-        
-        struct lyd_node* dnode = lyd_new_path(nullptr, m_schema->m_ctx, p.c_str(), segments.size() == 1 ? value.c_str():nullptr, 0);
-        if (!dnode) {
-            throw std::invalid_argument{"Path is invalid"};
-            
-        }
-        startdn = new DataNodeImpl{this, dnode};
-        created = true;
-    } else{
-        startdn = iter->second;
+    
+    
+
+    std::string start_seg = m_path + segments[0];
+    struct lyd_node* dnode = lyd_new_path(m_node, m_ctx, start_seg.c_str(),
+                                          segments.size() == 1 ? value.c_str():nullptr,0);
+    
+    
+    
+    if( dnode == nullptr){
+        throw ydk::core::YDKInvalidArgumentException{"Path is invalid."};
     }
     
-    DataNode* rdn = nullptr;
-    
-    if(segments.size() == 1) {
-        //this is the only node to create
-        rdn = startdn;
+    DataNodeImpl* dn = nullptr;
+    if(m_node == nullptr){
+        m_node = dnode;
+        dn = new DataNodeImpl{this, m_node};
+        child_map.insert(std::make_pair(m_node, dn));
     } else {
+        //dnode is one of the siblings of m_node
+        auto iter = child_map.find(dnode);
+        if(iter != child_map.end()) {
+            dn = iter->second;
+            
+        } else {
+            dn = new DataNodeImpl{this, m_node};
+            child_map.insert(std::make_pair(m_node, dn));
+        }
+        
+    }
+    
+    DataNode* rdn = dn;
+    // created data node is the last child
+    while(!rdn->children().empty()) {
+        rdn = rdn->children()[0];
+    }
+    
+    //at this stage we have dn so for the remaining segments use dn as the parent
+    if(segments.size() > 1) {
         std::string remaining_path;
-        bool addslash = false;
-        for(size_t i = 1; i< segments.size(); i++){
-            if (addslash)
+        for(size_t i =1; i< segments.size(); i++) {
+            if(i!=1){
                 remaining_path+="/";
-            else
-                addslash = true;
+            }
             remaining_path+=segments[i];
         }
-        //create the remaining node tree
-        try{
-             rdn = startdn->create(remaining_path, value);
-            
-            }catch(...){
-                if(created)
-                    delete startdn;
-                throw std::invalid_argument{"Path is invalid"};
-        }
-            
         
+        rdn = rdn->create(remaining_path);
     }
-
-    if(created)
-        m_childmap.insert(std::make_pair(segments[0], startdn));
+    
     
     return rdn;
-}
+    
+ }
 
 void
 ydk::core::RootDataImpl::set(const std::string& value)
 {
-	throw std::invalid_argument{"Invalid value being assigned to root."};
+	throw ydk::core::YDKInvalidArgumentException{"Invalid value being assigned to root."};
 }
 
 std::string
@@ -432,20 +442,27 @@ ydk::core::RootDataImpl::find(const std::string& path) const
 	return std::vector<DataNode*>{};
 }
 
-ydk::core::DataNode*
-ydk::core::RootDataImpl::parent() const
-{
-	return nullptr;
-}
+
 
 std::vector<ydk::core::DataNode*>
 ydk::core::RootDataImpl::children() const
 {
     std::vector<DataNode*> ret{};
     
-    for(auto p : m_childmap ){
-        ret.push_back(p.second);
+    struct lyd_node* iter = m_node;
+    
+    if( iter ){
+        do {
+            auto p = child_map.find(iter);
+            if (p != child_map.end()) {
+                ret.push_back(p->second);
+            }
+
+            iter=iter->next;
+            
+        } while (iter != m_node);
     }
+    
     return ret;
 }
 
@@ -469,6 +486,13 @@ ydk::core::RootDataImpl::root() const
 //    return ret;
 //}
 
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////
@@ -477,7 +501,7 @@ ydk::core::RootDataImpl::root() const
 ydk::core::DataNodeImpl::DataNodeImpl(DataNode* parent, struct lyd_node* node): m_parent{parent}, m_node{node}
 {
 	//add the children
-    if(m_node->child && !(m_node->schema->nodetype == LYS_LEAF ||
+    if(m_node && m_node->child && !(m_node->schema->nodetype == LYS_LEAF ||
                           m_node->schema->nodetype == LYS_LEAFLIST ||
                           m_node->schema->nodetype == LYS_ANYXML)){
         struct lyd_node *iter = nullptr;
@@ -497,7 +521,11 @@ ydk::core::DataNodeImpl::~DataNodeImpl()
 	}
 
 	if(m_node){
-		lyd_free(m_node);
+        if(m_parent) {
+            lyd_free(m_node);
+        } else {
+            lyd_free_withsiblings(m_node);
+        }
 		m_node = nullptr;
 	}
 }
@@ -524,7 +552,7 @@ ydk::core::DataNode*
 ydk::core::DataNodeImpl::create(const std::string& path, const std::string& value)
 {
 	if(path.empty()){
-		throw std::invalid_argument{"Path is empty."};
+		throw ydk::core::YDKInvalidArgumentException{"Path is empty."};
 	}
 
     std::vector<std::string> segments = segmentalize(path);
@@ -550,7 +578,7 @@ ydk::core::DataNodeImpl::create(const std::string& path, const std::string& valu
 	}
 
 	if (segments.empty()) {
-		throw std::invalid_argument{"path points to existing node."};
+		throw ydk::core::YDKInvalidArgumentException{"path points to existing node."};
 	}
 
 	std::vector<struct lyd_node*> nodes_created;
@@ -569,7 +597,7 @@ ydk::core::DataNodeImpl::create(const std::string& path, const std::string& valu
 			if(first_node_created) {
 				lyd_unlink(first_node_created);
 				lyd_free(first_node_created);
-				throw std::invalid_argument{"invalid path"};
+				throw ydk::core::YDKInvalidArgumentException{"invalid path"};
 			}
 
 		} else if (!first_node_created) {
@@ -599,7 +627,7 @@ ydk::core::DataNodeImpl::set(const std::string& value)
 	if (s_node->nodetype == LYS_LEAF || s_node->nodetype == LYS_LEAFLIST) {
 		struct lyd_node_leaf_list* leaf= reinterpret_cast<struct lyd_node_leaf_list *>(m_node);
 		if(lyd_change_leaf(leaf, value.c_str())) {
-			throw std::invalid_argument{"Invalid value"};
+			throw ydk::core::YDKInvalidArgumentException{"Invalid value"};
 		}
 
 	} else if (s_node->nodetype == LYS_ANYXML) {
@@ -608,7 +636,7 @@ ydk::core::DataNodeImpl::set(const std::string& value)
 		anyxml->value.str = value.c_str();
 
 	}else {
-		throw std::invalid_argument{"Cannot set value for this Data Node"};
+		throw ydk::core::YDKInvalidArgumentException{"Cannot set value for this Data Node"};
 	}
 }
 
@@ -634,23 +662,27 @@ ydk::core::DataNodeImpl::find(const std::string& path) const
 {
 	std::vector<DataNode*> results;
     
+    if(m_node == nullptr) {
+        return results;
+    }
+    
     const struct lys_node* found_snode =
         ly_ctx_get_node(m_node->schema->module->ctx, m_node->schema, path.c_str());
     
     if(found_snode) {
         struct ly_set* result_set = lyd_get_node2(m_node, found_snode);
-        if (result_set->number > 0){
-            for(size_t i=0; i < result_set->number; i++){
-                struct lyd_node* node_result = result_set->set.d[i];
-                results.push_back(get_dn_for_desc_node(node_result));
+        if( result_set ){
+            if (result_set->number > 0){
+                for(size_t i=0; i < result_set->number; i++){
+                    struct lyd_node* node_result = result_set->set.d[i];
+                    results.push_back(get_dn_for_desc_node(node_result));
+                }
             }
+            ly_set_free(result_set);
         }
-        ly_set_free(result_set);
 
     }
     
-	
-
 	return results;
 }
 
@@ -666,7 +698,7 @@ ydk::core::DataNodeImpl::children() const
 	std::vector<DataNode*> ret{};
 	//the ordering should be determined by the lyd_node
 	struct lyd_node *iter;
-    if(m_node->child && !(m_node->schema->nodetype == LYS_LEAF ||
+    if(m_node && m_node->child && !(m_node->schema->nodetype == LYS_LEAF ||
                           m_node->schema->nodetype == LYS_LEAFLIST ||
                           m_node->schema->nodetype == LYS_ANYXML)){
         LY_TREE_FOR(m_node->child, iter){
@@ -799,11 +831,12 @@ ydk::core::CodecService::encode(const ydk::core::DataNode* dn, ydk::core::CodecS
         //TODO
         return ret;
     }
-    char* buffer;
-    if(!lyd_print_mem(&buffer, m_node,scheme, pretty ? LYP_FORMAT : 0)) {
-        ret = buffer;
-        std::free(buffer);
-    }
+    //int rc = lyd_validate(&m_node, LYD_OPT_GET);
+    //if (rc ) {
+      //  throw YDKCoreException();
+    //}
+
+    xml_print_data(ret, m_node, pretty ? LYP_FORMAT : 0);
 
     return ret;
 }
@@ -826,7 +859,7 @@ ydk::core::CodecService::decode(const RootSchemaNode* root_schema, const std::st
         throw YDKCodecException{YDKCodecException::Error::XML_INVAL};
     }
 
-    RootDataImpl* rd = new RootDataImpl{rs_impl};
+    RootDataImpl* rd = new RootDataImpl{rs_impl, rs_impl->m_ctx, "/"};
     DataNodeImpl* nodeImpl = new DataNodeImpl{rd,root};
     return nodeImpl;
 }
@@ -871,26 +904,751 @@ ydk::core::Repository::create_root_schema(const std::vector<ydk::core::Capabilit
 ////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// class Rpc
+// class RpcImpl
 ////////////////////////////////////////////////////////////////////////////////
-ydk::core::DataNode*
-ydk::core::Rpc::operator()(const ServiceProvider& provider)
+
+    
+ydk::core::RpcImpl::RpcImpl(SchemaNodeImpl* sn, struct ly_ctx* ctx) : m_sn{sn}
 {
-	return provider.invoke(this);
+    std::string path = sn->path() + "/";
+
+    m_input_dn = new RootDataImpl{sn, ctx, path};
+    
 }
 
-ydk::core::DataNode*
-ydk::core::Rpc::input() const
+ydk::core::RpcImpl::~RpcImpl()
 {
-	//TODO
-	return nullptr;
+    if(m_input_dn){
+        delete m_input_dn;
+        m_input_dn = nullptr;
+    }
+    
+}
+    
+ydk::core::DataNode*
+ydk::core::RpcImpl::operator()(const ydk::core::ServiceProvider& provider)
+{
+    return provider.invoke(this);
+}
+    
+
+ydk::core::DataNode*
+ydk::core::RpcImpl::input() const
+{
+    return m_input_dn;
+}
+    
+ydk::core::SchemaNode*
+ydk::core::RpcImpl::schema() const
+{
+    return m_sn;
+}
+        
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+/// xml printing fixes
+/////////////////////////////////////////////////////////////////////////////////////////
+
+#define INDENT ""
+#define LEVEL (level ? level*2-2 : 0)
+
+
+int
+ydk::core::modlist_add(struct mlist **mlist, const struct lys_module *mod)
+{
+    struct mlist *iter;
+    
+    for (iter = *mlist; iter; iter = iter->next) {
+        if (mod == iter->module) {
+            break;
+        }
+    }
+    
+    if (!iter) {
+        iter = (struct mlist *)std::malloc(sizeof *iter);
+        if (!iter) {
+            return EXIT_FAILURE;
+        }
+        iter->next = *mlist;
+        iter->module = (struct lys_module *)mod;
+        *mlist = iter;
+    }
+    
+    return EXIT_SUCCESS;
 }
 
-//std::string
-//ydk::Rpc::xml() const
+void
+ydk::core::xml_print_ns(std::string& out, const struct lyd_node *node)
+{
+    struct lyd_node *next, *cur, *node2;
+    struct lyd_attr *attr;
+    const struct lys_module *wdmod = NULL;
+    struct mlist *mlist = NULL, *miter;
+    
+    
+    /* add node attribute modules */
+    for (attr = node->attr; attr; attr = attr->next) {
+        if (modlist_add(&mlist, attr->module)) {
+            goto print;
+        }
+    }
+    
+    /* add node children nodes and attribute modules */
+    if (!(node->schema->nodetype & (LYS_LEAF | LYS_LEAFLIST | LYS_ANYXML))) {
+        /* get with-defaults module */
+        wdmod = ly_ctx_get_module(node->schema->module->ctx, "ietf-netconf-with-defaults", NULL);
+        
+        LY_TREE_FOR(node->child, node2) {
+            LY_TREE_DFS_BEGIN(node2, next, cur) {
+                if (cur->dflt && wdmod) {
+                    if (modlist_add(&mlist, wdmod)) {
+                        goto print;
+                    }
+                }
+                for (attr = cur->attr; attr; attr = attr->next) {
+                    if (modlist_add(&mlist, attr->module)) {
+                        goto print;
+                    }
+                }
+                LY_TREE_DFS_END(node2, next, cur)}
+        }
+    }
+    
+print:
+    /* print used namespaces */
+    while (mlist) {
+        miter = mlist;
+        mlist = mlist->next;
+        
+        ly_print(out, " xmlns:%s=\"%s\"", miter->module->prefix, miter->module->ns);
+        free(miter);
+    }
+}
+
+void
+ydk::core::xml_print_attrs(std::string& out, const struct lyd_node *node)
+{
+    struct lyd_attr *attr;
+    const char **prefs, **nss;
+    const char *xml_expr;
+    uint32_t ns_count, i;
+    int rpc_filter = 0;
+    const struct lys_module *wdmod = NULL;
+    
+    /* with-defaults */
+    if (node->dflt) {
+        /* get with-defaults module */
+        wdmod = ly_ctx_get_module(node->schema->module->ctx, "ietf-netconf-with-defaults", NULL);
+        if (wdmod) {
+            /* print attribute only if context include with-defaults schema */
+            ly_print(out, " %s:default=\"true\"", wdmod->prefix);
+        }
+    }
+    /* technically, check for the extension get-filter-element-attributes from ietf-netconf */
+    if (!strcmp(node->schema->name, "filter")
+        && (!strcmp(node->schema->module->name, "ietf-netconf") || !strcmp(node->schema->module->name, "notifications"))) {
+        rpc_filter = 1;
+    }
+    
+    for (attr = node->attr; attr; attr = attr->next) {
+        if (rpc_filter && !strcmp(attr->name, "type")) {
+            ly_print(out, " %s=\"", attr->name);
+        } else if (rpc_filter && !strcmp(attr->name, "select")) {
+            xml_expr = transform_json2xml(node->schema->module, attr->value, &prefs, &nss, &ns_count);
+            if (!xml_expr) {
+                /* error */
+                ly_print(out, "\"(!error!)\"");
+                return;
+            }
+            
+            for (i = 0; i < ns_count; ++i) {
+                ly_print(out, " xmlns:%s=\"%s\"", prefs[i], nss[i]);
+            }
+            free(prefs);
+            free(nss);
+            
+            ly_print(out, " %s=\"", attr->name);
+            lyxml_dump_text(out, xml_expr);
+            ly_print(out, "\"");
+            
+            lydict_remove(node->schema->module->ctx, xml_expr);
+            continue;
+        } else {
+            ly_print(out, " %s:%s=\"", attr->module->prefix, attr->name);
+        }
+        lyxml_dump_text(out, attr->value);
+        ly_print(out, "\"");
+    }
+}
+
+void
+ydk::core::xml_print_leaf(std::string& out, int level, const struct lyd_node *node, int toplevel)
+{
+    const struct lyd_node_leaf_list *leaf = (struct lyd_node_leaf_list *)node;
+    const char *ns;
+    const char **prefs, **nss;
+    const char *xml_expr;
+    uint32_t ns_count, i;
+    
+    if (toplevel || !node->parent || nscmp(node, node->parent)) {
+        /* print "namespace" */
+        ns = lyd_node_module(node)->ns;
+        ly_print(out, "%*s<%s xmlns=\"%s\"", LEVEL, INDENT, node->schema->name, ns);
+    } else {
+        ly_print(out, "%*s<%s", LEVEL, INDENT, node->schema->name);
+    }
+    
+    if (toplevel) {
+        xml_print_ns(out, node);
+    }
+    
+    xml_print_attrs(out, node);
+    
+    switch (leaf->value_type & LY_DATA_TYPE_MASK) {
+        case LY_TYPE_BINARY:
+        case LY_TYPE_STRING:
+        case LY_TYPE_BITS:
+        case LY_TYPE_ENUM:
+        case LY_TYPE_BOOL:
+        case LY_TYPE_DEC64:
+        case LY_TYPE_INT8:
+        case LY_TYPE_INT16:
+        case LY_TYPE_INT32:
+        case LY_TYPE_INT64:
+        case LY_TYPE_UINT8:
+        case LY_TYPE_UINT16:
+        case LY_TYPE_UINT32:
+        case LY_TYPE_UINT64:
+            if (!leaf->value_str || !leaf->value_str[0]) {
+                ly_print(out, "/>");
+            } else {
+                ly_print(out, ">");
+                lyxml_dump_text(out, leaf->value_str);
+                ly_print(out, "</%s>", node->schema->name);
+            }
+            break;
+            
+        case LY_TYPE_IDENT:
+        case LY_TYPE_INST:
+            xml_expr = transform_json2xml(node->schema->module, ((struct lyd_node_leaf_list *)node)->value_str,
+                                          &prefs, &nss, &ns_count);
+            if (!xml_expr) {
+                /* error */
+                ly_print(out, "\"(!error!)\"");
+                return;
+            }
+            
+            for (i = 0; i < ns_count; ++i) {
+                ly_print(out, " xmlns:%s=\"%s\"", prefs[i], nss[i]);
+            }
+            free(prefs);
+            free(nss);
+            
+            if (xml_expr[0]) {
+                ly_print(out, ">");
+                lyxml_dump_text(out, xml_expr);
+                ly_print(out, "</%s>", node->schema->name);
+            } else {
+                ly_print(out, "/>");
+            }
+            lydict_remove(node->schema->module->ctx, xml_expr);
+            break;
+            
+        case LY_TYPE_LEAFREF:
+            if (leaf->value.leafref) {
+                lyxml_dump_text(out, ((struct lyd_node_leaf_list *)(leaf->value.leafref))->value_str);
+            } else if (leaf->value_str) {
+                if(strchr(leaf->value_str ,':')) {
+                    xml_expr = transform_json2xml(node->schema->module, ((struct lyd_node_leaf_list *)node)->value_str,
+                                                  &prefs, &nss, &ns_count);
+                    if (!xml_expr) {
+                        /* error */
+                        ly_print(out, "\"(!error!)\"");
+                        return;
+                    }
+                    
+                    for (i = 0; i < ns_count; ++i) {
+                        ly_print(out, " xmlns:%s=\"%s\"", prefs[i], nss[i]);
+                    }
+                    free(prefs);
+                    free(nss);
+                    
+                    if (xml_expr[0]) {
+                        ly_print(out, ">");
+                        lyxml_dump_text(out, xml_expr);
+                        ly_print(out, "</%s>", node->schema->name);
+                    } else {
+                        ly_print(out, "/>");
+                    }
+                    lydict_remove(node->schema->module->ctx, xml_expr);
+                    break;
+                } else {
+                    ly_print(out, ">");
+                    lyxml_dump_text(out, leaf->value_str);
+                    ly_print(out, "</%s>", node->schema->name);
+                }
+            }else {
+                 ly_print(out, "</%s>", node->schema->name);
+            }
+            
+            break;
+            
+        case LY_TYPE_EMPTY:
+            ly_print(out, "/>");
+            break;
+            
+        default:
+            /* error */
+            ly_print(out, "\"(!error!)\"");
+    }
+    
+    if (level) {
+        ly_print(out, "\n");
+    }
+}
+
+void
+ydk::core::xml_print_container(std::string& out, int level, const struct lyd_node *node, int toplevel)
+{
+    struct lyd_node *child;
+    const char *ns;
+    
+    if (toplevel || !node->parent || nscmp(node, node->parent)) {
+        /* print "namespace" */
+        ns = lyd_node_module(node)->ns;
+        ly_print(out, "%*s<%s xmlns=\"%s\"", LEVEL, INDENT, node->schema->name, ns);
+    } else {
+        ly_print(out, "%*s<%s", LEVEL, INDENT, node->schema->name);
+    }
+    
+    if (toplevel) {
+        xml_print_ns(out, node);
+    }
+    
+    xml_print_attrs(out, node);
+    
+    if (!node->child) {
+        ly_print(out, "/>%s", level ? "\n" : "");
+        return;
+    }
+    ly_print(out, ">%s", level ? "\n" : "");
+    
+    LY_TREE_FOR(node->child, child) {
+        xml_print_node(out, level ? level + 1 : 0, child, 0);
+    }
+    
+    ly_print(out, "%*s</%s>%s", LEVEL, INDENT, node->schema->name, level ? "\n" : "");
+}
+
+void
+ydk::core::xml_print_list(std::string& out, int level, const struct lyd_node *node, int is_list, int toplevel)
+{
+    struct lyd_node *child;
+    const char *ns;
+    
+    if (is_list) {
+        /* list print */
+        if (toplevel || !node->parent || nscmp(node, node->parent)) {
+            /* print "namespace" */
+            ns = lyd_node_module(node)->ns;
+            ly_print(out, "%*s<%s xmlns=\"%s\"", LEVEL, INDENT, node->schema->name, ns);
+        } else {
+            ly_print(out, "%*s<%s", LEVEL, INDENT, node->schema->name);
+        }
+        
+        if (toplevel) {
+            xml_print_ns(out, node);
+        }
+        xml_print_attrs(out, node);
+        
+        if (!node->child) {
+            ly_print(out, "/>%s", level ? "\n" : "");
+            return;
+        }
+        ly_print(out, ">%s", level ? "\n" : "");
+        
+        LY_TREE_FOR(node->child, child) {
+            xml_print_node(out, level ? level + 1 : 0, child, 0);
+        }
+        
+        ly_print(out, "%*s</%s>%s", LEVEL, INDENT, node->schema->name, level ? "\n" : "");
+    } else {
+        /* leaf-list print */
+        xml_print_leaf(out, level, node, toplevel);
+    }
+}
+
+int
+ydk::core::nscmp(const struct lyd_node *node1, const struct lyd_node *node2)
+{
+    /* we have to cover submodules belonging to the same module */
+    if (lys_node_module(node1->schema) == lys_node_module(node2->schema)) {
+        /* belongs to the same module */
+        return 0;
+    } else {
+        /* different modules */
+        return 1;
+    }
+}
+
+void
+ydk::core::xml_print_anyxml(std::string& out, int level, const struct lyd_node *node, int toplevel)
+{
+    //char *buf;
+    struct lyd_node_anyxml *axml = (struct lyd_node_anyxml *)node;
+    const char *ns;
+    
+    if (toplevel || !node->parent || nscmp(node, node->parent)) {
+        /* print "namespace" */
+        ns = lyd_node_module(node)->ns;
+        ly_print(out, "%*s<%s xmlns=\"%s\"", LEVEL, INDENT, node->schema->name, ns);
+    } else {
+        ly_print(out, "%*s<%s", LEVEL, INDENT, node->schema->name);
+    }
+    
+    if (toplevel) {
+        xml_print_ns(out, node);
+    }
+    xml_print_attrs(out, node);
+    ly_print(out, ">");
+    
+
+    if (axml->value.str) {
+        ly_print(out, "%s", axml->value.str);
+    }
+    
+    
+    /* closing tag */
+    ly_print(out, "%*s</%s>%s", LEVEL, INDENT, node->schema->name, level ? "\n" : "");
+}
+
+void
+ydk::core::xml_print_node(std::string& out, int level, const struct lyd_node *node, int toplevel)
+{
+    switch (node->schema->nodetype) {
+        case LYS_NOTIF:
+        case LYS_RPC:
+        case LYS_CONTAINER:
+            xml_print_container(out, level, node, toplevel);
+            break;
+        case LYS_LEAF:
+            xml_print_leaf(out, level, node, toplevel);
+            break;
+        case LYS_LEAFLIST:
+            xml_print_list(out, level, node, 0, toplevel);
+            break;
+        case LYS_LIST:
+            xml_print_list(out, level, node, 1, toplevel);
+            break;
+        case LYS_ANYXML:
+            xml_print_anyxml(out, level, node, toplevel);
+            break;
+        default:
+            
+            break;
+    }
+}
+
+int
+ydk::core::xml_print_data(std::string& out, const struct lyd_node *root, int options)
+{
+    const struct lyd_node *node;
+    
+    /* content */
+    LY_TREE_FOR(root, node) {
+        xml_print_node(out, (options & LYP_FORMAT ? 1 : 0), node, 1);
+        if (!(options & LYP_WITHSIBLINGS)) {
+            break;
+        }
+    }
+    
+    return EXIT_SUCCESS;
+}
+
+int
+ydk::core::ly_print(std::string& out, const char *format, ...)
+{
+    
+    char *msg = NULL;
+    va_list ap;
+    
+    va_start(ap, format);
+    
+    int count = vasprintf(&msg, format, ap);
+    out+=msg;
+   
+    free(msg);
+
+    va_end(ap);
+    return count;
+}
+
+const char *
+ydk::core::transform_json2xml(const struct lys_module *module, const char *expr, const char ***prefixes, const char ***namespaces,
+                   uint32_t *ns_count)
+{
+    return transform_json2xml(module, expr, 0, prefixes, namespaces, ns_count);
+}
+
+
+
+const char*
+ydk::core::transform_json2xml(const struct lys_module *module, const char *expr, int schema, const char ***prefixes,
+                    const char ***namespaces, uint32_t *ns_count)
+{
+    const char *in, *id, *prefix;
+    char *out, *col, *name;
+    size_t out_size, out_used, id_len;
+    const struct lys_module *mod;
+    uint32_t i;
+    
+    //assert(module && expr && ((!prefixes && !namespaces && !ns_count) || (prefixes && namespaces && ns_count)));
+    
+    if (ns_count) {
+        *ns_count = 0;
+        *prefixes = NULL;
+        *namespaces = NULL;
+    }
+    
+    in = expr;
+    out_size = strlen(in) + 1;
+    out = (char *)std::malloc(out_size);
+    if (!out) {
+        //LOGMEM;
+        return NULL;
+    }
+    out_used = 0;
+    
+    while (1) {
+        col = strchr(in, ':');
+        /* we're finished, copy the remaining part */
+        if (!col) {
+            strcpy(&out[out_used], in);
+            out_used += strlen(in) + 1;
+            //assert(out_size == out_used);
+            return lydict_insert_zc(module->ctx, out);
+        }
+        id = strpbrk_backwards(col - 1, "/ [\'\"", (col - in) - 1);
+        if ((id[0] == '/') || (id[0] == ' ') || (id[0] == '[') || (id[0] == '\'') || (id[0] == '\"')) {
+            ++id;
+        }
+        id_len = col - id;
+        
+        /* get the module */
+        if (!schema) {
+            name = strndup(id, id_len);
+            mod = ly_ctx_get_module(module->ctx, name, NULL);
+            free(name);
+            if (!mod) {
+//                LOGVAL(LYE_INMOD_LEN, LY_VLOG_NONE, NULL, id_len, id);
+                goto fail;
+            }
+            prefix = mod->prefix;
+        } else {
+            name = strndup(id, id_len);
+            prefix = transform_module_name2import_prefix(module, name);
+            free(name);
+            if (!prefix) {
+//                LOGVAL(LYE_INMOD_LEN, LY_VLOG_NONE, NULL, id_len, id);
+                goto fail;
+            }
+        }
+        
+        /* remember the namespace definition (only if it's new) */
+        if (!schema && ns_count) {
+            for (i = 0; i < *ns_count; ++i) {
+                if (ly_strequal((*namespaces)[i], mod->ns, 1)) {
+                    break;
+                }
+            }
+            if (i == *ns_count) {
+                ++(*ns_count);
+                *prefixes = (const char **)ly_realloc(*prefixes, *ns_count * sizeof **prefixes);
+                if (!(*prefixes)) {
+//                    LOGMEM;
+                    goto fail;
+                }
+                *namespaces = (const char **)ly_realloc(*namespaces, *ns_count * sizeof **namespaces);
+                if (!(*namespaces)) {
+ //                   LOGMEM;
+                    goto fail;
+                }
+                (*prefixes)[*ns_count - 1] = mod->prefix;
+                (*namespaces)[*ns_count - 1] = mod->ns;
+            }
+        }
+        
+        /* adjust out size */
+        out_size += strlen(prefix) - id_len;
+        out = (char *)ly_realloc(out, out_size);
+        if (!out) {
+//            LOGMEM;
+            goto fail;
+        }
+        
+        /* copy the data before prefix */
+        strncpy(&out[out_used], in, id-in);
+        out_used += id - in;
+        
+        /* copy the model prefix */
+        strcpy(&out[out_used], prefix);
+        out_used += strlen(prefix);
+        
+        /* copy ':' */
+        out[out_used] = ':';
+        ++out_used;
+        
+        /* finally adjust in pointer for next round */
+        in = col + 1;
+    }
+    
+    /* unreachable */
+
+    
+fail:
+    if (!schema && ns_count) {
+        free(*prefixes);
+        free(*namespaces);
+    }
+    free(out);
+    return NULL;
+
+}
+
+int
+ydk::core::lyxml_dump_text(std::string& out, const char *text)
+{
+    unsigned int i, n;
+    
+    if (!text) {
+        return 0;
+    }
+    
+    for (i = n = 0; text[i]; i++) {
+        switch (text[i]) {
+            case '&':
+                n += ly_print(out, "&amp;");
+                break;
+            case '<':
+                n += ly_print(out, "&lt;");
+                break;
+            case '>':
+                /* not needed, just for readability */
+                n += ly_print(out, "&gt;");
+                break;
+            case '"':
+                n += ly_print(out, "&quot;");
+                break;
+            default:
+                out+=text[i];
+                //ly_write(out, &text[i], 1);
+                n++;
+        }
+    }
+    
+    return n;
+}
+
+const char *
+ydk::core::transform_module_name2import_prefix(const struct lys_module *module, const char *module_name)
+{
+    uint16_t i;
+    
+    if (!std::strcmp(lys_main_module(module)->name, module_name)) {
+        /* the same for module and submodule */
+        return module->prefix;
+    }
+    
+    for (i = 0; i < module->imp_size; ++i) {
+        if (!std::strcmp(module->imp[i].module->name, module_name)) {
+            return module->imp[i].prefix;
+        }
+    }
+    
+    return NULL;
+}
+
+const char *
+ydk::core::strpbrk_backwards(const char *s, const char *accept, unsigned int s_len)
+{
+    const char *sc;
+    
+    for (; *s != '\0' && s_len; --s, --s_len) {
+        for (sc = accept; *sc != '\0'; ++sc) {
+            if (*s == *sc) {
+                return s;
+            }
+        }
+    }
+    return s;
+}
+
+void *
+ydk::core::ly_realloc(void *ptr, size_t size)
+{
+    void *new_mem;
+    
+    new_mem = std::realloc(ptr, size);
+    if (!new_mem) {
+        free(ptr);
+    }
+    
+    return new_mem;
+}
+
+int
+ydk::core::ly_strequal_(const char *s1, const char *s2)
+{
+    if (s1 == s2) {
+        return 1;
+    } else if (!s1 || !s2) {
+        return 0;
+    } else {
+        for ( ; *s1 == *s2; s1++, s2++) {
+            if (*s1 == '\0') {
+                return 1;
+            }
+        }
+        return 0;
+    }
+}
+
+
+
+//int
+//ydk::corely_write(std::string& out, const char *buf, size_t count)
 //{
-//	//TODO
-//	return "";
+//    char *aux;
+//    
+//    
+//    switch(out->type) {
+//        case LYOUT_FD:
+//            return write(out->method.fd, buf, count);
+//        case LYOUT_STREAM:
+//            return fwrite(buf, sizeof *buf, count, out->method.f);
+//        case LYOUT_MEMORY:
+//            if (out->method.mem.len + count + 1 > out->method.mem.size) {
+//                aux = ly_realloc(out->method.mem.buf, out->method.mem.len + count + 1);
+//                if (!aux) {
+//                    out->method.mem.buf = NULL;
+//                    out->method.mem.len = 0;
+//                    out->method.mem.size = 0;
+//                    LOGMEM;
+//                    return -1;
+//                }
+//                out->method.mem.buf = aux;
+//                out->method.mem.size = out->method.mem.len + count + 1;
+//            }
+//            memcpy(&out->method.mem.buf[out->method.mem.len], buf, count + 1);
+//            out->method.mem.len += count;
+//            return count;
+//        case LYOUT_CALLBACK:
+//            return out->method.clb.f(out->method.clb.arg, buf, count);
+//    }
+//    
+//    return 0;
 //}
 
 

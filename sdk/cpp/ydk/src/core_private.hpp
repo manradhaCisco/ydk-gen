@@ -36,11 +36,93 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
+#include <cstring>
 
 namespace ydk {
     namespace core {
         
+        void xml_print_node(std::string& out, int level, const struct lyd_node *node, int toplevel);
+        
+        struct mlist {
+            struct mlist *next;
+            struct lys_module *module;
+        } *mlist = NULL, *mlist_new;
+        
+        int
+        modlist_add(struct mlist **mlist, const struct lys_module *mod);
+        
+        void
+        xml_print_ns(std::string& out,  const struct lyd_node *node);
+        
+        void
+        xml_print_attrs(std::string& out, const struct lyd_node *node);
+        
+        void
+        xml_print_leaf(std::string& out, int level, const struct lyd_node *node, int toplevel);
+        
+        
+        void
+        xml_print_container(std::string& out, int level, const struct lyd_node *node, int toplevel);
+        
+        
+        void
+        xml_print_list(std::string& out, int level, const struct lyd_node *node, int is_list, int toplevel);
+        
+        
+        void
+        xml_print_anyxml(std::string& out, int level, const struct lyd_node *node, int toplevel);
+        
+        
+        void
+        xml_print_node(std::string& out, int level, const struct lyd_node *node, int toplevel);
+        
+        int
+        xml_print_data(std::string& out, const struct lyd_node *root, int options);
+        
+        int
+        ly_print(std::string& out, const char *format, ...);
+        
+        const char *
+        transform_json2xml(const struct lys_module *module, const char *expr, const char ***prefixes, const char ***namespaces, uint32_t *ns_count);
+        
+        const char *
+        transform_json2xml(const struct lys_module *module, const char *expr, int schema, const char ***prefixes,
+                           const char ***namespaces, uint32_t *ns_count);
+        
+        int
+        nscmp(const struct lyd_node *node1, const struct lyd_node *node2);
+        
+        int
+        lyxml_dump_text(std::string& out, const char *text);
+
+        const char *
+        transform_module_name2import_prefix(const struct lys_module *module, const char *module_name);
+        
+        const char *
+        strpbrk_backwards(const char *s, const char *accept, unsigned int s_len);
+
+        
         std::vector<std::string> segmentalize(const std::string& path);
+        
+        
+        
+        void *
+        ly_realloc(void *ptr, size_t size);
+       
+        
+        /**
+         * @brief Compare strings
+         * @param[in] s1 First string to compare
+         * @param[in] s2 Second string to compare
+         * @param[in] both_in_dictionary Flag for optimization, 1 if it is sure that \p s1 and \p s2 were stored in dictionary.
+         * This parameter is supposed to be a number (digit) known in compile time, not a variable or expression!
+         * @return 1 if both strings are the same, 0 if they differ.
+         */
+        int ly_strequal_(const char *s1, const char *s2);
+        #define ly_strequal0(s1, s2) ly_strequal_(s1, s2)
+        #define ly_strequal1(s1, s2) (s1 == s2)
+        #define ly_strequal(s1, s2, d) ly_strequal##d(s1, s2)
+        
         
         class SchemaNodeImpl : public SchemaNode
         {
@@ -97,38 +179,7 @@ namespace ydk {
         
         
         
-        class RootDataImpl : public DataNode {
-        public:
-            RootDataImpl(const RootSchemaNodeImpl* schema);
-            
-            virtual ~RootDataImpl();
-            
-            const SchemaNode* schema() const;
-            
-            std::string path() const;
-            
-            DataNode* create(const std::string& path, const std::string& value);
-            
-            void set(const std::string& value);
-            
-            std::string get() const;
-            
-            std::vector<DataNode*> find(const std::string& path) const;
-            
-            
-            DataNode* parent()	const;
-            
-            std::vector<DataNode*> children() const;
-            
-            const DataNode* root() const;
-            
-            std::string xml() const;
-            
-            const RootSchemaNodeImpl* m_schema;
-            std::map<std::string, DataNode*> m_childmap;
-            
-            
-        };
+
         
         
         class DataNodeImpl : public DataNode{
@@ -143,9 +194,9 @@ namespace ydk {
             
             virtual ~DataNodeImpl();
             
-            const SchemaNode* schema() const;
+            virtual const SchemaNode* schema() const;
             
-            std::string path() const;
+            virtual std::string path() const;
             
             // Create a new data node based on a simple XPath
             // The new node is normally inserted at the end, either as the last child of a parent.
@@ -154,25 +205,25 @@ namespace ydk {
             // and value is ignored
             //
             // returns the first created or updated node
-            DataNode* create(const std::string& path, const std::string& value);
+            virtual DataNode* create(const std::string& path, const std::string& value);
             
-            void set(const std::string& value);
+            virtual void set(const std::string& value);
             
-            std::string get() const;
+            virtual std::string get() const;
             
-            std::vector<DataNode*> find(const std::string& path) const;
-            
-            
-            DataNode* parent() const;
-            
-            std::vector<DataNode*> children() const;
+            virtual std::vector<DataNode*> find(const std::string& path) const;
             
             
-            const DataNode* root() const;
+            virtual DataNode* parent() const;
             
-            std::string xml() const;
+            virtual std::vector<DataNode*> children() const;
             
-            DataNodeImpl* get_dn_for_desc_node(struct lyd_node* desc_node) const;
+            
+            virtual const DataNode* root() const;
+            
+            virtual std::string xml() const;
+            
+            virtual DataNodeImpl* get_dn_for_desc_node(struct lyd_node* desc_node) const;
             
             DataNode* m_parent;
             struct lyd_node* m_node;
@@ -180,23 +231,67 @@ namespace ydk {
             
         };
         
+        
+        class RootDataImpl : public DataNodeImpl {
+        public:
+            RootDataImpl(const SchemaNode* schema, struct ly_ctx* ctx, const std::string path);
+            
+            virtual ~RootDataImpl();
+            
+            virtual const SchemaNode* schema() const;
+            
+            virtual std::string path() const;
+            
+            virtual DataNode* create(const std::string& path, const std::string& value);
+            
+            virtual void set(const std::string& value);
+            
+            virtual std::string get() const;
+            
+            virtual std::vector<DataNode*> find(const std::string& path) const;
+
+            
+            virtual std::vector<DataNode*> children() const;
+            
+            virtual const DataNode* root() const;
+            
+            
+            
+            const SchemaNode* m_schema;
+            
+            struct ly_ctx* m_ctx;
+            
+            std::string m_path;
+            
+        };
+        
+        
         class RpcImpl : public Rpc {
         public:
             
-            RpcImpl(SchemaNodeImpl* sn, struct lyd_node * node);
+            RpcImpl(SchemaNodeImpl* sn, struct ly_ctx* ctx);
             
             virtual ~RpcImpl();
             
-            virtual DataNode* operator()(const ServiceProvider& provider) = 0;
+            virtual DataNode* operator()(const ServiceProvider& provider);
             
             
             virtual DataNode* input() const;
             
+            virtual SchemaNode* schema() const;
+            
             
             SchemaNodeImpl* m_sn;
-            struct lyd_node* m_node;
+            DataNode* m_input_dn;
+            
+            
         };
     }
+    
+    
+    
+
+    
     
 }
 
