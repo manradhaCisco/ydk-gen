@@ -37,6 +37,7 @@
 #include <functional>
 #include <iostream>
 #include <cstring>
+#include <cassert>
 
 namespace ydk {
     namespace core {
@@ -248,9 +249,7 @@ namespace ydk {
             
             virtual std::string get() const;
             
-            virtual std::vector<DataNode*> find(const std::string& path) const;
-
-            
+                      
             virtual std::vector<DataNode*> children() const;
             
             virtual const DataNode* root() const;

@@ -64,13 +64,17 @@ ydk::core::YDKCodecException::YDKCodecException(YDKCodecException::Error ec) : Y
 /////////////////////////////////////////////////////////////////////
 // ydk::SchemaNodeImpl
 ////////////////////////////////////////////////////////////////////
-ydk::core::SchemaNodeImpl::SchemaNodeImpl(const SchemaNode* parent, struct lys_node* node):m_parent{parent}, m_node{node}
+ydk::core::SchemaNodeImpl::SchemaNodeImpl(const SchemaNode* parent, struct lys_node* node):m_parent{parent}, m_node{node}, m_children{}
 {
 	node->priv = this;
-    const struct lys_node *last = nullptr;
-    while( auto q = lys_getnext(last, node, nullptr, 0)) {
-        m_children.emplace_back(new SchemaNodeImpl{this,const_cast<struct lys_node*>(q)});
-        last = q;
+    if(node->nodetype != LYS_LEAF && node->nodetype != LYS_LEAFLIST) {
+    
+        const struct lys_node *last = nullptr;
+    
+        while( auto q = lys_getnext(last, node, nullptr, 0)) {
+            m_children.emplace_back(new SchemaNodeImpl{this,const_cast<struct lys_node*>(q)});
+            last = q;
+        }
     }
 
 }
@@ -427,7 +431,8 @@ ydk::core::RootDataImpl::create(const std::string& path, const std::string& valu
 void
 ydk::core::RootDataImpl::set(const std::string& value)
 {
-	throw ydk::core::YDKInvalidArgumentException{"Invalid value being assigned to root."};
+    if(!value.empty())
+        throw ydk::core::YDKInvalidArgumentException{"Invalid value being assigned to root."};
 }
 
 std::string
@@ -435,13 +440,6 @@ ydk::core::RootDataImpl::get() const
 {
 	return "";
 }
-
-std::vector<ydk::core::DataNode*>
-ydk::core::RootDataImpl::find(const std::string& path) const
-{
-	return std::vector<DataNode*>{};
-}
-
 
 
 std::vector<ydk::core::DataNode*>
@@ -809,12 +807,12 @@ ydk::core::CodecService::encode(const ydk::core::DataNode* dn, ydk::core::CodecS
     std::string ret{};
     
     
-    LYD_FORMAT scheme = LYD_XML;
+    //LYD_FORMAT scheme = LYD_XML;
   
     
-    if(format == ydk::core::CodecService::Format::JSON) {
-        scheme = LYD_JSON;
-    }
+    //if(format == ydk::core::CodecService::Format::JSON) {
+      //  scheme = LYD_JSON;
+    //}
     struct lyd_node* m_node = nullptr;
     
     
@@ -1427,7 +1425,7 @@ ydk::core::transform_json2xml(const struct lys_module *module, const char *expr,
         if (!col) {
             strcpy(&out[out_used], in);
             out_used += strlen(in) + 1;
-            //assert(out_size == out_used);
+            assert(out_size == out_used);
             return lydict_insert_zc(module->ctx, out);
         }
         id = strpbrk_backwards(col - 1, "/ [\'\"", (col - in) - 1);
