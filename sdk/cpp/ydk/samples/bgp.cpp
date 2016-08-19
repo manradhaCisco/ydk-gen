@@ -11,7 +11,7 @@
 #include <iostream>
 #include "../src/core.hpp"
 
-const char* TEST_HOME = "/Users/manradha/Development/github/manradhaCisco-ydk-gen/test/yang";
+const char* TEST_HOME = "/Users/manradha/Development/github/manradha/ydk-gen/sdk/cpp/ydk/tests/models";
 
 
 namespace mock {
@@ -126,7 +126,7 @@ void test_bgp_create()
 
     auto s = ydk::core::CodecService{};
     auto xml = s.encode(bgp, ydk::core::CodecService::Format::XML, true);
-    auto json = s.encode(bgp, ydk::core::CodecService::Format::JSON, true);
+    //auto json = s.encode(bgp, ydk::core::CodecService::Format::JSON, true);
     
     std::cout << "Testing encoding" << std::endl;
     
@@ -135,7 +135,7 @@ void test_bgp_create()
     std::cout <<  xml << std::endl;
     std::cout << "*********************************************************" << std::endl;
     std::cout << "*********************************************************" << std::endl;
-    std::cout <<  json << std::endl;
+    //std::cout <<  json << std::endl;
     std::cout << "*********************************************************" << std::endl;
     std::cout << "*********************************************************" << std::endl;
     
@@ -148,13 +148,21 @@ void test_bgp_create()
     if (new_bgp) {
         std::cout << "deserialized successfully" << std::endl;
     }
+    
+    auto new_xml = s.encode(new_bgp, ydk::core::CodecService::Format::XML, true);
+    std::cout << "*********************************************************" << std::endl;
+    std::cout << "*********************************************************" << std::endl;
+    std::cout <<  new_xml << std::endl;
+    std::cout << "*********************************************************" << std::endl;
+    std::cout << "*********************************************************" << std::endl;
+    
 
     //TODO fix rpc
-    //std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("ydk:create") };
-    //create_rpc->input()->create("config", xml);
+    std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("ydk:create") };
+    create_rpc->input()->create("config", xml);
 
     //call create
-    //(*create_rpc)(sp);
+    (*create_rpc)(sp);
 }
 
 //void test_read(ydk::ServiceProvider *sp, ydk::SchemaNode* schema)
