@@ -3,7 +3,7 @@ cmake_policy(SET CMP0048 NEW)
 
 set(core_tests bgptest xr601test)
 
-set(netconf_tests bgpnctest)
+set(netconf_tests bgpnctest;test_netconf_provider;test_entity;test_value;test_netconf_client;test_crud)
 
 include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 

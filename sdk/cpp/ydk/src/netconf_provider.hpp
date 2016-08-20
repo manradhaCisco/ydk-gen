@@ -14,36 +14,41 @@
  limitations under the License.
 ------------------------------------------------------------------*/
 
-#ifndef _YDK_PROVIDERS_H_
-#define _YDK_PROVIDERS_H_
+#ifndef _NETCONF_PROVIDER_H_
+#define _NETCONF_PROVIDER_H_
 
 #include <initializer_list>
 #include <memory>
 #include <string>
 
-#include "ydk.hpp"
 #include "entity.hpp"
 
 namespace ydk {
-
-
-class NetconfServiceProvider : public ServiceProvider {
-	public:
-		NetconfServiceProvider(std::initializer_list<std::string> args);
-
-		std::string encode(Entity & entity) override;
-		std::unique_ptr<Entity> decode(std::string & payload) override;
-		bool execute_payload(std::string & payload) override;
-
-	private:
-		std::string address;
-		std::string username;
-		std::string password;
-		std::string port;
-		std::string protocol;
-		std::string timeout;
-};
-
+namespace core {
+struct Capability;
 }
 
-#endif /*_YDK_PROVIDERS_H_*/
+class NetconfClient;
+class NetconfServiceProvider {
+	public:
+		NetconfServiceProvider(std::string address,
+				std::string username,
+				std::string password,
+				std::string port,
+				std::string protocol,
+				std::string timeout,
+				std::string searchdir);
+		~NetconfServiceProvider();
+
+		std::string encode(Entity & entity, std::string  operation);
+		std::unique_ptr<Entity> decode(std::string & payload);
+		std::string execute_payload(std::string payload, std::string operation);
+
+	private:
+		std::unique_ptr<NetconfClient> client;
+		std::unique_ptr<ydk::core::RootSchemaNode> root_schema;
+		std::vector<ydk::core::Capability> capabilities;
+};
+}
+
+#endif /*_NETCONF_PROVIDER_H_*/

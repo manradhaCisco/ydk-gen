@@ -29,7 +29,6 @@
 #include <libnetconf.h>
 #include <libnetconf_ssh.h>
 
-#include "netconf_private.hpp"
 #include "entity.hpp"
 
 #include <fstream>
@@ -37,6 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include "netconf_client.hpp"
 
 
 using namespace std;
@@ -106,7 +106,7 @@ void NetconfClient::init_capabilities()
 	}
 }
 
-const string NetconfClient::execute_payload(string  payload)
+string NetconfClient::execute_payload(const string & payload)
 {
 	if(session==NULL)
 	{
@@ -118,7 +118,7 @@ const string NetconfClient::execute_payload(string  payload)
 	nc_rpc *rpc;
 	string reply_payload;
 
-	rpc = build_rpc_request(move(payload));
+	rpc = build_rpc_request(payload);
 	if (rpc == NULL || return_status != EXIT_SUCCESS || NC_RPC_UNKNOWN==nc_rpc_get_type(rpc))
 	{
 		return_status = EXIT_FAILURE;
@@ -145,14 +145,13 @@ int NetconfClient::close()
 	{
 		return_status = EXIT_FAILURE;
 		return EXIT_FAILURE;
-
 	}
 
 	nc_session_free(session);
 	return EXIT_SUCCESS;
 }
 
-nc_rpc* NetconfClient::build_rpc_request(string  payload)
+nc_rpc* NetconfClient::build_rpc_request(const string & payload)
 {
 	nc_rpc* rpc = nc_rpc_build(payload.c_str(), session);
 	if (rpc == NULL)
@@ -228,62 +227,6 @@ int NetconfClient::get_status()
 	return return_status;
 }
 
-NetconfServiceProvider::NetconfServiceProvider(std::initializer_list<std::string> args)
-{
-	if(args.size()==0)
-	{
-		cout<<"- address - The address of the netconf server"
-            "- port  - The port to use default is 830"
-            "- username - The name of the user"
-            "- password - The password to use"
-            "- protocol - one of either ssh or tcp"
-            "- timeout  - Default to 60"<<endl;
-		return;
-	}
-
-	std::vector<std::string> argsv;
-	argsv.insert(argsv.end(), args.begin(), args.end());
-
-
-	username = argsv[2];
-	address = argsv[0];
-	port = argsv[1];
-	password = argsv[3];
-	protocol = argsv[4];
-	timeout = argsv[5];
-}
-
-std::string NetconfServiceProvider::encode(Entity & entity)
-{
-	return "";
-}
-
-std::unique_ptr<Entity> NetconfServiceProvider::decode(std::string & payload)
-{
-	return nullptr;
-}
-
-bool NetconfServiceProvider::execute_payload(std::string & payload)
-{
-	char connect_command[500];
-
-	ofstream myfile;
-	myfile.open ("payload.xml");
-	myfile << payload;
-	myfile.close();
-
-	snprintf(connect_command,sizeof(connect_command),
-			"ssh %s@%s -p %s -s netconf < payload.xml > debug.log",
-			username.c_str(),
-			address.c_str(),
-			port.c_str()
-			);
-
-	int res=system(connect_command);
-	cout << "Connected to device with command: "<< connect_command<<". Result: " << res << endl;
-	cout << "Debug in debug.log"<<endl;
-	return res==0;
-}
 
 
 }

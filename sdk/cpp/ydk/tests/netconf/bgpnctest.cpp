@@ -25,7 +25,7 @@
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 #include "../../src/core.hpp"
-#include "../../src/netconf_private.hpp"
+#include "../../src/netconf_client.hpp"
 #include "../config.hpp"
 
 
@@ -158,15 +158,13 @@ BOOST_AUTO_TEST_CASE( bgp )
     std::cout << xml << std::endl;
     
     auto json = s.encode(bgp, ydk::core::CodecService::Format::JSON, true);
-   
+
     BOOST_CHECK_MESSAGE( !xml.empty(),
                            "XML output :" << xml);
      
     BOOST_CHECK_MESSAGE( !json.empty(),
                            "JSON output :" << json);
 
-      
-    
     //codec service bugs
     auto new_bgp = s.decode(schema.get(), xml, ydk::core::CodecService::Format::XML);
     BOOST_REQUIRE( new_bgp != nullptr);
@@ -206,6 +204,46 @@ BOOST_AUTO_TEST_CASE( bgp_netconf_create  )
 
 	    BOOST_REQUIRE( as != nullptr );
 
+	    auto l3vpn_ipv4_unicast = bgp->create("global/afi-safis/afi-safi[afi-safi-name='openconfig-bgp-types:L3VPN_IPV4_UNICAST']", "");
+
+	    BOOST_REQUIRE( l3vpn_ipv4_unicast != nullptr );
+
+
+	    auto afi_safi_name = l3vpn_ipv4_unicast->create("config/afi-safi-name", "openconfig-bgp-types:L3VPN_IPV4_UNICAST");
+
+	    BOOST_REQUIRE( afi_safi_name != nullptr );
+
+
+	    //set the enable flag
+	    auto enable = l3vpn_ipv4_unicast->create("config/enabled","true");
+
+	    BOOST_REQUIRE( enable != nullptr );
+
+	    //bgp/neighbors/neighbor
+	    auto neighbor = bgp->create("neighbors/neighbor[neighbor-address='172.16.255.2']", "");
+
+	    BOOST_REQUIRE( neighbor != nullptr );
+
+	    auto neighbor_address = neighbor->create("config/neighbor-address", "172.16.255.2");
+
+	    BOOST_REQUIRE( neighbor_address != nullptr );
+
+	    auto peer_as = neighbor->create("config/peer-as","65172");
+
+	    BOOST_REQUIRE( peer_as != nullptr );
+
+	    //bgp/neighbors/neighbor/afi-safis/afi-safi
+	    auto neighbor_af = neighbor->create("afi-safis/afi-safi[afi-safi-name='openconfig-bgp-types:L3VPN_IPV4_UNICAST']", "");
+
+	    BOOST_REQUIRE( neighbor_af != nullptr );
+
+	    auto neighbor_afi_safi_name = neighbor_af->create("config/afi-safi-name" , "openconfig-bgp-types:L3VPN_IPV4_UNICAST");
+
+	    BOOST_REQUIRE( neighbor_afi_safi_name != nullptr );
+
+	    auto neighbor_enabled = neighbor_af->create("config/enabled","true");
+
+	    BOOST_REQUIRE( neighbor_enabled != nullptr );
 	    auto s = ydk::core::CodecService{};
 	    auto xml = s.encode(bgp, ydk::core::CodecService::Format::XML, true);
 	    auto json = s.encode(bgp, ydk::core::CodecService::Format::JSON, true);
