@@ -21,40 +21,42 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#include "ydk.hpp"
+#include "crud_service.hpp"
 #include "entity.hpp"
+#include "netconf_provider.hpp"
+#include <iostream>
 
 using namespace std;
 
 namespace ydk {
-CRUDService::CRUDService()
+CrudService::CrudService()
 {
 
 }
 
-bool CRUDService::create(ServiceProvider & provider, Entity & entity)
+string CrudService::create(NetconfServiceProvider & provider, Entity & entity)
 {
-	string payload = provider.encode(entity);
-	return provider.execute_payload(payload);
+	string payload = provider.encode(entity, "create");
+	std::cerr<<payload<<std::endl;
+	return provider.execute_payload(payload, "create");
 }
 
-std::unique_ptr<Entity> CRUDService::read(ServiceProvider & provider, Entity & entity)
+std::unique_ptr<Entity> CrudService::read(NetconfServiceProvider & provider, Entity & entity)
 {
-	string payload = provider.encode(entity);
-	provider.execute_payload(payload);
-	string reply="";
+	string payload = provider.encode(entity, "read");
+	string reply=provider.execute_payload(payload, "read");;
 	return provider.decode(reply);
 }
 
-bool CRUDService::update(ServiceProvider & provider, Entity & entity)
+string CrudService::update(NetconfServiceProvider & provider, Entity & entity)
 {
-	string payload = provider.encode(entity);
-	return provider.execute_payload(payload);
+	string payload = provider.encode(entity, "update");
+	return provider.execute_payload(payload, "update");
 }
 
-bool CRUDService::del(ServiceProvider & provider, Entity & entity)
+string CrudService::del(NetconfServiceProvider & provider, Entity & entity)
 {
-	string payload = provider.encode(entity);
-	return provider.execute_payload(payload);
+	string payload = provider.encode(entity, "delete");
+	return provider.execute_payload(payload, "delete");
 }
 }

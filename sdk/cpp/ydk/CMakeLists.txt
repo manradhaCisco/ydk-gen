@@ -40,8 +40,8 @@ else()
 	option(ENABLE_VALGRIND_TESTS "Build tests with valgrind" OFF)
 endif()
 
-set(libydk_src src/netconf.cpp src/crud.cpp src/core.cpp)
-set(libydk_headers src/ydk.hpp src/netconf.hpp src/core.hpp)
+set(libydk_src src/netconf_provider.cpp src/netconf_client.cpp src/value.cpp src/crud_service.cpp src/core.cpp models/openconfig_bgp.cpp src/entity_walker.cpp )
+set(libydk_headers src/netconf_provider.hpp src/netconf_client.hpp src/core.hpp src/value.hpp src/entity.hpp src/crud_service.hpp models/openconfig_bgp.h src/entity.hpp )
 
 # Find dependent libraries
 find_library(netconf_location netconf)

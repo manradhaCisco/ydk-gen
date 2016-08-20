@@ -14,16 +14,14 @@
  limitations under the License.
  ------------------------------------------------------------------*/
 
-#ifndef _YDK_NETCONF_PRIVATE_H_
-#define _YDK_NETCONF_PRIVATE_H_
+#ifndef _YDK_NETCONF_CLIENT_H_
+#define _YDK_NETCONF_CLIENT_H_
 #include <map>
 #include <string>
 #include <tuple>
 #include <vector>
 
 #include <libnetconf/netconf.h>
-
-#include "netconf.hpp"
 
 struct nc_session;
 typedef struct nc_msg nc_rpc;
@@ -49,7 +47,7 @@ public:
 			std::string  server_ip, int port, int verbosity);
 
 	int connect();
-	const std::string execute_payload(std::string  payload);
+	std::string execute_payload(const std::string & payload);
 	int close();
 	std::vector<std::string> get_capabilities();
 	int get_status();
@@ -65,7 +63,7 @@ private:
 	static int clb_ssh_host_authenticity_check(const char *hostname,
 			ssh_session session);
 
-	nc_rpc* build_rpc_request(std::string  payload);
+	nc_rpc* build_rpc_request(const std::string & payload);
 	void process_rpc_reply(int reply_type);
 	void init_capabilities();
 
@@ -86,4 +84,4 @@ private:
 
 }
 
-#endif /* _YDK_NETCONF_PRIVATE_H_ */
+#endif /* _YDK_NETCONF_CLIENT_H_ */

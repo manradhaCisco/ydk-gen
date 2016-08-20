@@ -16,9 +16,8 @@
 
 #include <iostream>
 
+#include "../ydk/src/crud_service.hpp"
 #include "ydk/src/entity.hpp"
-#include "ydk/src/ydk.hpp"
-
 #include "ydk/models/openconfig_bgp.h"
 
 using namespace std;

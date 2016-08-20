@@ -25,8 +25,8 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#ifndef YDK_HPP
-#define YDK_HPP
+#ifndef CRUD_SERVICE_HPP
+#define CRUD_SERVICE_HPP
 
 #include <string>
 #include <vector>
@@ -35,28 +35,20 @@
 #include "entity.hpp"
 
 namespace ydk {
-
-class ServiceProvider {
-	public:
-		virtual std::string encode(Entity & entity)=0;
-		virtual std::unique_ptr<Entity> decode(std::string & payload)=0;
-		virtual bool execute_payload(std::string & payload)=0;
-};
 class Service {
-
 };
+class NetconfServiceProvider;
 
-
-class CRUDService : public Service {
+class CrudService : public Service {
 	public:
-		CRUDService();
+		CrudService();
 
-		bool create(ServiceProvider & provider, Entity & entity);
-		std::unique_ptr<Entity> read(ServiceProvider & provider, Entity & entity);
-		bool update(ServiceProvider & provider, Entity & entity);
-		bool del(ServiceProvider & provider, Entity & entity);
+		std::string create(NetconfServiceProvider & provider, Entity & entity);
+		std::unique_ptr<Entity> read(NetconfServiceProvider & provider, Entity & entity);
+		std::string update(NetconfServiceProvider & provider, Entity & entity);
+		std::string del(NetconfServiceProvider & provider, Entity & entity);
 };
 
 }
 
-#endif /* YDK_HPP */
+#endif /* CRUD_SERVICE_HPP */

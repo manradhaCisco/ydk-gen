@@ -1,6 +1,6 @@
 //
-// @file entity.hpp
-// @brief Header for ydk entity
+// @file value.hpp
+// @brief Header for ydk value
 //
 // YANG Development Kit
 // Copyright 2016 Cisco Systems. All rights reserved
@@ -25,59 +25,66 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#ifndef ENTITY_HPP
-#define ENTITY_HPP
+#ifndef VALUE_HPP
+#define VALUE_HPP
 
+#include <sstream>
 #include <string>
-#include <vector>
+
+#include "enum.hpp"
+#include "identity.hpp"
+#include "value_types.hpp"
 
 namespace ydk {
 
-namespace core {
-class DataNode;
-class RootSchemaNode;
-}
-
-struct EntityPath {
-	std::string path;
-	std::vector<std::pair<std::string, std::string>> value_paths;
-
-	EntityPath(std::string path, std::vector<std::pair<std::string, std::string>> value_paths)
-		: path(path), value_paths(value_paths)
-	{
-	}
-
-	~EntityPath()
-	{
-	}
+enum class Type {
+	uint8,
+	uint16,
+	uint32,
+	uint64,
+	int8,
+	int16,
+	int32,
+	int64,
+	empty,
+	identityref,
+	str,
+	boolean
 };
 
-class Entity {
+class Value {
   public:
-	Entity():parent(nullptr){}
-	virtual ~Entity(){}
+	Value(Type type, std::string name);
+	~Value()=default;
 
-  public:
-	virtual bool has_data() = 0;
-	virtual EntityPath get_entity_path() = 0;
-	virtual std::string get_ydk_path() = 0;
-	void add_child(Entity* child)
-	{
-		children.push_back(child);
-	}
-	virtual std::vector<Entity*> & get_children()
-	{
-		return children;
-	}
+	std::string & get();
+	std::pair<std::string, std::string> get_name_value();
 
+	void operator = (uint8 val);
+//	void operator = (uint16 val);
+	void operator = (uint32 val);
+	void operator = (uint64 val);
+	void operator = (int8 val);
+//	void operator = (int16 val);
+	void operator = (int32 val);
+	void operator = (int64 val);
+	void operator = (Empty val);
+	void operator = (Identity val);
+	void operator = (Enum val);
+	void operator = (std::string val);
+//	void operator = (bool val);
 
-  public:
-	Entity* parent;
+	bool is_set;
 
   private:
-	std::vector<Entity*> children;
+	void store_value();
+
+	std::string name;
+	std::ostringstream value_buffer;
+	std::string value;
+	Type type;
 };
 
 }
 
-#endif /* ENTITY_HPP */
+#endif /* VALUE_HPP */
