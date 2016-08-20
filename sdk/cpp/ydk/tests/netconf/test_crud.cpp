@@ -24,14 +24,16 @@
 #include "../../src/crud_service.hpp"
 #include "../../src/make_unique.hpp"
 #include "../../models/openconfig_bgp.h"
+#include "../config.hpp"
 
 using namespace ydk;
 using namespace std;
-#define MODELS_PATH "/Users/abhirame/Cisco/003/ydk-gen/sdk/cpp/ydk/tests/models/openconfig"
+
+#define MODELS_DIR string(TEST_HOME)+string("/openconfig")
 
 BOOST_AUTO_TEST_CASE(bgp_as)
 {
-	NetconfServiceProvider provider{ "127.0.0.1", "admin", "admin", "12022", "", "", MODELS_PATH};
+	NetconfServiceProvider provider{ "127.0.0.1", "admin", "admin", "12022", "", "", MODELS_DIR};
 	CrudService crud{};
 	auto bgp = make_unique<openconfig_bgp::Bgp>();
 
