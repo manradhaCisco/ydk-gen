@@ -34,12 +34,12 @@ Value::Value(Type type, std::string name):
 {
 }
 
-std::string & Value::get()
+const std::string & Value::get() const
 {
 	return value;
 }
 
-std::pair<std::string, std::string> Value::get_name_value()
+const std::pair<std::string, std::string> Value::get_name_value() const
 {
 	return {name, value};
 }
@@ -141,5 +141,26 @@ void Value::store_value()
 	}
 //	std::cerr<<"stoing "<<value<<std::endl;
 //	std::cerr<<to_str(type)<<">>-----<<"<<std::endl;
+}
+
+Value::operator std::string() const
+{
+	return get();
+}
+
+bool Value::operator == (Value & other) const
+{
+	return get() == other.get();
+}
+
+bool Value::operator == (const Value & other) const
+{
+	return get() == other.get();
+}
+
+std::ostream& operator<< (std::ostream& stream, const Value& value)
+{
+	stream << value.get();
+	return stream;
 }
 }

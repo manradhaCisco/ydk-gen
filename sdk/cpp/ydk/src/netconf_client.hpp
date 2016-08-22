@@ -18,7 +18,6 @@
 #define _YDK_NETCONF_CLIENT_H_
 #include <map>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include <libnetconf/netconf.h>
@@ -64,8 +63,9 @@ private:
 			ssh_session session);
 
 	nc_rpc* build_rpc_request(const std::string & payload);
-	void process_rpc_reply(int reply_type);
+	std::string process_rpc_reply(int reply_type, const nc_reply* reply);
 	void init_capabilities();
+	bool is_session_active();
 
 private:
 	struct nc_session *session;

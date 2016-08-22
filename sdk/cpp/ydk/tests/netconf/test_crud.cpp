@@ -31,12 +31,8 @@ using namespace std;
 
 #define MODELS_DIR string(TEST_HOME)+string("/openconfig")
 
-BOOST_AUTO_TEST_CASE(bgp_as)
+void config_bgp(openconfig_bgp::Bgp* bgp)
 {
-	NetconfServiceProvider provider{ "127.0.0.1", "admin", "admin", "12022", "", "", MODELS_DIR};
-	CrudService crud{};
-	auto bgp = make_unique<openconfig_bgp::Bgp>();
-
 	// Set the Global AS
 	bgp->global_->config->as_ = 65001;
 	bgp->global_->config->router_id = "1.2.3.4";
@@ -56,7 +52,52 @@ BOOST_AUTO_TEST_CASE(bgp_as)
 	neighbor->config->local_as = 65001;
 	neighbor->parent = bgp->neighbors.get();
 	bgp->neighbors->neighbor.push_back(move(neighbor));
+}
 
+BOOST_AUTO_TEST_CASE(bgp_create)
+{
+	NetconfServiceProvider provider{ "127.0.0.1", "admin", "admin", "12022", "", "", MODELS_DIR};
+	CrudService crud{};
+	auto bgp = make_unique<openconfig_bgp::Bgp>();
+	config_bgp(bgp.get());
 	string reply = crud.create(provider, *bgp);
+	BOOST_REQUIRE(strstr(reply.c_str(),"<ok/>") != NULL);
+}
+
+BOOST_AUTO_TEST_CASE(bgp_read)
+{
+	NetconfServiceProvider provider{ "127.0.0.1", "admin", "admin", "12022", "", "", MODELS_DIR};
+	CrudService crud{};
+	auto bgp_set = make_unique<openconfig_bgp::Bgp>();
+	config_bgp(bgp_set.get());
+	string reply = crud.create(provider, *bgp_set);
+
+	BOOST_REQUIRE(strstr(reply.c_str(),"<ok/>") != NULL);
+
+	auto bgp_filter = make_unique<openconfig_bgp::Bgp>();
+	auto bgp_read = crud.read(provider, *bgp_filter, true);
+	BOOST_REQUIRE(bgp_read!=nullptr);
+	openconfig_bgp::Bgp * bgp_read_ptr = dynamic_cast<openconfig_bgp::Bgp*>(bgp_read.get());
+	BOOST_REQUIRE(bgp_read_ptr!=nullptr);
+
+	BOOST_CHECK_EQUAL(bgp_set->global_->config->as_, bgp_read_ptr->global_->config->as_);
+	BOOST_CHECK_EQUAL(bgp_set->neighbors->neighbor[0]->neighbor_address, bgp_read_ptr->neighbors->neighbor[0]->neighbor_address);
+	BOOST_CHECK_EQUAL(bgp_set->neighbors->neighbor[0]->config->local_as, bgp_read_ptr->neighbors->neighbor[0]->config->local_as);
+	BOOST_CHECK_EQUAL(bgp_set->global_->afi_safis->afi_safi[0]->afi_safi_name, bgp_read_ptr->global_->afi_safis->afi_safi[0]->afi_safi_name);
+	BOOST_CHECK_EQUAL(bgp_set->global_->afi_safis->afi_safi[0]->config->afi_safi_name, bgp_read_ptr->global_->afi_safis->afi_safi[0]->config->afi_safi_name);
+
+//	cerr<<bgp_set->global_->afi_safis->afi_safi[0]->config->enabled<<","<<bgp_read_ptr->global_->afi_safis->afi_safi[0]->config->enabled<<endl;
+//	res &= string(bgp_set->global_->afi_safis->afi_safi[0]->config->enabled)  == string(bgp_read_ptr->global_->afi_safis->afi_safi[0]->config->enabled);
+//	BOOST_REQUIRE(res==1);
+}
+
+BOOST_AUTO_TEST_CASE(bgp_update)
+{
+	NetconfServiceProvider provider{ "127.0.0.1", "admin", "admin", "12022", "", "", MODELS_DIR};
+	CrudService crud{};
+	auto bgp = make_unique<openconfig_bgp::Bgp>();
+	config_bgp(bgp.get());
+
+	string reply = crud.update(provider, *bgp);
 	BOOST_REQUIRE(strstr(reply.c_str(),"<ok/>") != NULL);
 }

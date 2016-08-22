@@ -57,8 +57,8 @@ class Value {
 	Value(Type type, std::string name);
 	~Value()=default;
 
-	std::string & get();
-	std::pair<std::string, std::string> get_name_value();
+	const std::string & get() const;
+	const std::pair<std::string, std::string> get_name_value() const;
 
 	void operator = (uint8 val);
 //	void operator = (uint16 val);
@@ -74,6 +74,10 @@ class Value {
 	void operator = (std::string val);
 //	void operator = (bool val);
 
+	operator std::string() const;
+	bool operator == (Value & other) const;
+	bool operator == (const Value & other) const;
+
 	bool is_set;
 
   private:
@@ -84,6 +88,8 @@ class Value {
 	std::string value;
 	Type type;
 };
+
+std::ostream& operator<< (std::ostream& stream, const Value& matrix);
 
 }
 

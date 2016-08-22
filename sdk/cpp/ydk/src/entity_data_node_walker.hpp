@@ -25,10 +25,9 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#ifndef ENTITY_HPP
-#define ENTITY_HPP
+#ifndef WALKER_HPP
+#define WALKER_HPP
 
-#include <string>
 #include <vector>
 
 namespace ydk {
@@ -37,57 +36,11 @@ namespace core {
 class DataNode;
 class RootSchemaNode;
 }
+class Entity;
 
-struct EntityPath {
-	std::string path;
-	std::vector<std::pair<std::string, std::string>> value_paths;
-
-	EntityPath(std::string path, std::vector<std::pair<std::string, std::string>> value_paths)
-		: path(path), value_paths(value_paths)
-	{
-	}
-
-	~EntityPath()
-	{
-	}
-
-	inline bool operator == (EntityPath & other) const
-	{
-		return path == other.path && value_paths == other.value_paths;
-	}
-
-	inline bool operator == (const EntityPath & other) const
-	{
-		return path == other.path && value_paths == other.value_paths;
-	}
-};
-
-class Entity {
-  public:
-	Entity():parent(nullptr){}
-	virtual ~Entity(){}
-
-  public:
-	virtual bool has_data() const = 0;
-	virtual EntityPath get_entity_path() const = 0;
-	virtual Entity* set_child(std::string path) = 0;
-	virtual void set_value(std::string value_path, std::string value) = 0;
-	virtual std::vector<Entity*> & get_children()
-	{
-		return children;
-	}
-	void add_child(Entity* child)
-	{
-		children.push_back(child);
-	}
-
-  public:
-	Entity* parent;
-
-  private:
-	std::vector<Entity*> children;
-};
+core::DataNode* get_data_node(Entity & entity, const core::RootSchemaNode & root);
+void walk_data_node(core::DataNode * node, Entity* entity);
 
 }
 
-#endif /* ENTITY_HPP */
+#endif /* WALKER_HPP */

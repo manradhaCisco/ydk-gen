@@ -21,43 +21,21 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#include <iostream>
-
-//#include <boost/python.hpp>
-//#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-
-#include <libnetconf.h>
-#include <libnetconf_ssh.h>
-
-#include "entity.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+
+#include <libnetconf.h>
+#include <libnetconf_ssh.h>
+
 #include "netconf_client.hpp"
 
-
 using namespace std;
-
-//using namespace boost::python;
 using namespace ydk;
-
 typedef vector<string> StringVec;
-
-//BOOST_PYTHON_MODULE(ydk_client)
-//{
-//	class_<vector<string> >("StringVec")
-//	        .def(vector_indexing_suite<std::vector<string> >())
-//	    ;
-
-//    class_<NetconfClient>("NetconfClient", init<string , string , string , int, int>())
-//        .def("connect", &NetconfClient::connect)
-//        .def("execute_payload", &NetconfClient::execute_payload)
-//		.def("close", &NetconfClient::close)
-//		.def("get_capabilities", &NetconfClient::get_capabilities);
-//};
 
 
 namespace ydk
@@ -108,30 +86,23 @@ void NetconfClient::init_capabilities()
 
 string NetconfClient::execute_payload(const string & payload)
 {
-	if(session==NULL)
+	if(!is_session_active())
 	{
 		return_status = EXIT_FAILURE;
 		return "";
 	}
+
 	nc_reply *reply;
-	NC_MSG_TYPE reply_type;
 	nc_rpc *rpc;
-	string reply_payload;
 
 	rpc = build_rpc_request(payload);
-	if (rpc == NULL || return_status != EXIT_SUCCESS || NC_RPC_UNKNOWN==nc_rpc_get_type(rpc))
+	if(rpc == NULL)
 	{
-		return_status = EXIT_FAILURE;
 		return "";
 	}
 
-	reply_type = nc_session_send_recv(session, rpc, &reply);
-	process_rpc_reply(reply_type);
-
-	if (NC_MSG_REPLY == reply_type)
-	{
-		reply_payload = nc_reply_dump(reply);
-	}
+	NC_MSG_TYPE reply_type = nc_session_send_recv(session, rpc, &reply);
+	string reply_payload = process_rpc_reply(reply_type, reply);
 
 	nc_reply_free(reply);
 	nc_rpc_free(rpc);
@@ -151,32 +122,42 @@ int NetconfClient::close()
 	return EXIT_SUCCESS;
 }
 
+bool NetconfClient::is_session_active()
+{
+	return session != NULL;
+}
+
 nc_rpc* NetconfClient::build_rpc_request(const string & payload)
 {
 	nc_rpc* rpc = nc_rpc_build(payload.c_str(), session);
+
 	if (rpc == NULL)
 	{
 		return_status = EXIT_FAILURE;
+		return NULL;
+	}
+	else if(NC_RPC_UNKNOWN==nc_rpc_get_type(rpc))
+	{
+		nc_rpc_free(rpc);
+		return_status = EXIT_FAILURE;
+		return NULL;
 	}
 	return rpc;
 }
 
-void NetconfClient::process_rpc_reply(int reply_type)
+string NetconfClient::process_rpc_reply(int reply_type, const nc_reply* reply)
 {
 	switch (reply_type)
 	{
-	case NC_MSG_NONE:
-	case NC_MSG_UNKNOWN:
-		return_status = EXIT_FAILURE;
-		break;
+		case NC_MSG_REPLY:
+			return_status = EXIT_SUCCESS;
+			return nc_reply_dump(reply);
 
-	case NC_MSG_REPLY:
-		return_status = EXIT_SUCCESS;
-		break;
-
-	default:
-		return_status = EXIT_FAILURE;
-		break;
+		default:
+		case NC_MSG_NONE:
+		case NC_MSG_UNKNOWN:
+			return_status = EXIT_FAILURE;
+			return "";
 	}
 }
 
@@ -226,7 +207,6 @@ int NetconfClient::get_status()
 {
 	return return_status;
 }
-
 
 
 }
