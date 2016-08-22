@@ -70,8 +70,6 @@ class Entity {
   public:
 	virtual bool has_data() const = 0;
 	virtual EntityPath get_entity_path() const = 0;
-	virtual Entity* set_child(std::string path) = 0;
-	virtual void set_value(std::string value_path, std::string value) = 0;
 	virtual std::vector<Entity*> & get_children()
 	{
 		return children;
