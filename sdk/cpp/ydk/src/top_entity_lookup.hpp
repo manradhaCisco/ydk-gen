@@ -25,31 +25,18 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#ifndef CRUD_SERVICE_HPP
-#define CRUD_SERVICE_HPP
+#ifndef NAMESPACE_MAP_HPP
+#define NAMESPACE_MAP_HPP
 
 #include <string>
-#include <vector>
 #include <memory>
 
-#include "entity.hpp"
-
 namespace ydk {
-class Service {
-};
-class NetconfServiceProvider;
+class Entity;
 
-class CrudService : public Service {
-	public:
-		CrudService();
-
-		std::string create(NetconfServiceProvider & provider, Entity & entity);
-		std::unique_ptr<Entity> read(NetconfServiceProvider & provider, Entity & entity, bool config_only);
-		std::unique_ptr<Entity> read(NetconfServiceProvider & provider, Entity & entity);
-		std::string update(NetconfServiceProvider & provider, Entity & entity);
-		std::string del(NetconfServiceProvider & provider, Entity & entity);
-};
+std::unique_ptr<Entity> lookup_path(std::string path);
+void insert(std::string path, std::unique_ptr<Entity> entity);
 
 }
 
-#endif /* CRUD_SERVICE_HPP */
+#endif /* NAMESPACE_MAP_HPP */

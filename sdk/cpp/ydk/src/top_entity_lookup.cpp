@@ -1,8 +1,4 @@
-//
-// @file entity.hpp
-// @brief Header for ydk entity
-//
-// YANG Development Kit
+/// YANG Development Kit
 // Copyright 2016 Cisco Systems. All rights reserved
 //
 ////////////////////////////////////////////////////////////////
@@ -25,21 +21,28 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#ifndef ENTITY_WALKER_HPP
-#define ENTITY_WALKER_HPP
+#include "top_entity_lookup.hpp"
 
-#include <vector>
+#include "make_unique.hpp"
+#include "../models/openconfig_bgp.h"
+
+using namespace std;
+using namespace ydk;
 
 namespace ydk {
 
-namespace core {
-class DataNode;
-class RootSchemaNode;
+std::unique_ptr<Entity> lookup_path(std::string path)
+{
+	if(path == "/openconfig-bgp:bgp")
+	{
+		return make_unique<openconfig_bgp::Bgp>();
+	}
+
+	return nullptr;
 }
-class Entity;
 
-core::DataNode* get_data_node(Entity & entity, core::RootSchemaNode & root);
+void insert(std::string path, std::unique_ptr<Entity> entity)
+{
 
 }
-
-#endif /* ENTITY_HPP */
+}

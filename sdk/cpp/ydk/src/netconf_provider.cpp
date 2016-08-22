@@ -36,35 +36,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include "entity.hpp"
 #include "netconf_client.hpp"
 #include "netconf_provider.hpp"
 #include "core.hpp"
+#include "entity_data_node_walker.hpp"
 #include "make_unique.hpp"
-#include "entity_walker.hpp"
+#include "top_entity_lookup.hpp"
 
 using namespace std;
 using namespace ydk;
 
-static string get_value(char* tag_value);
-
 namespace ydk
 {
+static string get_value(char* tag_value);
+static string get_data_from_reply(const string & payload);
+static string get_rpc_payload(const string & data_payload, const string & operation, bool read_config_only);
+static string get_commit_rpc_payload();
+static string get_data_payload(Entity & entity, core::RootSchemaNode & root_schema);
 
 NetconfServiceProvider::NetconfServiceProvider(string address, string username, string password, string port, string protocol, string timeout, string searchdir)
 	: client(make_unique<NetconfClient>(username, password, address, atoi(port.c_str()), 0))
 {
 	client->connect();
-	vector<string> caps = client->get_capabilities();
 	//TODO
-	capabilities=    {{"openconfig-bgp-types", "" },
-		    {"openconfig-bgp", ""},
-		    {"openconfig-extensions", ""},
-		    {"openconfig-interfaces", ""},
-		    {"openconfig-policy-types", ""},
-		    {"openconfig-routing-policy", ""},
-		    {"openconfig-types", ""},
-		    {"ietf-interfaces", ""},
-		    {"ydk", ""}};
+//	vector<string> caps = client->get_capabilities();
 //	for(string & cap:caps)
 //	{
 //		string module, revision;
@@ -86,9 +82,19 @@ NetconfServiceProvider::NetconfServiceProvider(string address, string username, 
 //			}
 //		}
 //	}
+	capabilities=    {{"openconfig-bgp-types", "" },
+		    {"openconfig-bgp", ""},
+		    {"openconfig-extensions", ""},
+		    {"openconfig-interfaces", ""},
+		    {"openconfig-policy-types", ""},
+		    {"openconfig-routing-policy", ""},
+		    {"openconfig-types", ""},
+		    {"ietf-interfaces", ""},
+		    {"ydk", ""}};
+
 
 	auto repo = ydk::core::Repository{searchdir};
-	root_schema = std::unique_ptr<ydk::core::RootSchemaNode>(repo.create_root_schema(capabilities));
+	root_schema = unique_ptr<ydk::core::RootSchemaNode>(repo.create_root_schema(capabilities));
 }
 
 NetconfServiceProvider::~NetconfServiceProvider()
@@ -96,44 +102,117 @@ NetconfServiceProvider::~NetconfServiceProvider()
 	client->close();
 }
 
-string NetconfServiceProvider::encode(Entity & entity, std::string  operation)
+string NetconfServiceProvider::encode(Entity & entity, const string & operation, bool read_config_only) const
 {
-	const ydk::core::DataNode* data_node = get_data_node(entity, *root_schema);
+	std::string data_payload = get_data_payload(entity, *root_schema);
+	return get_rpc_payload(data_payload, operation, read_config_only);
+}
+
+string NetconfServiceProvider::encode(Entity & entity, const string & operation) const
+{
+	std::string data_payload = get_data_payload(entity, *root_schema);
+	return get_rpc_payload(data_payload, operation, false);
+}
+
+unique_ptr<Entity> NetconfServiceProvider::decode(const string & payload) const
+{
+	string data = get_data_from_reply(payload);
+	cerr<<data<<endl;
+	if(data.size()==0)
+	{
+		return nullptr;
+	}
+
+	auto s = ydk::core::CodecService{};
+	core::DataNode* top_data_node = s.decode(root_schema.get(), data, ydk::core::CodecService::Format::XML);
+	auto top_entity = lookup_path(top_data_node->path());
+	walk_data_node(top_data_node, top_entity.get());
+
+	return top_entity;
+}
+
+string NetconfServiceProvider::execute_payload(const string & payload, const string & operation) const
+{
+	string reply = client->execute_payload(payload);
+	if(strstr(reply.c_str(),"<ok/>")!=NULL)
+	{
+		if(operation=="create" || operation=="update")
+		{
+			reply = client->execute_payload(get_commit_rpc_payload());
+		}
+	}
+	return reply;
+}
+
+static string get_data_payload(Entity & entity, core::RootSchemaNode & root_schema)
+{
+	const ydk::core::DataNode* data_node = get_data_node(entity, root_schema);
 	if (data_node==nullptr)
 		return "";
 	auto s = ydk::core::CodecService{};
-	auto xml = s.encode(data_node, ydk::core::CodecService::Format::XML, true);
-	string payload;
-	if(operation=="create")
-	{
-		payload = "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-				       "<edit-config>"
-				       "<target><candidate/></target>"
-				       "<config>"+xml+"</config>"
-					    "</edit-config>"
-					    "</rpc>";
-	}
-	return payload;
+	return s.encode(data_node, ydk::core::CodecService::Format::XML, true);
 }
 
-unique_ptr<Entity> NetconfServiceProvider::decode(string & payload)
+static string get_rpc_payload(const string & data_payload, const string & operation, bool read_config_only)
 {
-	return nullptr;
+	if(operation=="create" || operation=="update")
+	{
+		return "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
+			   "<edit-config>"
+			   "<target><candidate/></target>"
+			   "<config>"+data_payload+"</config>"
+				"</edit-config>"
+				"</rpc>";
+	}
+	else if(operation=="read")
+	{
+		if (read_config_only)
+		{
+			return "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
+				   "<get-config>"
+				   "<source><candidate/></source>"
+				   "<filter>"+data_payload+"</filter>"
+					"</get-config>"
+					"</rpc>";
+		}
+		else
+		{
+			return "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
+				   "<get>"
+				   "<filter>"+data_payload+"</filter>"
+					"</get>"
+					"</rpc>";
+		}
+	}
+
+	return "";
 }
 
-std::string NetconfServiceProvider::execute_payload(string  payload, string  operation)
+static string get_commit_rpc_payload()
 {
-	string reply = client->execute_payload(payload);
-	if(operation =="create" && strstr(reply.c_str(),"<ok/>")!=NULL)
+	return "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
+		   "<commit/>"
+			"</rpc>";
+}
+
+static string get_data_from_reply(const string & payload)
+{
+	static const string start ="<data>";
+	static const string end   ="</data>";
+	size_t starting = payload.find(start);
+	if(starting == string::npos)
 	{
-		if(operation=="create")
-			{
-				reply = client->execute_payload("<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-						       "<commit/>"
-							    "</rpc>");
-			}
+		return "";
 	}
-	return reply;
+
+	size_t ending = payload.find(end);
+	if(ending == string::npos)
+	{
+		return "";
+	}
+
+	return payload.substr(starting + start.size(),
+								 ending - starting - start.size());
 }
 
 }

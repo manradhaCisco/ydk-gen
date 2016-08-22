@@ -1,3 +1,4 @@
 *
 !.gitignore
-
+!openconfig_bgp.h
+!openconfig_bgp.cpp

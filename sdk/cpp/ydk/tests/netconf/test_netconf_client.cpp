@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(DeviceNotConnectedClose)
 {
 	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	int result = client.close();
-//	BOOST_REQUIRE(0!=client.get_status());
+	BOOST_REQUIRE(0!=client.get_status());
 	BOOST_REQUIRE(result);
 }
 
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE(DeviceNotConnectedExecute)
 			 "</edit-config>"
 			 "</rpc>");
 	BOOST_REQUIRE(s== "");
-//	BOOST_REQUIRE(0!=client.get_status());
+	BOOST_REQUIRE(0!=client.get_status());
 }
 
 
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(RpcInvalid)
 		 "</rpc>");
 
 	BOOST_REQUIRE(NULL != strstr(reply.c_str(), ""));
-//	BOOST_REQUIRE(OK!=client.get_status());
+	BOOST_REQUIRE(OK!=client.get_status());
 
 	result = client.close();
 	BOOST_REQUIRE(result == OK);
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(WrongXml)
 	 "<testing>"
 	 );
 	BOOST_REQUIRE(reply== "");
-//	BOOST_REQUIRE(OK!=client.get_status());
+	BOOST_REQUIRE(OK!=client.get_status());
 
 	result = client.close();
 	BOOST_REQUIRE(result == OK);
@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE(CorrectXmlWrongRpc)
 	 "<testing/>"
 	 );
 	BOOST_REQUIRE(reply== "");
-//	BOOST_REQUIRE(OK!=client.get_status());
+	BOOST_REQUIRE(OK!=client.get_status());
 
 	result = client.close();
 	BOOST_REQUIRE(result == OK);
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE(EmptyRpc)
 
 	string reply = client.execute_payload("");
 	BOOST_REQUIRE(reply== "");
-//	BOOST_REQUIRE(OK!=client.get_status());
+	BOOST_REQUIRE(OK!=client.get_status());
 
 	result = client.close();
 	BOOST_REQUIRE(result == OK);

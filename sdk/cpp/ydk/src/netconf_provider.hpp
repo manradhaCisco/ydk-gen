@@ -17,14 +17,13 @@
 #ifndef _NETCONF_PROVIDER_H_
 #define _NETCONF_PROVIDER_H_
 
-#include <initializer_list>
 #include <memory>
 #include <string>
 
-#include "entity.hpp"
-
 namespace ydk {
+class Entity;
 namespace core {
+class RootSchemaNode;
 struct Capability;
 }
 
@@ -40,9 +39,10 @@ class NetconfServiceProvider {
 				std::string searchdir);
 		~NetconfServiceProvider();
 
-		std::string encode(Entity & entity, std::string  operation);
-		std::unique_ptr<Entity> decode(std::string & payload);
-		std::string execute_payload(std::string payload, std::string operation);
+		std::string encode(Entity & entity, const std::string & operation, bool read_config_only) const;
+		std::string encode(Entity & entity, const std::string & operation) const;
+		std::unique_ptr<Entity> decode(const std::string & payload) const;
+		std::string execute_payload(const std::string & payload, const std::string & operation) const;
 
 	private:
 		std::unique_ptr<NetconfClient> client;

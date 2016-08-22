@@ -38,25 +38,44 @@ string CrudService::create(NetconfServiceProvider & provider, Entity & entity)
 {
 	string payload = provider.encode(entity, "create");
 	std::cerr<<payload<<std::endl;
-	return provider.execute_payload(payload, "create");
+	string reply = provider.execute_payload(payload, "create");
+	std::cerr<<reply<<std::endl;
+	return reply;
 }
 
 std::unique_ptr<Entity> CrudService::read(NetconfServiceProvider & provider, Entity & entity)
 {
-	string payload = provider.encode(entity, "read");
+	string payload = provider.encode(entity, "read", false);
+	std::cerr<<payload<<std::endl;
 	string reply=provider.execute_payload(payload, "read");;
+	std::cerr<<reply<<std::endl;
+	return provider.decode(reply);
+}
+
+std::unique_ptr<Entity> CrudService::read(NetconfServiceProvider & provider, Entity & entity, bool config_only)
+{
+	string payload = provider.encode(entity, "read", config_only);
+	std::cerr<<payload<<std::endl;
+	string reply=provider.execute_payload(payload, "read");;
+	std::cerr<<reply<<std::endl;
 	return provider.decode(reply);
 }
 
 string CrudService::update(NetconfServiceProvider & provider, Entity & entity)
 {
 	string payload = provider.encode(entity, "update");
-	return provider.execute_payload(payload, "update");
+	std::cerr<<payload<<std::endl;
+	string reply = provider.execute_payload(payload, "update");
+	std::cerr<<reply<<std::endl;
+	return reply;
 }
 
 string CrudService::del(NetconfServiceProvider & provider, Entity & entity)
 {
 	string payload = provider.encode(entity, "delete");
-	return provider.execute_payload(payload, "delete");
+	std::cerr<<payload<<std::endl;
+	string reply = provider.execute_payload(payload, "delete");
+	std::cerr<<reply<<std::endl;
+	return reply;
 }
 }
