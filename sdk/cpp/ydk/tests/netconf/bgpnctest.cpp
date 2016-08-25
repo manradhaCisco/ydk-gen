@@ -25,76 +25,149 @@
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 #include "../../src/core.hpp"
-#include "../../src/netconf_client.hpp"
 #include "../config.hpp"
+#include "../../src/netconf_provider.hpp"
+
+const char* expected_bgp_output ="\
+<bgp xmlns=\"http://openconfig.net/yang/bgp\">\
+<global>\
+<config>\
+<as>65172</as>\
+</config>\
+<afi-safis>\
+<afi-safi>\
+<afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name>\
+<config>\
+<afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name>\
+<enabled>true</enabled>\
+</config>\
+</afi-safi>\
+</afi-safis>\
+</global>\
+<neighbors>\
+<neighbor>\
+<neighbor-address>172.16.255.2</neighbor-address>\
+<config>\
+<neighbor-address>172.16.255.2</neighbor-address>\
+<peer-as>65172</peer-as>\
+</config>\
+<afi-safis>\
+<afi-safi>\
+<afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name>\
+<config>\
+<afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name>\
+<enabled>true</enabled>\
+</config>\
+</afi-safi>\
+</afi-safis>\
+</neighbor>\
+</neighbors>\
+</bgp>";
 
 
-namespace mock {
-class MockServiceProvider : public ydk::core::ServiceProvider
+const char* expected_bgp_read ="\
+<bgp xmlns=\"http://openconfig.net/yang/bgp\">\
+<global>\
+<config>\
+<as>65172</as>\
+</config>\
+<use-multiple-paths>\
+<state/>\
+<ebgp>\
+<state/>\
+</ebgp>\
+<ibgp>\
+<state/>\
+</ibgp>\
+</use-multiple-paths>\
+<route-selection-options>\
+<state/>\
+</route-selection-options>\
+<afi-safis>\
+<afi-safi>\
+<afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name>\
+<config>\
+<afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name>\
+<enabled>true</enabled>\
+</config>\
+<state/>\
+<graceful-restart>\
+<state/>\
+</graceful-restart>\
+<route-selection-options>\
+<state/>\
+</route-selection-options>\
+<use-multiple-paths>\
+<state/>\
+<ebgp>\
+<state/>\
+</ebgp>\
+<ibgp>\
+<state/>\
+</ibgp>\
+</use-multiple-paths>\
+<apply-policy>\
+<state/>\
+</apply-policy>\
+</afi-safi>\
+</afi-safis>\
+<apply-policy>\
+<state/>\
+</apply-policy>\
+</global>\
+<neighbors>\
+<neighbor>\
+<neighbor-address>172.16.255.2</neighbor-address>\
+<config>\
+<neighbor-address>172.16.255.2</neighbor-address>\
+<peer-as>65172</peer-as>\
+</config>\
+<state/>\
+<timers>\
+<state>\
+<connect-retry>30.0</connect-retry>\
+<hold-time>90.0</hold-time>\
+<keepalive-interval>30.0</keepalive-interval>\
+<minimum-advertisement-interval>30.0</minimum-advertisement-interval>\
+</state>\
+</timers>\
+<transport>\
+<state/>\
+</transport>\
+<error-handling><state/></error-handling>\
+<logging-options><state/></logging-options>\
+<ebgp-multihop><state/></ebgp-multihop>\
+<route-reflector><state/></route-reflector>\
+<as-path-options><state/></as-path-options>\
+<add-paths><state/></add-paths>\
+<use-multiple-paths><state/>\
+<ebgp><state/></ebgp>\
+</use-multiple-paths><apply-policy><state/></apply-policy>\
+<afi-safis>\
+<afi-safi>\
+<afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name>\
+<config>\
+<afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name>\
+<enabled>true</enabled>\
+</config>\
+<state/>\
+<graceful-restart><state/></graceful-restart>\
+<apply-policy><state/></apply-policy>\
+<use-multiple-paths><state/><ebgp><state/></ebgp></use-multiple-paths>\
+</afi-safi></afi-safis></neighbor></neighbors></bgp>";
+
+BOOST_AUTO_TEST_CASE( bgp_netconf_create  )
 {
-public:
-    MockServiceProvider(const std::string searchdir, const std::vector<ydk::core::Capability> capabilities) : m_searchdir{searchdir}, m_capabilities{capabilities}
-    {
-        
-    }
+	std::string searchdir{TEST_HOME};
+    ydk::core::Repository repo{searchdir};
     
-	virtual ~MockServiceProvider()
-	{
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::core::RootSchemaNode* schema = sp.get_root_schema();
 
-	}
-
+    BOOST_REQUIRE(schema != nullptr);
     
-	ydk::core::RootSchemaNode* get_root_schema()
-	{
-		auto repo = ydk::core::Repository{m_searchdir};
-        
-        
+    auto s = ydk::core::CodecService{};
 
-		return repo.create_root_schema(m_capabilities);
-	}
-
-	ydk::core::DataNode* invoke(ydk::core::Rpc* rpc) const
-	{
-        auto s = ydk::core::CodecService{};
-        
-        std::cout << s.encode(rpc->input(), ydk::core::CodecService::Format::XML, true) << std::endl;
-
-		return nullptr;
-	}
-private:
-    std::string m_searchdir;
-    std::vector<ydk::core::Capability> m_capabilities;
-    
-};
-}
-
-
-
-
-std::vector<ydk::core::Capability> test_openconfig {
-    {"openconfig-bgp-types", "" },
-    {"openconfig-bgp", ""},
-    {"openconfig-extensions", ""},
-    {"openconfig-interfaces", ""},
-    {"openconfig-policy-types", ""},
-    {"openconfig-routing-policy", ""},
-    {"openconfig-types", ""},
-    {"ietf-interfaces", ""},
-    {"ydk", ""}
-    
-};
-
-BOOST_AUTO_TEST_CASE( bgp )
-{
-    std::string searchdir{TEST_HOME};
-    searchdir+="/openconfig";
-    std::cout << searchdir << std::endl;
-    mock::MockServiceProvider sp{searchdir, test_openconfig};
-    
-    std::unique_ptr<ydk::core::RootSchemaNode> schema{sp.get_root_schema()};
-   
-    BOOST_REQUIRE(schema.get() != nullptr);
-        
     auto bgp = schema->create("openconfig-bgp:bgp", "");
 
     BOOST_REQUIRE( bgp != nullptr );
@@ -102,15 +175,25 @@ BOOST_AUTO_TEST_CASE( bgp )
     //get the root
     std::unique_ptr<const ydk::core::DataNode> data_root{bgp->root()};
 
-
     BOOST_REQUIRE( data_root != nullptr );
+    
+    //first delete
+    std::unique_ptr<ydk::core::Rpc> delete_rpc { schema->rpc("ydk:delete") };
+    
+    auto xml = s.encode(bgp, ydk::core::CodecService::Format::XML, false);
+    
+    delete_rpc->input()->create("entity", xml);
+    
+    //call delete
+    (*delete_rpc)(sp);
+    
 
     auto as = bgp->create("global/config/as", "65172");
-    
+
     BOOST_REQUIRE( as != nullptr );
 
     auto l3vpn_ipv4_unicast = bgp->create("global/afi-safis/afi-safi[afi-safi-name='openconfig-bgp-types:L3VPN_IPV4_UNICAST']", "");
-    
+
     BOOST_REQUIRE( l3vpn_ipv4_unicast != nullptr );
 
 
@@ -139,184 +222,51 @@ BOOST_AUTO_TEST_CASE( bgp )
 
     //bgp/neighbors/neighbor/afi-safis/afi-safi
     auto neighbor_af = neighbor->create("afi-safis/afi-safi[afi-safi-name='openconfig-bgp-types:L3VPN_IPV4_UNICAST']", "");
-    
+
     BOOST_REQUIRE( neighbor_af != nullptr );
-    
+
     auto neighbor_afi_safi_name = neighbor_af->create("config/afi-safi-name" , "openconfig-bgp-types:L3VPN_IPV4_UNICAST");
-    
+
     BOOST_REQUIRE( neighbor_afi_safi_name != nullptr );
 
     auto neighbor_enabled = neighbor_af->create("config/enabled","true");
 
     BOOST_REQUIRE( neighbor_enabled != nullptr );
-
-    auto s = ydk::core::CodecService{};
-    auto xml = s.encode(bgp, ydk::core::CodecService::Format::XML, true);
     
-    BOOST_TEST_MESSAGE(xml);
+    xml = s.encode(bgp, ydk::core::CodecService::Format::XML, false);
+    
+    BOOST_CHECK_MESSAGE( !xml.empty(),
+                        "XML output :" << xml);
+
+    BOOST_REQUIRE(xml == expected_bgp_output);
+    
+    
+    //call create
+    std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("ydk:create") };
+    create_rpc->input()->create("entity", xml);
+    (*create_rpc)(sp);
+    
+    //call read
+    std::unique_ptr<ydk::core::Rpc> read_rpc { schema->rpc("ydk:read") };
+    auto bgp_read = schema->create("openconfig-bgp:bgp", "");
+    BOOST_REQUIRE( bgp_read != nullptr );
+    std::unique_ptr<const ydk::core::DataNode> data_root2{bgp_read->root()};
+    
+    xml = s.encode(bgp_read, ydk::core::CodecService::Format::XML, false);
+    BOOST_REQUIRE( !xml.empty() );
+    read_rpc->input()->create("filter", xml);
+    
+    auto read_result = (*read_rpc)(sp);
+    
+    BOOST_REQUIRE(read_result != nullptr);
+
+    xml = s.encode(read_result, ydk::core::CodecService::Format::XML, false);
     
     std::cout << xml << std::endl;
     
-    auto json = s.encode(bgp, ydk::core::CodecService::Format::JSON, true);
+    BOOST_REQUIRE(xml == expected_bgp_read);
 
-    BOOST_CHECK_MESSAGE( !xml.empty(),
-                           "XML output :" << xml);
-     
-    BOOST_CHECK_MESSAGE( !json.empty(),
-                           "JSON output :" << json);
-
-    //codec service bugs
-    auto new_bgp = s.decode(schema.get(), xml, ydk::core::CodecService::Format::XML);
-    BOOST_REQUIRE( new_bgp != nullptr);
-    //if (new_bgp) {
-    //    std::cout << "deserialized successfully" << std::endl;
-    //}
-
-    //TODO fix rpc
-    std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("/ydk:create") };
-    create_rpc->input()->create("entity", xml);
-
-    //call create
-    //(*create_rpc)(sp);
-}
-
-BOOST_AUTO_TEST_CASE( bgp_netconf_create  )
-{
-	std::string searchdir{TEST_HOME};
-	    searchdir+="/openconfig";
-	    std::cout << searchdir << std::endl;
-	    mock::MockServiceProvider sp{searchdir, test_openconfig};
-
-	    std::unique_ptr<ydk::core::RootSchemaNode> schema{sp.get_root_schema()};
-
-	    BOOST_REQUIRE(schema.get() != nullptr);
-
-	    auto bgp = schema->create("openconfig-bgp:bgp", "");
-
-	    BOOST_REQUIRE( bgp != nullptr );
-
-	    //get the root
-	    std::unique_ptr<const ydk::core::DataNode> data_root{bgp->root()};
-
-	    BOOST_REQUIRE( data_root != nullptr );
-
-	    auto as = bgp->create("global/config/as", "65172");
-
-	    BOOST_REQUIRE( as != nullptr );
-
-	    auto l3vpn_ipv4_unicast = bgp->create("global/afi-safis/afi-safi[afi-safi-name='openconfig-bgp-types:L3VPN_IPV4_UNICAST']", "");
-
-	    BOOST_REQUIRE( l3vpn_ipv4_unicast != nullptr );
-
-
-	    auto afi_safi_name = l3vpn_ipv4_unicast->create("config/afi-safi-name", "openconfig-bgp-types:L3VPN_IPV4_UNICAST");
-
-	    BOOST_REQUIRE( afi_safi_name != nullptr );
-
-
-	    //set the enable flag
-	    auto enable = l3vpn_ipv4_unicast->create("config/enabled","true");
-
-	    BOOST_REQUIRE( enable != nullptr );
-
-	    //bgp/neighbors/neighbor
-	    auto neighbor = bgp->create("neighbors/neighbor[neighbor-address='172.16.255.2']", "");
-
-	    BOOST_REQUIRE( neighbor != nullptr );
-
-	    auto neighbor_address = neighbor->create("config/neighbor-address", "172.16.255.2");
-
-	    BOOST_REQUIRE( neighbor_address != nullptr );
-
-	    auto peer_as = neighbor->create("config/peer-as","65172");
-
-	    BOOST_REQUIRE( peer_as != nullptr );
-
-	    //bgp/neighbors/neighbor/afi-safis/afi-safi
-	    auto neighbor_af = neighbor->create("afi-safis/afi-safi[afi-safi-name='openconfig-bgp-types:L3VPN_IPV4_UNICAST']", "");
-
-	    BOOST_REQUIRE( neighbor_af != nullptr );
-
-	    auto neighbor_afi_safi_name = neighbor_af->create("config/afi-safi-name" , "openconfig-bgp-types:L3VPN_IPV4_UNICAST");
-
-	    BOOST_REQUIRE( neighbor_afi_safi_name != nullptr );
-
-	    auto neighbor_enabled = neighbor_af->create("config/enabled","true");
-
-	    BOOST_REQUIRE( neighbor_enabled != nullptr );
-	    auto s = ydk::core::CodecService{};
-	    auto xml = s.encode(bgp, ydk::core::CodecService::Format::XML, true);
-	    auto json = s.encode(bgp, ydk::core::CodecService::Format::JSON, true);
-
-	    BOOST_TEST_MESSAGE( xml);
-	    BOOST_TEST_MESSAGE(json);
-
-	    BOOST_CHECK_MESSAGE( !xml.empty(),
-	                           "XML output :" << xml);
-
-	    BOOST_CHECK_MESSAGE( !json.empty(),
-	                           "JSON output :" << json);
-
-	    ydk::NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
-	    client.connect();
-	    std::string payload="<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-	       "<edit-config>"
-	       "<target><candidate/></target>"
-	       "<config>"
-	      +xml+
-	      "</config>"
-	    "</edit-config>"
-	    "</rpc>";
-	    std::string reply = client.execute_payload(payload);
-	    BOOST_TEST_MESSAGE(payload);
-	    BOOST_TEST_MESSAGE(reply);
-
-	    BOOST_REQUIRE(NULL != strstr(reply.c_str(), "<ok/>"));
-
-	    reply = client.execute_payload("<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\"><commit/></rpc>");
-		BOOST_TEST_MESSAGE(reply);
-
-		BOOST_REQUIRE(NULL != strstr(reply.c_str(), "<ok/>"));
 
 }
-
-//void test_read(ydk::ServiceProvider *sp, ydk::SchemaNode* schema)
-//{
-//   const char *bgp_xml = "\
-//		   <bgp xmlns=\"http://openconfig.net/yang/bgp\">\
-//             <global>\
-//              <config>\
-//               <as>65172</as>\
-//              </config>\
-//             <afi-safi>\
-//              <afi-safi>\
-//                <afi-safi-name>l3vpn-ipv4-unicast</afi-safi-name>\
-//                <config>\
-//                  <afi-safi-name>l3vpn-ipv4-unicast</afi-safi-name>\
-//                  <enabled>true</enabled>\
-//                 </config>\
-//              </afi-safi>\
-//            </afi-safis>\
-//            </global>
-////  <neighbors>
-////    <neighbor>
-////      <neighbor-address>172.16.255.2</neighbor-address>
-////      <config>
-////        <neighbor-address>172.16.255.2</neighbor-address>
-////        <peer-as>65172</peer-as>
-////      </config>
-////      <afi-safis>
-////        <afi-safi>
-////          <afi-safi-name>l3vpn-ipv4-unicast</afi-safi-name>
-////          <config>
-////            <afi-safi-name>l3vpn-ipv4-unicast</afi-safi-name>
-////            <enabled>true</enabled>
-////          </config>
-////        </afi-safi>
-////      </afi-safis>
-////    </neighbor>
-////  </neighbors>
-////</bgp>";
-//}
 
 

@@ -202,8 +202,6 @@ const char* expected_bgp_json = "\
 BOOST_AUTO_TEST_CASE( bgp )
 {
     std::string searchdir{TEST_HOME};
-    searchdir+="/openconfig";
-    std::cout << searchdir << std::endl;
     mock::MockServiceProvider sp{searchdir, test_openconfig};
     
     std::unique_ptr<ydk::core::RootSchemaNode> schema{sp.get_root_schema()};
@@ -293,9 +291,6 @@ BOOST_AUTO_TEST_CASE( bgp )
     BOOST_CHECK_MESSAGE( !json.empty(),
                            "JSON output :" << json);
     
-    std::cout << "*********************************************" << std::endl;
-    std::cout << json << std::endl;
-    std::cout << "*********************************************" << std::endl;
 
     BOOST_REQUIRE(json == expected_bgp_json);
     
@@ -305,9 +300,6 @@ BOOST_AUTO_TEST_CASE( bgp )
     
     auto new_json = s.encode(new_bgp1, ydk::core::CodecService::Format::JSON, false);
     
-    std::cout << "*********************************************" << std::endl;
-    std::cout << new_json << std::endl;
-    std::cout << "*********************************************" << std::endl;
     
     BOOST_CHECK_MESSAGE(!new_json.empty(),
                         "Deserialized json output is empty.");
@@ -315,12 +307,12 @@ BOOST_AUTO_TEST_CASE( bgp )
     BOOST_REQUIRE(new_json == expected_bgp_json);
     
     
-    //TODO fix rpc
-    std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("/ydk:create") };
+    std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("ydk:create") };
     create_rpc->input()->create("entity", xml);
 
     //call create
     (*create_rpc)(sp);
+    
     
 }
 

@@ -56,6 +56,8 @@ NetconfClient::NetconfClient(string  username, string  password,
 	password_lookup.insert(make_pair(make_pair(username, hostname), password));
 	session=NULL;
 }
+    
+
 
 int NetconfClient::connect()
 {

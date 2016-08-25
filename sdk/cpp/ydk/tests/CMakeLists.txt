@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.6)
 cmake_policy(SET CMP0048 NEW)
 
-set(core_tests bgptest xr601test)
+set(core_tests bgptest)
 
-set(netconf_tests bgpnctest;test_netconf_provider;test_entity;test_value;test_netconf_client;test_crud;test_entity_lookup)
+#set(netconf_tests bgpnctest;test_entity;test_value;test_netconf_client;test_entity_lookup)
+set(netconf_tests bgpnctest;test_entity;test_value;test_netconf_client)
 
 include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 
