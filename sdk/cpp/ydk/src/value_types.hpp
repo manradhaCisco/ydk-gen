@@ -1,3 +1,5 @@
+#ifndef VALUE_TYPES_HPP
+#define VALUE_TYPES_HPP
 
 typedef unsigned short uint8;
 typedef unsigned int uint16;
@@ -12,3 +14,5 @@ typedef signed long long int64;
 typedef struct Empty {
     bool set;
 } Empty;
+
+#endif /* VALUE_TYPES_HPP */

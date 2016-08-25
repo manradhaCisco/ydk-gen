@@ -153,9 +153,9 @@ class NamedElement(Element):
         """
         pkg = get_top_pkg(self)
         if not pkg.bundle_name:
-            cpp_header_name = 'ydk/models/%s.h' % pkg.name
+            cpp_header_name = '%s.h' % pkg.name
         else:
-            cpp_header_name = 'ydk/models/%s/%s.h' % (pkg.bundle_name, pkg.name)
+            cpp_header_name = '../%s/%s.h' % (pkg.bundle_name, pkg.name)
         return cpp_header_name
 
     def get_meta_py_mod_name(self):

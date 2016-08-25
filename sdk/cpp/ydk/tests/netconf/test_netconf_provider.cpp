@@ -22,7 +22,7 @@
 
 #include "../../src/netconf_provider.hpp"
 #include "../../src/make_unique.hpp"
-#include "../../models/openconfig_bgp.h"
+#include "../models_gen/openconfig_bgp.h"
 
 using namespace ydk;
 using namespace std;
