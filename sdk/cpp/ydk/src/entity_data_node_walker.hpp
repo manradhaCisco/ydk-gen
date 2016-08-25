@@ -40,6 +40,8 @@ class Entity;
 
 core::DataNode* get_data_node(Entity & entity, const core::RootSchemaNode & root);
 
+void walk_data_node(core::DataNode * node, Entity* entity);
+
 }
 
 #endif /* WALKER_HPP */

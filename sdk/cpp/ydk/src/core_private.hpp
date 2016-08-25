@@ -142,6 +142,15 @@ namespace ydk {
             
             virtual const DataNode* root() const;
             
+            
+            virtual void add_annotation(const Annotation& an);
+            
+
+            virtual bool remove_annotation(const Annotation& an);
+            
+            virtual std::vector<Annotation> annotations();
+            
+            
             virtual std::string xml() const;
             
             virtual DataNodeImpl* get_dn_for_desc_node(struct lyd_node* desc_node) const;
@@ -174,7 +183,7 @@ namespace ydk {
             
             virtual const DataNode* root() const;
             
-            
+            virtual std::vector<DataNode*> find(const std::string& path) const;
             
             const SchemaNode* m_schema;
             

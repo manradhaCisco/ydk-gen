@@ -31,9 +31,9 @@
 #include <string>
 #include <memory>
 #include <map>
+#include "entity.hpp"
 
 namespace ydk {
-class Entity;
 
 std::unique_ptr<Entity> lookup_path(std::string path);
 

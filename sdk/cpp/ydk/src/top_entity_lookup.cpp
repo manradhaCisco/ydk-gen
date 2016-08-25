@@ -24,7 +24,6 @@
 #include "top_entity_lookup.hpp"
 
 #include "make_unique.hpp"
-#include "../tests/models_gen/openconfig_bgp.h"
 
 using namespace std;
 using namespace ydk;
@@ -35,7 +34,7 @@ std::unique_ptr<Entity> lookup_path(std::string path)
 {
 	if(path == "/openconfig-bgp:bgp")
 	{
-		return make_unique<openconfig_bgp::Bgp>();
+		//return make_unique<openconfig_bgp::Bgp>();
 	}
 
 	return nullptr;

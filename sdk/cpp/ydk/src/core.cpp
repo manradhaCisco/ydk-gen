@@ -268,8 +268,9 @@ ydk::core::RootSchemaNodeImpl::find(const std::string& path) const
 
 	std::vector<SchemaNode*> ret;
 
-
-	const struct lys_node* found_node = ly_ctx_get_node(m_ctx, nullptr, path.c_str());
+    std::string full_path{"/"};
+    full_path+=path;
+	const struct lys_node* found_node = ly_ctx_get_node(m_ctx, nullptr, full_path.c_str());
 
 	if (found_node){
 		auto p = reinterpret_cast<SchemaNode*>(found_node->priv);
@@ -320,18 +321,32 @@ ydk::core::RootSchemaNodeImpl::from_xml(const std::string& xml) const
 ydk::core::Rpc*
 ydk::core::RootSchemaNodeImpl::rpc(const std::string& path) const
 {
-	
-    struct lyd_node* node = lyd_new_path(nullptr, m_ctx, path.c_str(), "", 0);
-    
-    if(node == nullptr) {
+    auto c = find(path);
+    if(c.empty()){
         throw YDKInvalidArgumentException{"Path is invalid"};
     }
     
-    SchemaNodeImpl* sn = new SchemaNodeImpl{this, node->schema};
-    struct ly_ctx* ctx = node->schema->module->ctx;
-    lyd_free(node);
+    bool found = false;
+    SchemaNode* rpc_sn = nullptr;
     
-    return new RpcImpl{sn, ctx};
+    for(auto item : c) {
+        auto s = item->statement();
+        if(s.keyword == "rpc"){
+            found = true;
+            rpc_sn = item;
+            break;
+        }
+    }
+    
+    if(!found){
+        throw YDKInvalidArgumentException{"Path does not refer to an rpc node"};
+    }
+    SchemaNodeImpl* sn = dynamic_cast<SchemaNodeImpl*>(rpc_sn);
+    if(!sn){
+        throw YDKIllegalStateException("Internal error occurred");
+    }
+    return new RpcImpl{sn, m_ctx};
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -457,7 +472,7 @@ ydk::core::RootDataImpl::children() const
 
             iter=iter->next;
             
-        } while (iter != m_node);
+        } while (iter && iter != m_node);
     }
     
     return ret;
@@ -467,6 +482,47 @@ const ydk::core::DataNode*
 ydk::core::RootDataImpl::root() const
 {
 	return this;
+}
+
+std::vector<ydk::core::DataNode*>
+ydk::core::RootDataImpl::find(const std::string& path) const
+{
+    std::vector<DataNode*> results;
+    
+    if(m_node == nullptr) {
+        return results;
+    }
+    
+    std::string schema_path{ this->path() };
+    if(schema_path.size()!= 1){
+        schema_path+="/";
+    }
+    
+    auto s = schema()->statement();
+    if(s.keyword == "rpc") {
+        schema_path+="input/";
+    }
+    
+    schema_path+=path;
+    
+    const struct lys_node* found_snode =
+    ly_ctx_get_node(m_node->schema->module->ctx, nullptr, schema_path.c_str());
+    
+    if(found_snode) {
+        struct ly_set* result_set = lyd_get_node2(m_node, found_snode);
+        if( result_set ){
+            if (result_set->number > 0){
+                for(size_t i=0; i < result_set->number; i++){
+                    struct lyd_node* node_result = result_set->set.d[i];
+                    results.push_back(get_dn_for_desc_node(node_result));
+                }
+            }
+            ly_set_free(result_set);
+        }
+        
+    }
+    
+    return results;
 }
 
 //std::string
@@ -662,9 +718,14 @@ ydk::core::DataNodeImpl::find(const std::string& path) const
     if(m_node == nullptr) {
         return results;
     }
+    std::string spath{path};
     
+    auto s = schema()->statement();
+    if(s.keyword == "rpc"){
+        spath="input/" + spath;
+    }
     const struct lys_node* found_snode =
-        ly_ctx_get_node(m_node->schema->module->ctx, m_node->schema, path.c_str());
+        ly_ctx_get_node(m_node->schema->module->ctx, m_node->schema, spath.c_str());
     
     if(found_snode) {
         struct ly_set* result_set = lyd_get_node2(m_node, found_snode);
@@ -767,6 +828,69 @@ ydk::core::DataNodeImpl::get_dn_for_desc_node(struct lyd_node* desc_node) const
 	return dn;
 }
 
+
+void
+ydk::core::DataNodeImpl::add_annotation(const ydk::core::Annotation& an)
+{
+    
+    if(!m_node) {
+        throw YDKIllegalStateException{"Cannot annotate node"};
+    }
+        
+    std::string name { an.m_ns + ":" + an.m_name };
+    
+    struct lyd_attr* attr = lyd_insert_attr(m_node, nullptr, name.c_str(), an.m_val.c_str());
+    
+    if(attr == nullptr) {
+        throw YDKInvalidArgumentException("Cannot find module with given namespace.");
+    }
+}
+
+
+bool
+ydk::core::DataNodeImpl::remove_annotation(const ydk::core::Annotation& an)
+{
+    if(!m_node) {
+        return false;
+    }
+    
+    struct lyd_attr* attr = m_node->attr;
+    while(attr){
+        struct lys_module *module = attr->module;
+        if(module){
+            Annotation an1{module->ns, attr->name, attr->value};
+            if (an == an1){
+                lyd_free_attr(m_node->schema->module->ctx, m_node, attr, 0);
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
+std::vector<ydk::core::Annotation>
+ydk::core::DataNodeImpl::annotations()
+{
+    std::vector<ydk::core::Annotation> ann {};
+    
+    if(m_node) {
+        struct lyd_attr* attr = m_node->attr;
+        while(attr) {
+            struct lys_module *module = attr->module;
+            if(module) {
+                ann.emplace_back(module->ns, attr->name, attr->value);
+        
+            }
+            attr = attr->next;
+        }
+    }
+    
+    
+    return ann;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
@@ -812,23 +936,19 @@ ydk::core::CodecService::encode(const ydk::core::DataNode* dn, ydk::core::CodecS
     if(format == ydk::core::CodecService::Format::JSON) {
         scheme = LYD_JSON;
     }
+    
     struct lyd_node* m_node = nullptr;
-
-    //first determine what kind of node this is
-    if(dn->parent()) {
-        //note a root node
-        const DataNodeImpl* impl = dynamic_cast<const DataNodeImpl *>(dn);
-        if( !impl) {
-            throw YDKCoreException{};
-        }
-        m_node = impl->m_node;
-        
-    } else {
-        //TODO
-        return ret;
+    
+    const DataNodeImpl* impl = dynamic_cast<const DataNodeImpl *>(dn);
+    if( !impl) {
+        throw YDKCoreException{};
     }
+    m_node = impl->m_node;
 
 
+    if(m_node == nullptr){
+        throw YDKInvalidArgumentException{"No data in data node"};
+    }
     char* buffer;
     
     if(!lyd_print_mem(&buffer, m_node,scheme, pretty ? LYP_FORMAT : 0)) {
@@ -852,15 +972,23 @@ ydk::core::CodecService::decode(const RootSchemaNode* root_schema, const std::st
         throw YDKCoreException{};
     }
     
-    struct lyd_node *root = lyd_parse_mem(rs_impl->m_ctx, buffer.c_str(), scheme, LYD_OPT_TRUSTED | LYD_OPT_GET);
+    struct lyd_node *root = lyd_parse_mem(rs_impl->m_ctx, buffer.c_str(), scheme, LYD_OPT_TRUSTED |  LYD_OPT_KEEPEMPTYCONT | LYD_WD_TRIM | LYD_OPT_GET);
     if( ly_errno ) {
         std::cout << ly_errmsg() << std::endl;
         throw YDKCodecException{YDKCodecException::Error::XML_INVAL};
     }
 
     RootDataImpl* rd = new RootDataImpl{rs_impl, rs_impl->m_ctx, "/"};
-    DataNodeImpl* nodeImpl = new DataNodeImpl{rd,root};
-    return nodeImpl;
+    rd->m_node = root;
+    
+    struct lyd_node* dnode = root;
+    do{
+        DataNodeImpl* nodeImpl = new DataNodeImpl{rd, dnode};
+        rd->child_map.insert(std::make_pair(root, nodeImpl));
+        dnode = dnode->next;
+    } while(dnode != nullptr && dnode != root);
+    
+    return rd;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -876,7 +1004,7 @@ ydk::core::Repository::Repository(const std::string& search_dir) : m_search_dir{
 }
 
 ydk::core::RootSchemaNode*
-ydk::core::Repository::create_root_schema(const std::vector<ydk::core::Capability> capabilities)
+ydk::core::Repository::create_root_schema(const std::vector<ydk::core::Capability> capabilities) const
 {
 	struct ly_ctx* ctx = ly_ctx_new(m_search_dir.c_str());
 
@@ -888,7 +1016,9 @@ ydk::core::Repository::create_root_schema(const std::vector<ydk::core::Capabilit
         auto p = ly_ctx_load_module(ctx, c.module.c_str(), c.revision.empty()?0:c.revision.c_str());
         if (!p) {
             ly_ctx_destroy(ctx, nullptr);
-            throw YDKException{"Unable to parse module"};
+            //log and continue
+            continue;
+            //throw YDKException{"Unable to parse module"};
         }
         for (auto f : c.features)
             lys_features_enable(p, f.c_str());
@@ -909,9 +1039,15 @@ ydk::core::Repository::create_root_schema(const std::vector<ydk::core::Capabilit
     
 ydk::core::RpcImpl::RpcImpl(SchemaNodeImpl* sn, struct ly_ctx* ctx) : m_sn{sn}
 {
-    std::string path = sn->path() + "/";
+    
 
-    m_input_dn = new RootDataImpl{sn, ctx, path};
+    struct lyd_node* dnode = lyd_new_path(nullptr, ctx, sn->path().c_str(), "", 0);
+    
+    if(!dnode){
+        throw YDKIllegalStateException{"Illegal state"};
+    }
+    
+    m_input_dn = new DataNodeImpl{nullptr, dnode};
     
 }
 

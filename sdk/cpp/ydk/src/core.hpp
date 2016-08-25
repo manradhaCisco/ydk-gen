@@ -30,6 +30,8 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
+
 
 namespace ydk {
     namespace core {
@@ -315,6 +317,7 @@ namespace ydk {
             ///
             virtual DataNode* decode(const RootSchemaNode* root_schema, const std::string& buffer, Format format);
             
+            
         };
         
         
@@ -331,6 +334,21 @@ namespace ydk {
             }
             
             std::string err_msg;
+        };
+        
+        ///
+        /// @brief Illegal State Exception.
+        ///
+        ///
+        /// Thrown when an operation/service is invoked
+        /// on an object that is not in the right state. Use the err_msg for the error.
+        ///
+        struct YDKIllegalStateException : public YDKException
+        {
+            YDKIllegalStateException(const std::string& msg) : YDKException{msg}
+            {
+                
+            }
         };
         
         ///
@@ -353,7 +371,10 @@ namespace ydk {
         ///
         struct YDKOperationNotSupportedException : public YDKException
         {
-            
+            YDKOperationNotSupportedException(const std::string& msg) : YDKException{msg}
+            {
+                
+            }
         };
         
         ///
@@ -507,6 +528,65 @@ namespace ydk {
             /// The errors in form of pair {SchemaNode*, Error}
             std::vector<std::pair<SchemaNode*, Error>> errors;
         };
+        
+        ///
+        /// @brief Annotation
+        ///
+        /// Class represents an annotation.
+        /// An annotation has a namespace and a name and an associated value.
+        /// Annotations are not defined in the YANG model and hence just provide a means of hanging
+        /// some useful data to DataNodes. For example netconf edit-config rpc operation uses
+        /// the annotation nc:operation (nc refers to the netconf namespace) on the data nodes
+        /// to describe the kind of operation one needs to perform on the given DataNode.
+        ///
+        struct Annotation{
+            
+            Annotation(const std::string& ns, const std::string& name, const std::string& val) : m_ns{ns}, m_name{name}, m_val{val}
+            {
+                
+            }
+            
+            Annotation(const Annotation& an) : m_ns{an.m_ns}, m_name{an.m_name}, m_val{an.m_val}
+            {
+                
+            }
+            
+            Annotation(Annotation&& an) : m_ns{std::move(an.m_ns)}, m_name{std::move(an.m_name)}, m_val{std::move(an.m_val)}
+            {
+                
+            }
+            
+            
+            Annotation& operator=(const Annotation& an)
+            {
+                m_ns = an.m_ns;
+                m_name = an.m_name;
+                m_val = an.m_val;
+                
+                return *this;
+            }
+            
+            Annotation& operator=(Annotation&& an)
+            {
+                m_ns = std::move(an.m_ns);
+                m_name = std::move(an.m_name);
+                m_val = std::move(an.m_val);
+                
+                return *this;
+            }
+            
+            bool operator==(const Annotation& an) const
+            {
+                return m_ns == an.m_ns && m_name == an.m_name;
+            }
+            
+            
+            std::string m_ns;
+            std::string m_name;
+            std::string m_val;
+            
+        };
+        
         
         ///
         /// @brief represents the YANG Statement
@@ -733,7 +813,6 @@ namespace ydk {
             /// @return an empty statement
             ///
             virtual Statement statement() const { return Statement{}; }
-            //virtual DataNode* from_xml(const std::string& xml) const = 0;
             
             ///
             /// @brief create an rpc instance
@@ -747,6 +826,8 @@ namespace ydk {
             virtual Rpc* rpc(const std::string& path) const = 0;
             
         };
+        
+        
         
         ///
         /// @brief DataNode
@@ -821,32 +902,231 @@ namespace ydk {
             ///
             virtual DataNode* create(const std::string& path, const std::string& value) = 0;
             
-            
+            ///
+            /// @brief set the value of this DataNode.
+            ///
+            /// Set the value of this data node.
+            /// Note the DataNode should represent a leaf , leaf-list or anyxml element for this to work.
+            /// The value should be the string representation of the type of according to the schema.
+            /// Note this method does not validate the value being set. To validate please see the ValidationService.
+            ///
+            /// @param[in] value The value to set. This should be the string representation of the YANG type.
+            /// @throws YDKInvalidArgumentException if the DataNode's value cannot be set (for example it represents
+            /// a container)
             virtual void set(const std::string& value) = 0;
+            
+            
+            
+            ///
+            /// @brief get the value in this DataNode
+            ///
+            /// Returns a copy of the value of this DataNode.
+            ///
+            // @returns The string representation of the value.
+            /// 
             virtual std::string get() const = 0;
+            
+            ///
+            /// @brief finds nodes that satisfy the given path expression.
+            ///
+            /// Finds nodes that satisfy the given path expression. For details
+            /// about the path expression see @ref
+            ///
+            /// @param[in] path The path expression.
+            /// @return vector of DataNodes that satisfy the path expression supplied.
             virtual std::vector<DataNode*> find(const std::string& path) const = 0 ;
+            
+            
+            ///
+            /// @brief returns the parent of this DataNode or nullptr if None exist.
+            ///
+            /// Returns the parent of this DataNode or nullptr if None exist
+            ///
             virtual DataNode* parent() const = 0;
+            
+            ///
+            /// @brief returns the children of this DataNode
+            ///
+            /// Returns the children of this DataNode
+            ///
             virtual std::vector<DataNode*> children() const = 0;
+            
+            ///
+            /// @brief returns the root DataNode of this tree.
+            ///
+            /// Returns the root of the DataNode.
+            ///
             virtual const DataNode* root() const = 0;
-            //virtual std::string xml() const = 0;
+            
+            ///
+            /// @brief Add the annotation to this datanode
+            ///
+            /// This method adds the annotation to this datanode
+            ///
+            /// @param[in] an The annotation to add to this DataNode
+            /// @throws YDKInvalidArgumentException In case the argument is invalid
+            ///
+            virtual void add_annotation(const Annotation& an) = 0;
+               
+            ///
+            /// @brief Remove the annotation
+            ///
+            /// This method will remove the annotation from the given node.
+            /// Note the m_val is ignored.
+            ///
+            /// @param[in] an The reference to the annotation.
+            /// @return bool If true the annotation was found and removed. false otherwise
+            ///
+            virtual bool remove_annotation(const Annotation& an) = 0;
+            
+            
+            ///
+            /// @brief Get the annotations associated with this data node
+            ///
+            /// @return vector of annotations for this node.
+            ///
+            virtual std::vector<Annotation> annotations() = 0;
+            
         };
         
+        ///
+        /// @brief Capability
+        ///
+        /// Class represents the Capability. An instance of Capability is defined by
+        /// The module name and revision along with the set of enabled features defined
+        /// in this modules as well as the list of deviations which target nodes defined
+        /// by this module
         struct Capability {
             Capability(const std::string& mod, const std::string& rev) : module{mod}, revision{rev}
             {
                 
             }
+            
+            Capability(const std::string& mod, const std::string& rev, const std::vector<std::string>& f,
+                       const std::vector<std::string>& d): module{mod}, revision{rev}, features{f}, deviations({d})
+            {
+                
+            }
+            
+            Capability(const Capability& cap) : module{cap.module}, revision{cap.revision}, features{cap.features}, deviations{cap.deviations}
+            {
+                
+            }
+            
+            Capability(Capability&& cap) : module{std::move(cap.module)}, revision{std::move(cap.revision)},
+            features{std::move(cap.features)}, deviations{std::move(cap.deviations)}
+            {
+                
+            }
+            
+            Capability& operator=(const Capability& cap)
+            {
+                module = cap.module;
+                revision = cap.revision;
+                features = cap.features;
+                deviations = cap.deviations;
+                
+                return *this;
+            }
+            
+            Capability& operator=(Capability&& cap)
+            {
+                module = std::move(cap.module);
+                revision = std::move(cap.revision);
+                features = std::move(cap.features);
+                deviations = std::move(cap.deviations);
+                
+                return *this;
+            }
+            
+            
+            bool operator==(const Capability& cap)
+            {
+                if( cap.module != module || cap.revision != revision ) {
+                    return false;
+                }
+                
+                if (cap.features.size() != features.size()){
+                    return false;
+                } else if(cap.features.size() != 0){
+                    
+                    //sort and compare
+                    std::vector<std::string> cap_features{cap.features};
+                    std::sort(cap_features.begin(), cap_features.end());
+                    
+                    //sort ourselves
+                    std::sort(features.begin(), features.end());
+                    
+                    if(cap_features != features) {
+                        return false;
+                    }
+                    
+                }
+                
+                if (cap.deviations.size() != deviations.size()) {
+                    return false;
+                } else if(cap.deviations.size() != 0){
+                    
+                    //sort and compare
+                    std::vector<std::string> cap_deviations{cap.deviations};
+                    std::sort(cap_deviations.begin(), cap_deviations.end());
+                    
+                    //sort ourselves
+                    std::sort(deviations.begin(), deviations.end());
+                    
+                    if(cap_deviations != deviations) {
+                        return false;
+                    }
+                    
+                }
+                
+                return true;
+            }
+            
+            /// The module
             std::string module;
+            
+            /// The revision
             std::string revision;
+            
+            /// List of features defined in this module that are enabled.
             std::vector<std::string> features;
+            
+            /// List of deviations that target nodes defined by this module.
             std::vector<std::string> deviations;
         };
         
+        
+        ///
+        /// @brief represents the Repository of YANG models.
+        ///
+        /// A instance of the Repository will be used to create a RootSchemaNode given a set of Capabilities.
+        /// Behind the scenes the repository is responsible for loading and parsing the YANG modules and
+        /// creating the SchemaNode tree. ServiceProviders are expected to use the Repository#create_root_schema
+        /// to generate the RootSchemaNode.
+        ///
         class Repository {
         public:
+            ///
+            /// @brief Constructor for the Repository.
+            ///
+            /// Constructor
+            /// @param[in] search_dir The path in the filesystem where yang files can be found.
+            /// @throws YDKInvalidArgumentException if the search_dir is not a valid directory in the
+            /// filesystem
             Repository(const std::string& search_dir);
-            
-            RootSchemaNode* create_root_schema(const std::vector<Capability> capabilities);
+           
+            ///
+            /// @brief Creates the root schema based on the capabilities passed in.
+            ///
+            /// Creates the root schema based on the vector of capabilities passed in.
+            /// This method verifies the said capabilities and can throw exceptions if
+            /// a module is not found in the search directory or cannot be loaded.
+            ///
+            /// @param[in] capabilities vector of Capability
+            /// @return pointer to the RootSchemaNode or nullptr if one could not be created.
+            ///
+            RootSchemaNode* create_root_schema(const std::vector<Capability> capabilities) const;
             
             
         private:
@@ -854,31 +1134,76 @@ namespace ydk {
         };
         
         
-        
+        ///
+        /// @brief Interface for all ServiceProvider implementations
+        ///
+        /// Concretes instances of ServiceProviders are expected to extend this interface.
+        ///
         class ServiceProvider
         {
         public:
+            ///
+            /// @brief return the SchemaTree supported by this instance of the ServiceProvider
+            ///
+            /// @return pointer to the RootSchemaNode or nullptr if one could not be created
+            ///
             virtual RootSchemaNode* get_root_schema() = 0;
+            
+            
             virtual ~ServiceProvider() {};
+            
+            
+            ///
+            /// @brief invoke the Rpc
+            ///
+            /// invokes or executes the given rpc and Returns a DataNode pointer
+            /// if the Rpc has an output modelled in YANG.
+            ///
+            /// @param[in] pointer to the Rpc node
+            /// @return The pointer to the DataNode representing the output.
+            ///
             virtual DataNode* invoke(Rpc* rpc) const = 0 ;
             
         };
         
-        
+        ///
+        ///
+        /// @brief An instance of the YANG schmea rpc node
+        ///
+        /// Instances of this class represent a YANG rpc and are modelled as Callables.
+        /// The input data node tree is used to populate the input parameters to the rpc
+        /// if any.
+        /// The Callable takes as a parameter the ServiceProvider that can execute this rpc
+        /// as its parameter returning a pointer to a DataNode tree if output is available
+        ///
         class Rpc
         {
         public:
             
             virtual ~Rpc() {};
-            
+           
+            ///
+            /// @brief execute/invoke the rpc through the given service provider.
+            ///
+            /// @param[in] sp The Service provider
+            /// @areturn pointer to the DataNode or nullptr if none exists
+            ///
             virtual DataNode* operator()(const ServiceProvider& provider) = 0;
             
-            
+            ///
+            /// @brief get the input data tree
+            ///
+            ///@return pointer to the input DataNode or nullptr if the rpc does not have
+            /// an input element in the schema.
+            ///
             virtual DataNode* input() const = 0;
             
+            ///
+            /// @brief return the SchemaNode associated with this rpc
+            ///
+            /// @return pointer to the SchemaNode associated with this rpc.
             virtual SchemaNode* schema() const = 0;
-            
-            //std::string xml() const;
+
             
         };
         
