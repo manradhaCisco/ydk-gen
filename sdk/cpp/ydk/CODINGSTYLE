@@ -8,3 +8,4 @@ This way, we can avoid nasty bugs and make maintenance easier. Some of the main 
 4) Avoid writing duplicate code
 5) Follow the 'girl scout'/‘boy scout’ rule of leaving the code cleaner than one finds it
 6) For indentation, follow the BSD/Allman style (https://en.wikipedia.org/wiki/Indent_style#Allman_style)
+7) Use 4 spaces for indentation in place of hard tabs
