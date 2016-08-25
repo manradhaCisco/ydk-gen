@@ -24,7 +24,7 @@
 #include "top_entity_lookup.hpp"
 
 #include "make_unique.hpp"
-#include "../models/openconfig_bgp.h"
+#include "../tests/models_gen/openconfig_bgp.h"
 
 using namespace std;
 using namespace ydk;
@@ -45,4 +45,24 @@ void insert(std::string path, std::unique_ptr<Entity> entity)
 {
 
 }
+
+TopEntityLookUp::TopEntityLookUp() : m_entity()
+{
+
+}
+
+TopEntityLookUp::~TopEntityLookUp()
+{
+
+}
+
+std::unique_ptr<Entity> TopEntityLookUp::lookup(std::string path)
+{
+    return std::move(m_entity.at(path));
+}
+
+void TopEntityLookUp::insert(std::string path, std::unique_ptr<Entity> top_entity) {
+    m_entity.insert(std::make_pair(path, std::move(top_entity)));
+}
+
 }

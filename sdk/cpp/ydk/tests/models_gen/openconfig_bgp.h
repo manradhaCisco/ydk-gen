@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include "../src/entity.hpp"
-#include "../src/value.hpp"
+#include "../../src/entity.hpp"
+#include "../../src/value.hpp"
 
 //#include "ydk/models/openconfig_bgp_types.h"
 //#include "ydk/models/openconfig_routing_policy.h"

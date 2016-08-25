@@ -2,7 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include "openconfig_bgp.h"
-#include "../src/make_unique.hpp"
+#include "../../src/make_unique.hpp"
 
 namespace ydk {
 namespace openconfig_bgp {

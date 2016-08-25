@@ -1,3 +1,6 @@
+#ifndef MAKE_UNIQUE_HPP
+#define MAKE_UNIQUE_HPP
+
 #include <memory>
 
 namespace std {
@@ -9,3 +12,5 @@ std::unique_ptr<T> make_unique( Args&& ...args )
 }
 
 }
+
+#endif /* MAKE_UNIQUE_HPP */

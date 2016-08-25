@@ -25,18 +25,31 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#ifndef NAMESPACE_MAP_HPP
-#define NAMESPACE_MAP_HPP
+#ifndef TOP_ENTITY_LOOKUP_HPP
+#define TOP_ENTITY_LOOKUP_HPP
 
 #include <string>
 #include <memory>
+#include <map>
 
 namespace ydk {
 class Entity;
 
 std::unique_ptr<Entity> lookup_path(std::string path);
+
 void insert(std::string path, std::unique_ptr<Entity> entity);
+
+class TopEntityLookUp {
+    std::map<std::string, std::unique_ptr<Entity>> m_entity;
+
+public:
+    TopEntityLookUp ();
+    ~TopEntityLookUp ();
+    std::unique_ptr<Entity> lookup(std::string path);
+    void insert(std::string path, std::unique_ptr<Entity> top_entity);
+    static std::unique_ptr<TopEntityLookUp> get_entity_lookup();
+};
 
 }
 
-#endif /* NAMESPACE_MAP_HPP */
+#endif /* TOP_ENTITY_LOOKUP_HPP */

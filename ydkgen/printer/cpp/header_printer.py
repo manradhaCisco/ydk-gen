@@ -48,6 +48,8 @@ class HeaderPrinter(FilePrinter):
         self.ctx.writeln('#include <sstream>')
         self.ctx.writeln('#include <iostream>')
         self.ctx.writeln('#include "../src/entity.hpp"')
+        self.ctx.writeln('#include "../src/value.hpp"')
+        self.ctx.writeln('#include "../src/make_unique.hpp"')
         self.ctx.bline()
 
     def _print_unique_imports(self, package):
@@ -100,9 +102,6 @@ class HeaderPrinter(FilePrinter):
         if len(child_classes) > 0:
             self._print_classes(child_classes)
         self._print_class_inits(clazz)
-        self.ctx.lvl_inc()
-        self._print_class_path_method(clazz)
-        self.ctx.lvl_dec()
 
     def _print_constructor_destructor(self, clazz):
         self.ctx.writeln('public:')
@@ -111,9 +110,6 @@ class HeaderPrinter(FilePrinter):
         self.ctx.writeln('virtual ~' + clazz.name + '();')
         self.ctx.lvl_dec()
         self.ctx.bline()
-
-    def _print_class_path_method(self, clazz):
-        self.ctx.writeln('std::string get_ydk_path();')
 
     def _print_class_inits(self, clazz):
         if clazz.is_identity() and len(clazz.extends) == 0:

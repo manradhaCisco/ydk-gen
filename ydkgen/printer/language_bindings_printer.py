@@ -74,7 +74,7 @@ class LanguageBindingsPrinter(object):
             self.aug_dir = self.initialize_output_directory(
                 self.sub_dir + '/_aug', True)
         self.test_dir = self.initialize_output_directory(
-            self.ydk_dir + '/tests', True)
+            self.ydk_dir + '/tests', False)
         self.deviation_dir = self.initialize_output_directory(
             self.models_dir + '/_deviate', True)
 
