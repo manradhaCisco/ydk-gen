@@ -40,7 +40,7 @@ else()
 	option(ENABLE_VALGRIND_TESTS "Build tests with valgrind" OFF)
 endif()
 
-set(libydk_src src/netconf_provider.cpp src/netconf_client.cpp src/value.cpp src/crud_service.cpp src/core.cpp tests/models_gen/openconfig_bgp.cpp src/entity_data_node_walker.cpp src/top_entity_lookup.cpp models/top_entity_lookup_gen.cpp)
+set(libydk_src src/netconf_provider.cpp src/netconf_client.cpp src/value.cpp src/crud_service.cpp src/core.cpp tests/models_gen/openconfig_bgp.cpp src/entity_data_node_walker.cpp src/top_entity_lookup.cpp tests/models_gen/top_entity_lookup_gen.cpp)
 set(libydk_headers src/netconf_provider.hpp src/netconf_client.hpp src/core.hpp src/value.hpp src/entity_data_node_walker.hpp src/crud_service.hpp tests/models_gen/openconfig_bgp.h src/entity.hpp src/top_entity_lookup.hpp )
 
 # Find dependent libraries
