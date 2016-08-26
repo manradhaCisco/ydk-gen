@@ -156,6 +156,25 @@ const char* expected_bgp_read ="\
 <use-multiple-paths><state/><ebgp><state/></ebgp></use-multiple-paths>\
 </afi-safi></afi-safis></neighbor></neighbors></bgp>";
 
+void print_tree(ydk::core::DataNode* dn, const std::string& indent)
+{
+    ydk::core::Statement s = dn->schema()->statement();
+    if(s.keyword == "leaf" || s.keyword == "leaf-list" || s.keyword == "anyxml") {
+        auto val = dn->get();
+        std::cout << indent << "<" << s.arg << ">" << val << "</" << s.arg << ">" << std::endl;
+    } else {
+        std::string child_indent{indent};
+        child_indent+="  ";
+        std::cout << indent << "<" << s.arg << ">" << std::endl;
+        for(auto c : dn->children())
+            print_tree(c, child_indent);
+        std::cout << indent << "</" << s.arg << ">" << std::endl;
+        
+    }
+}
+
+
+
 BOOST_AUTO_TEST_CASE( bgp_netconf_create  )
 {
 	std::string searchdir{TEST_HOME};
@@ -260,6 +279,8 @@ BOOST_AUTO_TEST_CASE( bgp_netconf_create  )
     
     BOOST_REQUIRE(read_result != nullptr);
 
+    print_tree(read_result,"");
+    
     xml = s.encode(read_result, ydk::core::CodecService::Format::XML, false);
     
     std::cout << xml << std::endl;
