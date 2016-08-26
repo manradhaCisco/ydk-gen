@@ -190,7 +190,7 @@ ydk::core::SchemaNodeImpl::statement() const
 		s.keyword = "leaf-list";
 		break;
 	case LYS_LIST:
-		s.keyword = "anyxml";
+		s.keyword = "list";
 		break;
 	case LYS_CASE:
 		s.keyword = "case";
