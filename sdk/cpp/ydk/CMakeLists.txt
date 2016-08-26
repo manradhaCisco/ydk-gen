@@ -43,7 +43,19 @@ endif()
 #set(libydk_src src/netconf_provider.cpp src/netconf_client.cpp src/value.cpp src/crud_service.cpp src/core.cpp tests/models_gen/openconfig_bgp.cpp src/entity_data_node_walker.cpp src/top_entity_lookup.cpp tests/models_gen/top_entity_lookup_gen.cpp)
 #set(libydk_headers src/netconf_provider.hpp src/netconf_client.hpp src/core.hpp src/value.hpp src/entity_data_node_walker.hpp src/crud_service.hpp tests/models_gen/openconfig_bgp.h src/entity.hpp src/top_entity_lookup.hpp )
 set(libydk_src src/netconf_provider.cpp src/netconf_client.cpp src/value.cpp src/crud_service.cpp src/core.cpp  src/entity_data_node_walker.cpp src/top_entity_lookup.cpp)
-set(libydk_headers src/netconf_provider.hpp src/netconf_client.hpp src/core.hpp src/value.hpp src/entity_data_node_walker.hpp src/crud_service.hpp src/top_entity_lookup.hpp)
+set(libydk_headers 
+    src/core.hpp 
+    src/crud_service.hpp 
+    src/entity.hpp 
+    src/entity_data_node_walker.hpp 
+    src/enum.hpp 
+    src/identity.hpp 
+    src/make_unique.hpp
+    src/netconf_client.hpp
+    src/netconf_provider.hpp 
+    src/top_entity_lookup.hpp
+    src/value.hpp
+    src/value_types.hpp) 
 
 # Find dependent libraries
 find_library(netconf_location netconf)
