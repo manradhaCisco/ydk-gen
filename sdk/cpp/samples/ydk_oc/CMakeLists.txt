@@ -56,7 +56,7 @@ set_property(TARGET ydk_oc PROPERTY CXX_STANDARD_REQUIRED ON)
 # find YDK library
 
 install(TARGETS ydk_oc DESTINATION ${LIB_INSTALL_DIR})
-install(FILES ${libydk_oc__headers} DESTINATION ${INCLUDE_INSTALL_DIR})
+install(FILES ${libydk_oc_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
 
 
 # generate doxygen documentation for ydk_core API

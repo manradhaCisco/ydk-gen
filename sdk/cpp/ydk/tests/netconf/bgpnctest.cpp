@@ -265,7 +265,17 @@ BOOST_AUTO_TEST_CASE( bgp_netconf_create  )
     std::cout << xml << std::endl;
     
     BOOST_REQUIRE(xml == expected_bgp_read);
-
+    
+    peer_as->set("6500");
+    
+    //call update
+    std::unique_ptr<ydk::core::Rpc> update_rpc { schema->rpc("ydk:update") };
+    xml = s.encode(bgp, ydk::core::CodecService::Format::XML, false);
+    BOOST_REQUIRE( !xml.empty() );
+    update_rpc->input()->create("entity", xml);
+    (*update_rpc)(sp);
+    
+    
 
 }
 

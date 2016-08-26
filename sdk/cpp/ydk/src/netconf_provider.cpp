@@ -537,18 +537,15 @@ NetconfServiceProvider::invoke(core::Rpc* rpc) const
     core::CodecService codec_service{};
    
     
-    if(rpc_sn == create_sn || rpc_sn == delete_sn) {
+    if(rpc_sn == create_sn || rpc_sn == delete_sn || rpc_sn == update_sn) {
         
         //for each child node in dn add the nc:operation attribute
-        core::Annotation an{NetconfServiceProvider::MODULE_NAME, "operation", rpc_sn == create_sn ? "merge" : "delete"};
+        core::Annotation an{NetconfServiceProvider::MODULE_NAME, "operation", rpc_sn == delete_sn ? "delete" : "merge"};
         
         return handle_create_delete(rpc, an);
   
     } else if(rpc_sn == read_sn) {
         return handle_read(rpc);
-        
-    } else if(rpc_sn == update_sn) {
-        //TODO this has to supported at a higher layer ??
         
     } else {
         throw core::YDKOperationNotSupportedException{"rpc is not supported!"};
