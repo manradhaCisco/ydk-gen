@@ -110,8 +110,16 @@ BOOST_AUTO_TEST_CASE(LockUnlock)
 
 	int result = client.connect();
 	BOOST_REQUIRE(result == OK);
-
-	string reply = client.execute_payload(
+   
+    string reply = client.execute_payload(
+                                          "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
+                                          "<discard-changes/>"
+                                          "</rpc>");
+    
+    BOOST_REQUIRE(NULL != strstr(reply.c_str(), "<ok/>"));
+    
+    
+	reply = client.execute_payload(
 		 "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
 		 "<lock>"
 		 "<target><candidate/></target>"

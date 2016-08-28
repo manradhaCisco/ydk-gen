@@ -432,6 +432,11 @@ namespace ydk {
                 
             };
             
+            YDKDataValidationException(): YDKException{"Data Validation Exception"}
+            {
+                
+            }
+            
             /// List of pair<DataNode, ValidationError>. The Validation Error is specific to
             /// this node
             std::vector<std::pair<DataNode*,Error>> errors;

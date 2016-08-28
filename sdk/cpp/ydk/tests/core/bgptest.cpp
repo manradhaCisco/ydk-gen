@@ -316,5 +316,75 @@ BOOST_AUTO_TEST_CASE( bgp )
     
 }
 
-
+BOOST_AUTO_TEST_CASE( bgp_validation )
+{
+    std::string searchdir{TEST_HOME};
+    mock::MockServiceProvider sp{searchdir, test_openconfig};
+    
+    std::unique_ptr<ydk::core::RootSchemaNode> schema{sp.get_root_schema()};
+    
+    BOOST_REQUIRE(schema.get() != nullptr);
+    
+    auto bgp = schema->create("openconfig-bgp:bgp", "");
+    
+    BOOST_REQUIRE( bgp != nullptr );
+    
+    //get the root
+    std::unique_ptr<const ydk::core::DataNode> data_root{bgp->root()};
+    
+    
+    BOOST_REQUIRE( data_root != nullptr );
+    
+    auto as = bgp->create("global/config/as", "65172");
+    
+    BOOST_REQUIRE( as != nullptr );
+    
+    auto l3vpn_ipv4_unicast = bgp->create("global/afi-safis/afi-safi[afi-safi-name='openconfig-bgp-types:L3VPN_IPV4_UNICAST']", "");
+    
+    BOOST_REQUIRE( l3vpn_ipv4_unicast != nullptr );
+    
+    
+    auto afi_safi_name = l3vpn_ipv4_unicast->create("config/afi-safi-name", "openconfig-bgp-types:L3VPN_IPV4_UNICAST");
+    
+    BOOST_REQUIRE( afi_safi_name != nullptr );
+    
+    
+    //set the enable flag
+    auto enable = l3vpn_ipv4_unicast->create("config/enabled","true");
+    
+    BOOST_REQUIRE( enable != nullptr );
+    
+    //bgp/neighbors/neighbor
+    auto neighbor = bgp->create("neighbors/neighbor[neighbor-address='172.16.255.2']", "");
+    
+    BOOST_REQUIRE( neighbor != nullptr );
+    
+    auto neighbor_address = neighbor->create("config/neighbor-address", "172.16.255.2");
+    
+    BOOST_REQUIRE( neighbor_address != nullptr );
+    
+    auto peer_as = neighbor->create("config/peer-as","65172");
+    
+    BOOST_REQUIRE( peer_as != nullptr );
+    
+    //bgp/neighbors/neighbor/afi-safis/afi-safi
+    auto neighbor_af = neighbor->create("afi-safis/afi-safi[afi-safi-name='openconfig-bgp-types:L3VPN_IPV4_UNICAST']", "");
+    
+    BOOST_REQUIRE( neighbor_af != nullptr );
+    
+    auto neighbor_afi_safi_name = neighbor_af->create("config/afi-safi-name" , "openconfig-bgp-types:L3VPN_IPV4_UNICAST");
+    
+    BOOST_REQUIRE( neighbor_afi_safi_name != nullptr );
+    
+    auto neighbor_enabled = neighbor_af->create("config/enabled","true");
+    
+    BOOST_REQUIRE( neighbor_enabled != nullptr );
+    
+    ydk::core::ValidationService validation_service{};
+    
+    validation_service.validate(bgp, ydk::core::ValidationService::Option::EDIT_CONFIG);
+    
+    
+    
+}
 

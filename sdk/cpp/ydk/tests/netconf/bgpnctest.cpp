@@ -300,4 +300,3 @@ BOOST_AUTO_TEST_CASE( bgp_netconf_create  )
 
 }
 
-

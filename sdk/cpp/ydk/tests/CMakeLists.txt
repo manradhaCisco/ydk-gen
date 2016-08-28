@@ -4,7 +4,7 @@ cmake_policy(SET CMP0048 NEW)
 set(core_tests bgptest)
 
 #set(netconf_tests bgpnctest;test_entity;test_value;test_netconf_client;test_entity_lookup)
-set(netconf_tests bgpnctest;test_entity;test_value;test_netconf_client)
+set(netconf_tests bgpnctest;test_entity;test_value;test_netconf_client;testsanitynctest)
 
 include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 
