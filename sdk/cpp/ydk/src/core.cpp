@@ -811,6 +811,10 @@ ydk::core::DataNodeImpl::get_dn_for_desc_node(struct lyd_node* desc_node) const
     
 	const DataNodeImpl* parent = this;
     
+    if(nodes[0] == m_node){
+        nodes.erase(nodes.begin());
+    }
+    
 	for( auto p : nodes)
     {
 		auto res = parent->child_map.find(p);
@@ -820,7 +824,20 @@ ydk::core::DataNodeImpl::get_dn_for_desc_node(struct lyd_node* desc_node) const
 		   dn = res->second;
 
 	   } else {
-           throw YDKCoreException{};
+           if(!m_node->parent){
+               //special case the root is the first node
+               parent = child_map.begin()->second;
+               
+               res = parent->child_map.find(p);
+               if(res != parent->child_map.end()){
+                   dn = res->second;
+               } else {
+                   throw YDKCoreException{};
+               }
+               
+           } else {
+               throw YDKCoreException{};
+           }
 	   }
 	   parent = dn;
 	}
@@ -900,22 +917,43 @@ void
 ydk::core::ValidationService::validate(const ydk::core::DataNode* dn, ydk::core::ValidationService::Option option)
 {
     std::string option_str = "";
+    int ly_option = 0;
     switch(option) {
         case ValidationService::Option::DATASTORE:
             option_str="DATATSTORE";
+            ly_option = LYD_OPT_CONFIG;
             break;
         case ValidationService::Option::EDIT_CONFIG:
             option_str="EDIT-CONFIG";
+            ly_option = LYD_OPT_EDIT;
             break;
         case ValidationService::Option::GET:
             option_str="GET";
+            ly_option = LYD_OPT_GET;
             break;
         case ValidationService::Option::GET_CONFIG:
             option_str="GET-CONFIG";
+            ly_option = LYD_OPT_GETCONFIG;
             break;
             
     }
+    ly_option = ly_option | LYD_OPT_NOAUTODEL;
+    
     std::cout << "Validation called on " << dn->path() << " with option " << option_str << std::endl;
+    
+    //what kind of a DataNode is this
+    const ydk::core::DataNodeImpl* dn_impl = dynamic_cast<const ydk::core::DataNodeImpl*>(dn);
+    if(dn_impl){
+        struct lyd_node* lynode = dn_impl->m_node;
+        int rc = lyd_validate(&lynode,ly_option);
+        if(rc) {
+            throw ydk::core::YDKDataValidationException{};
+        }
+        
+    } else {
+        throw YDKIllegalStateException{"Illegal state"};
+    }
+    
 }
 
 
