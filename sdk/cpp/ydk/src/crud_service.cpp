@@ -23,59 +23,82 @@
 
 #include "crud_service.hpp"
 #include "entity.hpp"
-#include "netconf_provider.hpp"
+#include "core.hpp"
+#include "entity_data_node_walker.hpp"
 #include <iostream>
 
 using namespace std;
 
 namespace ydk {
+static string get_data_payload(Entity & entity, core::RootSchemaNode & root_schema);
+static core::DataNode* execute_rpc(core::ServiceProvider & provider, Entity & entity, const string & operation, const string & data_tag);
+static unique_ptr<Entity> get_top_entity_from_filter(Entity & filter);
+static bool operation_succeeded(core::DataNode * node);
+
 CrudService::CrudService()
 {
-
 }
 
-string CrudService::create(NetconfServiceProvider & provider, Entity & entity)
+bool CrudService::create(core::ServiceProvider & provider, Entity & entity)
 {
-	string payload = provider.encode(entity, "create");
-	std::cerr<<payload<<std::endl;
-	string reply = provider.execute_payload(payload, "create");
-	std::cerr<<reply<<std::endl;
-	return reply;
+	return operation_succeeded(
+			execute_rpc(provider, entity, "ydk:create", "entity")
+			);
 }
 
-std::unique_ptr<Entity> CrudService::read(NetconfServiceProvider & provider, Entity & entity)
+bool CrudService::update(core::ServiceProvider & provider, Entity & entity)
 {
-	string payload = provider.encode(entity, "read", false);
-	std::cerr<<payload<<std::endl;
-	string reply=provider.execute_payload(payload, "read");;
-	std::cerr<<reply<<std::endl;
-	return provider.decode(reply);
+	return operation_succeeded(
+			execute_rpc(provider, entity, "ydk:update", "entity")
+			);
 }
 
-std::unique_ptr<Entity> CrudService::read(NetconfServiceProvider & provider, Entity & entity, bool config_only)
+bool CrudService::del(core::ServiceProvider & provider, Entity & entity)
 {
-	string payload = provider.encode(entity, "read", config_only);
-	std::cerr<<payload<<std::endl;
-	string reply=provider.execute_payload(payload, "read");;
-	std::cerr<<reply<<std::endl;
-	return provider.decode(reply);
+	return operation_succeeded(
+			execute_rpc(provider, entity, "ydk:delete", "entity")
+			);
 }
 
-string CrudService::update(NetconfServiceProvider & provider, Entity & entity)
+unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & filter)
 {
-	string payload = provider.encode(entity, "update");
-	std::cerr<<payload<<std::endl;
-	string reply = provider.execute_payload(payload, "update");
-	std::cerr<<reply<<std::endl;
-	return reply;
+	unique_ptr<Entity> top_entity = get_top_entity_from_filter(filter);
+	core::DataNode* read_data_node = execute_rpc(provider, filter, "ydk:read", "filter");
+
+	get_entity_from_data_node(read_data_node->children()[0], top_entity.get());
+    return top_entity;
 }
 
-string CrudService::del(NetconfServiceProvider & provider, Entity & entity)
+static bool operation_succeeded(core::DataNode * node)
 {
-	string payload = provider.encode(entity, "delete");
-	std::cerr<<payload<<std::endl;
-	string reply = provider.execute_payload(payload, "delete");
-	std::cerr<<reply<<std::endl;
-	return reply;
+	return node == nullptr;
 }
+
+static unique_ptr<Entity> get_top_entity_from_filter(Entity & filter)
+{
+	if(filter.parent == nullptr)
+		return filter.clone_ptr();
+
+	return get_top_entity_from_filter(*(filter.parent));
+}
+
+static core::DataNode* execute_rpc(core::ServiceProvider & provider, Entity & entity, const string & operation, const string & data_tag)
+{
+	core::RootSchemaNode* root_schema = provider.get_root_schema();
+	std::unique_ptr<ydk::core::Rpc> ydk_rpc { root_schema->rpc(operation) };
+	string data = get_data_payload(entity, *root_schema);
+
+	ydk_rpc->input()->create(data_tag, data);
+	return (*ydk_rpc)(provider);
+}
+
+static string get_data_payload(Entity & entity, core::RootSchemaNode & root_schema)
+{
+	const ydk::core::DataNode* data_node = get_data_node_from_entity(entity, root_schema);
+	if (data_node==nullptr)
+		return "";
+	auto s = ydk::core::CodecService{};
+	return s.encode(data_node, ydk::core::CodecService::Format::XML, true);
+}
+
 }

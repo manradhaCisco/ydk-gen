@@ -199,6 +199,9 @@ const char* expected_bgp_json = "\
 }\
 }";
 
+const char* expected_bgp_peer_xml = "<bgp xmlns=\"http://openconfig.net/yang/bgp\"><global><config><as>65172</as></config><afi-safis><afi-safi><afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name><config><afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name><enabled>true</enabled></config></afi-safi></afi-safis></global><peer-groups><peer-group><peer-group-name>IBGP</peer-group-name><config><peer-group-name>IBGP</peer-group-name><peer-as>65001</peer-as></config><afi-safis><afi-safi><afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name><config><afi-safi-name xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:L3VPN_IPV4_UNICAST</afi-safi-name><enabled>true</enabled></config><apply-policy><config><export-policy>POLICY2</export-policy></config></apply-policy></afi-safi></afi-safis></peer-group></peer-groups><neighbors><neighbor><neighbor-address>172.16.255.2</neighbor-address><config><neighbor-address>172.16.255.2</neighbor-address><peer-group>IBGP</peer-group></config></neighbor></neighbors></bgp>";
+const char* expected_bgp_peer_json = "{\"openconfig-bgp:bgp\":{\"global\":{\"config\":{\"as\":65172},\"afi-safis\":{\"afi-safi\":[{\"afi-safi-name\":\"openconfig-bgp-types:L3VPN_IPV4_UNICAST\",\"config\":{\"afi-safi-name\":\"openconfig-bgp-types:L3VPN_IPV4_UNICAST\",\"enabled\":true}}]}},\"peer-groups\":{\"peer-group\":[{\"peer-group-name\":\"IBGP\",\"config\":{\"peer-group-name\":\"IBGP\",\"peer-as\":65001},\"afi-safis\":{\"afi-safi\":[{\"afi-safi-name\":\"openconfig-bgp-types:L3VPN_IPV4_UNICAST\",\"config\":{\"afi-safi-name\":\"openconfig-bgp-types:L3VPN_IPV4_UNICAST\",\"enabled\":true},\"apply-policy\":{\"config\":{\"export-policy\":[\"POLICY2\"]}}}]}}]},\"neighbors\":{\"neighbor\":[{\"neighbor-address\":\"172.16.255.2\",\"config\":{\"neighbor-address\":\"172.16.255.2\",\"peer-group\":\"IBGP\"}}]}}}";
+
 BOOST_AUTO_TEST_CASE( bgp )
 {
     std::string searchdir{TEST_HOME};
@@ -386,5 +389,80 @@ BOOST_AUTO_TEST_CASE( bgp_validation )
     
     
     
+}
+
+BOOST_AUTO_TEST_CASE( bgp_peer )
+{
+    std::string searchdir{TEST_HOME};
+  //  searchdir+="";
+    std::cout << searchdir << std::endl;
+    mock::MockServiceProvider sp{searchdir, test_openconfig};
+
+    std::unique_ptr<ydk::core::RootSchemaNode> schema{sp.get_root_schema()};
+    BOOST_REQUIRE(schema.get() != nullptr);
+
+    auto bgp = schema->create("openconfig-bgp:bgp", "");
+    BOOST_REQUIRE( bgp != nullptr );
+
+
+    auto s = ydk::core::CodecService{};
+
+
+    //XML Codec Test
+    auto xml = s.encode(bgp, ydk::core::CodecService::Format::XML, false);
+
+    BOOST_CHECK_MESSAGE( !xml.empty(),
+                        "XML output is empty");
+
+    BOOST_REQUIRE(xml == expected_bgp_peer_xml);
+
+    auto new_bgp = s.decode(schema.get(), xml, ydk::core::CodecService::Format::XML);
+
+    BOOST_REQUIRE( new_bgp != nullptr);
+
+    auto new_xml = s.encode(new_bgp, ydk::core::CodecService::Format::XML, false);
+    BOOST_CHECK_MESSAGE(!new_xml.empty(),
+                        "Deserialized XML output is empty.");
+
+    BOOST_REQUIRE(new_xml == expected_bgp_peer_xml);
+
+
+    //JSON codec test
+    auto json = s.encode(bgp, ydk::core::CodecService::Format::JSON, false);
+
+    BOOST_CHECK_MESSAGE( !json.empty(),
+                           "JSON output :" << json);
+
+    std::cout << "*********************************************" << std::endl;
+    std::cout << json << std::endl;
+    std::cout << "*********************************************" << std::endl;
+
+    BOOST_REQUIRE(json == expected_bgp_peer_json);
+
+    auto new_bgp1 = s.decode(schema.get(), json, ydk::core::CodecService::Format::JSON);
+
+    BOOST_REQUIRE( new_bgp1 != nullptr);
+
+    auto new_json = s.encode(new_bgp1, ydk::core::CodecService::Format::JSON, false);
+
+    std::cout << "*********************************************" << std::endl;
+    std::cout << new_json << std::endl;
+    std::cout << "*********************************************" << std::endl;
+
+    BOOST_CHECK_MESSAGE(!new_json.empty(),
+                        "Deserialized json output is empty.");
+
+    BOOST_REQUIRE(new_json == expected_bgp_peer_json);
+
+
+    //TODO fix rpc
+    std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("/ydk:create") };
+    create_rpc->input()->create("entity", xml);
+
+    //call create
+    (*create_rpc)(sp);
+
+    BOOST_TEST_MESSAGE(xml);
+    BOOST_TEST_MESSAGE(json);
 }
 

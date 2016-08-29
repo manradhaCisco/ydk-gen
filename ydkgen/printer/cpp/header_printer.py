@@ -20,7 +20,7 @@ header_printer.py
  prints C++ classes
 
 """
-from ydkgen.api_model import Class, Bits
+from ydkgen.api_model import Class, Package
 from ydkgen.common import sort_classes_at_same_level
 from ydkgen.printer.file_printer import FilePrinter
 
@@ -45,11 +45,8 @@ class HeaderPrinter(FilePrinter):
         self.ctx.writeln('#include <memory>')
         self.ctx.writeln('#include <vector>')
         self.ctx.writeln('#include <string>')
-        self.ctx.writeln('#include <sstream>')
-        self.ctx.writeln('#include <iostream>')
-        self.ctx.writeln('#include "../src/entity.hpp"')
-        self.ctx.writeln('#include "../src/value.hpp"')
-        self.ctx.writeln('#include "../src/make_unique.hpp"')
+        self.ctx.writeln('#include "ydk/entity.hpp"')
+        self.ctx.writeln('#include "ydk/value.hpp"')
         self.ctx.bline()
 
     def _print_unique_imports(self, package):
@@ -88,7 +85,10 @@ class HeaderPrinter(FilePrinter):
         self._print_class_trailer(clazz)
 
     def _print_class_header(self, clazz):
-        parents = 'object'
+        parents = 'Entity'
+        if isinstance(clazz.owner, Class):
+            self.ctx.bline()
+            self.ctx.writeln('public:')
         if len(clazz.extends) > 0:
             parents = ', '.join([sup.fully_qualified_cpp_name() for sup in clazz.extends])
             self.ctx.writeln('class ' + clazz.name + ' : public ' + parents + ' {')
@@ -98,6 +98,8 @@ class HeaderPrinter(FilePrinter):
 
     def _print_class_body(self, clazz):
         self._print_constructor_destructor(clazz)
+        self._print_class_method_declarations(clazz)
+        self._print_class_members(clazz)
         child_classes = [nested_class for nested_class in clazz.owned_elements if isinstance(nested_class, Class)]
         if len(child_classes) > 0:
             self._print_classes(child_classes)
@@ -107,93 +109,112 @@ class HeaderPrinter(FilePrinter):
         self.ctx.writeln('public:')
         self.ctx.lvl_inc()
         self.ctx.writeln(clazz.name + '();')
-        self.ctx.writeln('virtual ~' + clazz.name + '();')
+        self.ctx.writeln('~' + clazz.name + '();')        
+        self.ctx.bline()
+
+    def _print_class_method_declarations(self, clazz):
+        if clazz.is_identity():
+            return
+        self._print_common_method_declarations(clazz)
+        self._print_clone_ptr_method(clazz)
+        self._print_get_children_method(clazz)
+
+    def _get_leafs(self, clazz):
+        leafs = []
+        for child in clazz.owned_elements:
+            if child.stmt.keyword == 'leaf':
+                leafs.append(child)
+        return leafs
+
+    def _get_leaf_lists(self, clazz):
+        leaf_lists = []
+        for child in clazz.owned_elements:
+            if child.stmt.keyword == 'leaf-list':
+                leaf_lists.append(child)
+        return leaf_lists
+
+    def _has_list(self, clazz):
+        has_list = False
+        for child in clazz.owned_elements:
+            has_list = has_list or child.stmt.keyword == 'list'
+        return has_list
+
+    def _print_common_method_declarations(self, clazz):
+        self.ctx.writeln('bool has_data() const;')
+        self.ctx.writeln('EntityPath get_entity_path() const;')                
+        self.ctx.writeln('Entity* set_child(std::string path);')
+        self.ctx.writeln('void set_value(std::string value_path, std::string value);')
+
+    def _print_clone_ptr_method(self, clazz):
+        if clazz.owner is not None and isinstance(clazz.owner, Package):
+            self.ctx.writeln('std::unique_ptr<Entity> clone_ptr();')
+
+    def _print_get_children_method(self, clazz):
+        if self._has_list(clazz):
+            self.ctx.writeln('std::vector<Entity*> & get_children();')
+
+    def _print_class_members(self, clazz):
+        if clazz.is_identity():
+            self.ctx.lvl_dec()
+            return
+        self._print_value_members(clazz)
+        self._print_parent_member(clazz)
+        self._print_children_member(clazz)
+
+    def _print_parent_member(self, clazz):
+        self.ctx.writeln('Entity * parent;')
         self.ctx.lvl_dec()
+        self.ctx.bline()
+
+    def _print_children_member(self, clazz):
+        self.ctx.writeln('private:')
+        self.ctx.lvl_inc()
+        self.ctx.writeln('std::vector<Entity*> children;')
+        self.ctx.lvl_dec()
+
+    def _print_value_members(self, clazz):
+        for leaf in self._get_leafs(clazz):
+            self.ctx.writeln('Value %s;' % leaf.name)
+        for leaf in self._get_leaf_lists(clazz):
+            self.ctx.writeln('std::vector<Value> %s;' % leaf.name)
         self.ctx.bline()
 
     def _print_class_inits(self, clazz):
         if clazz.is_identity() and len(clazz.extends) == 0:
             self.ctx.bline()
-        else:
-            # self._print_class_inits_properties(clazz)
-            properties = clazz.properties()
+            return
+        class_inits_properties = self._get_children(clazz)
+        if len(class_inits_properties) > 0:
+            self.ctx.bline()
             self.ctx.writeln('public:')
             self.ctx.lvl_inc()
-            for prop in properties:
-                self._print_class_inits_property(prop)
+            self.ctx.writelns(class_inits_properties)
             self.ctx.lvl_dec()
-        self.ctx.bline()
 
-    def _print_class_inits_property(self, prop):
-        if prop.is_many:
-            self._print_class_inits_is_many(prop)
-        else:
-            self._print_class_inits_unique(prop)
-
-    def _print_class_inits_is_many(self, prop):
-        if isinstance(prop.property_type, Class):
-            self.ctx.writeln('std::vector< std::unique_ptr<%s> > %s;' % (prop.property_type.fully_qualified_cpp_name(), prop.name))
-        else:
-            self.ctx.writeln('std::vector<std::string> %s;' % (prop.name))
-
-    def _print_class_inits_unique(self, prop):
+    def _get_class_inits_unique(self, prop):
         if isinstance(prop.property_type, Class) and not prop.property_type.is_identity():
-            self.ctx.writeln('std::unique_ptr<%s> %s;' % (prop.property_type.fully_qualified_cpp_name(), prop.name,))
-            # instantiate the class only if it is not a presence class
-            '''stmt = prop.property_type.stmt
-            if stmt.search_one('presence') is None:
-                self.ctx.writeln('self.%s = %s()' %
-                                 (prop.name, prop.property_type.qn()))
-                self.ctx.writeln('self.%s.parent = self' % (prop.name))
+            return 'std::unique_ptr<%s> %s;' % (prop.property_type.fully_qualified_cpp_name(), prop.name,)
+
+    def _get_class_inits_many(self, prop):
+        if prop.is_many and isinstance(prop.property_type, Class) and not prop.property_type.is_identity():
+            return 'std::vector<std::unique_ptr<%s> > %s;' % (prop.property_type.fully_qualified_cpp_name(), prop.name,)
+
+    def _get_children(self, clazz):
+        class_inits_properties = []
+        for prop in clazz.properties():
+            result = None
+            if not prop.is_many:
+                result = self._get_class_inits_unique(prop)
             else:
-                self.ctx.writeln('self.%s = None' % (prop.name,))'''
-        elif isinstance(prop.property_type, Bits):
-            '''self.ctx.writeln('self.%s = %s()' %
-                             (prop.name, prop.property_type.qn()))'''
-        else:
-            type_str=''
-            from pyang.types import PathTypeSpec, BinaryTypeSpec, BooleanTypeSpec, Decimal64TypeSpec, \
-                                    RangeTypeSpec, EmptyTypeSpec, IntTypeSpec, LengthTypeSpec, PatternTypeSpec, \
-                                    StringTypeSpec
-            type_stmt = prop.stmt.search_one('type')
-            target_type_stmt = type_stmt
-            if type_stmt is None:
-                return
-            type_spec = type_stmt.i_type_spec
-            while isinstance(type_spec, PathTypeSpec):
-                if not hasattr(type_spec, 'i_target_node'):
-                    return None
-                target_type_stmt = type_spec.i_target_node.search_one('type')
-                type_spec = target_type_stmt.i_type_spec
-            if isinstance(type_spec, BinaryTypeSpec):
-                type_str = 'std::string'
-            elif isinstance(type_spec, BooleanTypeSpec):
-                type_str = 'bool'
-            elif isinstance(type_spec, Decimal64TypeSpec):
-                type_str='int64'
-            elif isinstance(type_spec, EmptyTypeSpec):
-                type_str = 'Empty'
-            elif isinstance(type_spec, IntTypeSpec):
-                type_str = 'int'
-            elif isinstance(type_spec, LengthTypeSpec):
-                type_str = 'std::string'
-
-            elif isinstance(type_spec, PatternTypeSpec):
-                type_str = 'std::string'
-
-            elif isinstance(type_spec, RangeTypeSpec):
-                type_str = 'std::string'
-
-            elif isinstance(type_spec, StringTypeSpec):
-                type_str = 'std::string'
-
-            else:
-                type_str = 'std::string'
-            self.ctx.writeln('%s %s;' % (type_str, prop.name,))
+                result = self._get_class_inits_many(prop)
+            if result is not None:
+                class_inits_properties.append(result)
+        return class_inits_properties
 
     def _print_class_trailer(self, clazz):
         self.ctx.lvl_dec()
-        self.ctx.writeln('};')
+        self.ctx.bline()
+        self.ctx.writeln('}; // ' + clazz.name)
         self.ctx.bline()
 
     def _print_include_guard_header(self, package):

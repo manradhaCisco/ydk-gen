@@ -38,9 +38,9 @@ class RootSchemaNode;
 }
 class Entity;
 
-core::DataNode* get_data_node(Entity & entity, const core::RootSchemaNode & root);
+core::DataNode* get_data_node_from_entity(Entity & entity, const core::RootSchemaNode & root);
 
-void walk_data_node(core::DataNode * node, Entity* entity);
+void get_entity_from_data_node(core::DataNode * node, Entity* entity);
 
 }
 
