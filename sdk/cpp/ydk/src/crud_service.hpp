@@ -29,7 +29,6 @@
 #define CRUD_SERVICE_HPP
 
 #include <string>
-#include <vector>
 #include <memory>
 
 #include "entity.hpp"
@@ -37,17 +36,18 @@
 namespace ydk {
 class Service {
 };
-class NetconfServiceProvider;
+namespace core {
+class ServiceProvider;
+}
 
 class CrudService : public Service {
 	public:
 		CrudService();
 
-		std::string create(NetconfServiceProvider & provider, Entity & entity);
-		std::unique_ptr<Entity> read(NetconfServiceProvider & provider, Entity & entity, bool config_only);
-		std::unique_ptr<Entity> read(NetconfServiceProvider & provider, Entity & entity);
-		std::string update(NetconfServiceProvider & provider, Entity & entity);
-		std::string del(NetconfServiceProvider & provider, Entity & entity);
+		bool create(core::ServiceProvider & provider, Entity & entity);
+		bool update(core::ServiceProvider & provider, Entity & entity);
+		bool del(core::ServiceProvider & provider, Entity & entity);
+		std::unique_ptr<Entity> read(core::ServiceProvider & provider, Entity & filter);
 };
 
 }

@@ -18,7 +18,6 @@
 #include <string.h>
 
 #include "../../src/netconf_client.hpp"
-#include "../../src/make_unique.hpp"
 #include <iostream>
 using namespace ydk;
 using namespace std;

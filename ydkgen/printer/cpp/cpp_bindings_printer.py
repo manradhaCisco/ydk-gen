@@ -23,7 +23,6 @@ from ydkgen.printer.language_bindings_printer import LanguageBindingsPrinter, _E
 
 from .header_printer import HeaderPrinter
 from .source_printer import SourcePrinter
-from .entity_lookup_printer import EntityLookUpPrinter
 
 
 class CppBindingsPrinter(LanguageBindingsPrinter):
@@ -37,8 +36,6 @@ class CppBindingsPrinter(LanguageBindingsPrinter):
 
         for index, package in enumerate(self.packages):
             self.print_module(index, package, size)
-
-        self._print_entity_lookup(self.models_dir, self.packages)
 
     def print_module(self, index, package, size):
         print('Processing %d of %d %s' % (index + 1, size, package.stmt.pos.ref))
@@ -56,11 +53,6 @@ class CppBindingsPrinter(LanguageBindingsPrinter):
                         emit_source,
                         _EmitArgs(self.ypy_ctx, package, self.sort_clazz))
 
-    def _print_entity_lookup(self, path, packages):
-        self.print_file(get_entity_lookup_file_name(path),
-                        emit_entity_lookup,
-                        _EmitArgs(self.ypy_ctx, packages, self.sort_clazz))
-
 
 def get_source_file_name(path, package):
     return '%s/%s.cpp' % (path, package.name)
@@ -70,10 +62,6 @@ def get_header_file_name(path, package):
     return '%s/%s.h' % (path, package.name)
 
 
-def get_entity_lookup_file_name(path):
-    return '%s/top_entity_lookup_gen.cpp' % (path)
-
-
 def emit_header(ctx, package, sort_clazz):
     HeaderPrinter(ctx, sort_clazz).print_output(package)
 
@@ -81,6 +69,3 @@ def emit_header(ctx, package, sort_clazz):
 def emit_source(ctx, package, sort_clazz):
     SourcePrinter(ctx, sort_clazz).print_output(package)
 
-
-def emit_entity_lookup(ctx, packages, sort_clazz):
-    EntityLookUpPrinter(ctx).print_entity_lookup(packages, sort_clazz)

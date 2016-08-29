@@ -26,7 +26,7 @@
 namespace ydk {
 
 
-class NetconfClient;
+	class NetconfClient;
     class NetconfServiceProvider : public core::ServiceProvider {
 	public:
         NetconfServiceProvider(const core::Repository* repo,
@@ -36,16 +36,10 @@ class NetconfClient;
 				int port);
 		~NetconfServiceProvider();
 
-	std::string encode(Entity & entity, const std::string & operation, bool read_config_only) const;
-	std::string encode(Entity & entity, const std::string & operation) const;
-	std::unique_ptr<Entity> decode(const std::string & payload) const;
-	std::string execute_payload(const std::string & payload, const std::string & operation) const;
-        
-        virtual core::RootSchemaNode* get_root_schema();
-        
-        virtual core::DataNode* invoke(core::Rpc* rpc) const;
-        
-        
+        core::RootSchemaNode* get_root_schema();
+
+        core::DataNode* invoke(core::Rpc* rpc) const;
+
         static const char* WRITABLE_RUNNING;
         static const char* CANDIDATE;
         static const char* ROLLBACK_ON_ERROR;
@@ -57,22 +51,17 @@ class NetconfClient;
         static const char* VALIDATE_1_1;
         static const char* NS;
         static const char* MODULE_NAME;
-        
 
 	private:
-        core::DataNode*
-        handle_create_delete(core::Rpc* rpc, core::Annotation ann) const;
-        
-        
-        core::DataNode*
-        handle_read(core::Rpc* rpc) const;
-        
-        
+        core::DataNode* handle_create_delete(core::Rpc* rpc, core::Annotation ann) const;
+
+        core::DataNode* handle_read(core::Rpc* rpc) const;
+
         const core::Repository* m_repo;
-	std::unique_ptr<NetconfClient> client;
-	std::unique_ptr<ydk::core::RootSchemaNode> root_schema;
-	std::vector<ydk::core::Capability> capabilities;
-        
+		std::unique_ptr<NetconfClient> client;
+		std::unique_ptr<ydk::core::RootSchemaNode> root_schema;
+		std::vector<ydk::core::Capability> capabilities;
+
         std::vector<std::string> client_caps;
         //crud related stuff
         core::SchemaNode* create_sn;

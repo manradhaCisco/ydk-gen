@@ -16,7 +16,7 @@ static void populate_name_values(core::DataNode* parent_data_node, EntityPath & 
 static bool data_node_is_leaf(core::DataNode* data_node);
 static string strip_keys(string path);
 
-core::DataNode* get_data_node(Entity & entity, const ydk::core::RootSchemaNode & root_schema)
+core::DataNode* get_data_node_from_entity(Entity & entity, const ydk::core::RootSchemaNode & root_schema)
 {
 	EntityPath root_path = get_top_entity_path(entity);
 	auto root_data_node = root_schema.create(root_path.path);
@@ -25,7 +25,7 @@ core::DataNode* get_data_node(Entity & entity, const ydk::core::RootSchemaNode &
 	return root_data_node;
 }
 
-void walk_data_node(core::DataNode * node, Entity* entity)
+void get_entity_from_data_node(core::DataNode * node, Entity* entity)
 {
 //	cerr<<endl;
 //	cerr<<"Looking at "<<node->path()<<endl;
@@ -44,8 +44,10 @@ void walk_data_node(core::DataNode * node, Entity* entity)
 		{
 //			cerr<<"Setting child: "<<path<<endl;
 			Entity * child_entity = entity->set_child(path);
+			if(child_entity == nullptr)
+			    cerr << "Couln't find child entity!"<<endl;
 //			cerr<<endl;
-			walk_data_node(child_data_node, child_entity);
+			get_entity_from_data_node(child_data_node, child_entity);
 		}
 	}
 }

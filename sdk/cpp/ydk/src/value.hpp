@@ -31,8 +31,6 @@
 #include <sstream>
 #include <string>
 
-#include "enum.hpp"
-#include "identity.hpp"
 #include "value_types.hpp"
 
 namespace ydk {
@@ -55,10 +53,10 @@ enum class Type {
 class Value {
   public:
 	Value(Type type, std::string name);
-	~Value()=default;
+	~Value();
 
 	const std::string & get() const;
-	const std::pair<std::string, std::string> get_name_value() const;
+	std::pair<std::string, std::string> get_name_value() const;
 
 	void operator = (uint8 val);
 //	void operator = (uint16 val);
@@ -69,8 +67,8 @@ class Value {
 	void operator = (int32 val);
 	void operator = (int64 val);
 	void operator = (Empty val);
-	void operator = (Identity val);
-	void operator = (Enum val);
+//	void operator = (Identity val);
+//	void operator = (Enum val);
 	void operator = (std::string val);
 //	void operator = (bool val);
 
@@ -89,7 +87,7 @@ class Value {
 	Type type;
 };
 
-std::ostream& operator<< (std::ostream& stream, const Value& matrix);
+std::ostream& operator<< (std::ostream& stream, const Value& value);
 
 }
 

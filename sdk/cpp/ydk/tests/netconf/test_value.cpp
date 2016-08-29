@@ -5,7 +5,7 @@
 
 using namespace ydk;
 
-class TestIdentity : public Identity {
+/*class TestIdentity : public Identity {
 	std::string get_tag() override
 	{
 		return "test";
@@ -17,7 +17,7 @@ class TestEnum : public Enum {
 	{
 		return "test";
 	}
-};
+};*/
 
 BOOST_AUTO_TEST_CASE(test_uint8)
 {

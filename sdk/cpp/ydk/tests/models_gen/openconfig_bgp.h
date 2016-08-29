@@ -22,10 +22,12 @@ class Bgp : public Entity {
         EntityPath get_entity_path() const;
         Entity* set_child(std::string path);
         void set_value(std::string value_path, std::string value);
+        std::unique_ptr<Entity> clone_ptr();
 
-		Entity * parent;
+        Entity * parent;
+
     private:
-		std::vector<Entity*> children;
+	std::vector<Entity*> children;
 
     public:
     class Global : public Entity {
@@ -187,8 +189,77 @@ class Bgp : public Entity {
 			std::vector< std::unique_ptr<openconfig_bgp::Bgp::Neighbors::Neighbor> > neighbor;
     }; // Neighbors
 
+
+    class PeerGroups : public Entity {
+        public:
+            PeerGroups();
+            ~PeerGroups();
+
+	        bool has_data() const;
+	        EntityPath get_entity_path() const;
+	        std::vector<Entity*> & get_children();
+	        Entity* set_child(std::string path);
+	        void set_value(std::string value_path, std::string value);
+
+	        Entity * parent;
+
+        private:
+			std::vector<Entity*> children;
+
+        public:
+        class PeerGroup : public Entity {
+            public:
+                PeerGroup();
+                ~PeerGroup();
+
+                Value peer_group_name;
+
+		        bool has_data() const;
+		        EntityPath get_entity_path() const;
+		        Entity* set_child(std::string path);
+		        void set_value(std::string value_path, std::string value);
+
+		        Entity * parent;
+
+	        private:
+				std::vector<Entity*> children;
+
+	        public:
+            class Config : public Entity {
+                public:
+                    Config();
+                    ~Config();
+
+                public:
+                    Value auth_password;
+                    Value description;
+                    Value local_as;
+                    Value peer_as;
+                    Value peer_group_name;
+
+    		        bool has_data() const;
+    		        EntityPath get_entity_path() const;
+    		        Entity* set_child(std::string path);
+    		        void set_value(std::string value_path, std::string value);
+
+    		        Entity * parent;
+
+    	        private:
+    				std::vector<Entity*> children;
+
+            }; //Config
+
+            public:
+            	std::unique_ptr<openconfig_bgp::Bgp::PeerGroups::PeerGroup::Config> config;
+        }; //PeerGroup
+
+        public:
+        	std::vector< std::unique_ptr<openconfig_bgp::Bgp::PeerGroups::PeerGroup> > peer_group;
+    }; //PeerGroups
+
     public:
 		std::unique_ptr<openconfig_bgp::Bgp::Global> global_;
+		std::unique_ptr<openconfig_bgp::Bgp::PeerGroups> peer_groups;
 		std::unique_ptr<openconfig_bgp::Bgp::Neighbors> neighbors;
 }; // Bgp
 
