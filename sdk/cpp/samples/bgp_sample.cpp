@@ -21,7 +21,6 @@
 #include "ydk/crud_service.hpp"
 #include "ydk_openconfig/openconfig_bgp.h"
 
-
 using namespace ydk;
 using namespace std;
 
@@ -159,8 +158,17 @@ static void show_usage(string name)
 	cerr << "Usage:\n\t"<< name << " ssh://user:password@host:port" <<endl;
 }
 
-static vector<string> parse_args(string arg)
+static vector<string> parse_args(int argc, char* argv[])
 {
+	if (argc < 2) {
+		show_usage(argv[0]);
+		return {};
+	}
+	string arg = argv[1];
+	if ((arg == "-h") || (arg == "--help")) {
+		show_usage(argv[0]);
+		return {};
+	}
 	vector<string> ret;
 	size_t s = arg.find("ssh://") + sizeof("ssh://")-1;
 	size_t col1 = arg.find(":",s);
@@ -175,20 +183,12 @@ static vector<string> parse_args(string arg)
 
 int main(int argc, char* argv[])
 {
+	vector<string> args = parse_args(argc, argv);
+	if(args.empty()) return 1;
+
 	string host, username, password;
 	int port;
 
-	if (argc < 2) {
-		show_usage(argv[0]);
-		return 1;
-	}
-
-	string arg = argv[1];
-	if ((arg == "-h") || (arg == "--help")) {
-		show_usage(argv[0]);
-		return 0;
-	}
-	vector<string> args = parse_args(argv[1]);
 	username = args[0]; password = args[1]; host = args[2]; port = stoi(args[3]);
 
 	ydk::core::Repository repo{MODELS_DIR};
