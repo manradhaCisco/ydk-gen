@@ -84,7 +84,8 @@ static unique_ptr<Entity> get_top_entity_from_filter(Entity & filter)
 	return get_top_entity_from_filter(*(filter.parent));
 }
 
-static core::DataNode* execute_rpc(core::ServiceProvider & provider, Entity & entity, const string & operation, const string & data_tag)
+static core::DataNode* execute_rpc(core::ServiceProvider & provider, Entity & entity,
+		const string & operation, const string & data_tag)
 {
 	core::RootSchemaNode* root_schema = provider.get_root_schema();
 	std::unique_ptr<ydk::core::Rpc> ydk_rpc { root_schema->rpc(operation) };
@@ -99,8 +100,8 @@ static string get_data_payload(Entity & entity, core::RootSchemaNode & root_sche
 	const ydk::core::DataNode* data_node = get_data_node_from_entity(entity, root_schema);
 	if (data_node==nullptr)
 		return "";
-	auto s = ydk::core::CodecService{};
-	return s.encode(data_node, ydk::core::CodecService::Format::XML, true);
+	core::CodecService codec{};
+	return codec.encode(data_node, ydk::core::CodecService::Format::XML, true);
 }
 
 }
