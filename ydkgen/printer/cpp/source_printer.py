@@ -200,7 +200,7 @@ class SourcePrinter(FilePrinter):
         self._print_class_set_child_trailer(clazz)
 
     def _print_class_set_child_header(self, clazz):
-        self.ctx.writeln('Entity* %s::set_child(std::string path)' % clazz.qualified_cpp_name())
+        self.ctx.writeln('Entity* %s::set_child(std::string child_path)' % clazz.qualified_cpp_name())
         self.ctx.writeln('{')
         self.ctx.lvl_inc()
 
@@ -210,7 +210,7 @@ class SourcePrinter(FilePrinter):
             
     def _print_class_set_child_body(self, child):
         child_path = self._get_path(child)
-        self.ctx.writeln('if(path == "%s")' % (child_path))
+        self.ctx.writeln('if(child_path == "%s")' % (child_path))
         self.ctx.writeln('{')
         self.ctx.lvl_inc()
         if child.is_many:

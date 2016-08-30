@@ -53,6 +53,8 @@ using namespace ydk;
 namespace ydk
 {
 static string get_commit_rpc_payload();
+static unique_ptr<core::Rpc> create_rpc_instance(core::RootSchemaNode & root_schema, string rpc_name);
+static core::DataNode* create_rpc_input(core::Rpc & netconf_rpc);
 
 const char* NetconfServiceProvider::WRITABLE_RUNNING = "urn:ietf:params:netconf:capability:writable-running:1.0";
 const char* NetconfServiceProvider::CANDIDATE = "urn:ietf:params:netconf:capability:candidate:1.0";
@@ -75,10 +77,10 @@ NetconfServiceProvider::NetconfServiceProvider(const core::Repository* repo, str
     }
 
     client->connect();
-    client_caps = client->get_capabilities();
+    client_capabilities = client->get_capabilities();
     std::vector<core::Capability> yang_caps {};
 
-    for(std::string c : client_caps ){
+    for(std::string c : client_capabilities ){
 
         auto p = std::find(c.begin(), c.end(),'?');
 
@@ -169,26 +171,26 @@ NetconfServiceProvider::NetconfServiceProvider(const core::Repository* repo, str
     if(c.empty()){
         throw core::YDKIllegalStateException{"CRUD create rpc schema not found!"};
     }
-    create_sn = c[0];
+    create_schema = c[0];
 
     c = root_schema->find("ydk:read");
     if(c.empty()){
         throw core::YDKIllegalStateException{"CRUD read rpc schema not found!"};
     }
-    read_sn = c[0];
+    read_schema = c[0];
 
     c = root_schema->find("ydk:update");
     if(c.empty()){
         throw core::YDKIllegalStateException{"CRUD update rpc schema not found!"};
 
     }
-    update_sn = c[0];
+    update_schema = c[0];
 
     c = root_schema->find("ydk:delete");
     if(c.empty()){
         throw core::YDKIllegalStateException{"CRUD delete rpc schema not found!"};
     }
-    delete_sn = c[0];
+    delete_schema = c[0];
 
 }
 
@@ -202,20 +204,10 @@ core::RootSchemaNode* NetconfServiceProvider::get_root_schema()
     return root_schema.get();
 }
 
-static string get_commit_rpc_payload()
-{
-	return "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-		   "<commit/>"
-			"</rpc>";
-}
-
 core::DataNode* NetconfServiceProvider::handle_read(core::Rpc* rpc) const
 {
     //for now we only support crud rpc's
-    core::DataNode* dn = nullptr;
-
-    core::Rpc* nc_rpc = nullptr;
-
+    core::DataNode* datanode = nullptr;
     core::CodecService codec_service{};
     bool config = true;
 
@@ -223,37 +215,32 @@ core::DataNode* NetconfServiceProvider::handle_read(core::Rpc* rpc) const
         config = true;
     }
 
-    std::string nc_rpc_name = "ietf-netconf:get";
-    if(config){
-        nc_rpc_name = "ietf-netconf:get-config";
+    std::string rpc_name = "ietf-netconf:get";
+    if(config)
+    {
+        rpc_name = "ietf-netconf:get-config";
     }
 
-    nc_rpc = root_schema->rpc(nc_rpc_name);
-
-    if(!nc_rpc){
-        throw core::YDKIllegalStateException{"Cannot create get-config payload"};
-    }
-
-    std::unique_ptr<core::Rpc> nc_rpc_ptr{nc_rpc};
-
-    core::DataNode* input = nc_rpc->input();
+    auto netconf_rpc = create_rpc_instance(*root_schema, rpc_name);
+    auto input = create_rpc_input(*netconf_rpc);
 
     if(config && !input->create("source/running", "")){
         throw core::YDKIllegalStateException{"Failed setting source"};
     }
 
-    auto e = rpc->input()->find("filter");
-    if(e.empty()){
+    auto entity = rpc->input()->find("filter");
+    if(entity.empty()){
         throw core::YDKInvalidArgumentException{"Failed to get entity node"};
     }
 
-    dn = e[0];
+    datanode = entity[0];
 
-    std::string filter_val = dn->get();
+    std::string filter_value = datanode->get();
     //deserialize the entity_val
 
-    auto filter_node = input->create("filter", filter_val);
-    if(!filter_node){
+    auto filter_node = input->create("filter", filter_value);
+    if(!filter_node)
+    {
         throw core::YDKIllegalStateException{"Failed to set filter"};
     }
 
@@ -265,58 +252,53 @@ core::DataNode* NetconfServiceProvider::handle_read(core::Rpc* rpc) const
 
     std::string reply = client->execute_payload(payload);
     std::cout << reply << std::endl;
+
+    auto empty_data = reply.find("<data/>");
+	if(empty_data != std::string::npos)
+	{
+		return nullptr;
+	}
+
     auto data_start = reply.find("<data>");
-    if(data_start == std::string::npos){
+    if(data_start == std::string::npos)
+    {
         //TODO at a later stage this should be changed to
         //another exception hierarchy
         throw core::YDKException{reply};
     }
     data_start+= sizeof("<data>") - 1;
     auto data_end = reply.find("</data>", data_start);
-    if(data_end == std::string::npos){
+    if(data_end == std::string::npos)
+    {
         throw core::YDKException{"No end data tag found"};
     }
 
     payload = reply.substr(data_start, data_end-data_start);
 
-    std::cout << payload << std::endl;
+    datanode = codec_service.decode(root_schema.get(), payload, core::CodecService::Format::XML);
 
-    dn = codec_service.decode(root_schema.get(), payload, core::CodecService::Format::XML);
-
-    if(!dn){
+    if(!datanode){
         throw core::YDKException{"Problems deserializing output"};
     }
 
-    return dn;
-
+    return datanode;
 }
 
 
-core::DataNode* NetconfServiceProvider::handle_create_delete(core::Rpc* rpc, core::Annotation ann) const
+core::DataNode* NetconfServiceProvider::handle_edit(core::Rpc* rpc, core::Annotation ann) const
 {
     //for now we only support crud rpc's
-    core::DataNode* dn = nullptr;
-
-    core::Rpc* nc_rpc = nullptr;
-
+    core::DataNode* datanode = nullptr;
     core::CodecService codec_service{};
-
     bool candidate_supported = false;
 
-    nc_rpc = root_schema->rpc("ietf-netconf:edit-config");
+    auto netconf_rpc = create_rpc_instance(*root_schema, "ietf-netconf:edit-config");
+    auto input = create_rpc_input(*netconf_rpc);
 
-    if(!nc_rpc){
-        throw core::YDKIllegalStateException{"Cannot create edit-config payload"};
-    }
-
-    std::unique_ptr<core::Rpc> nc_rpc_ptr{nc_rpc};
-
-    if(std::find(client_caps.begin(), client_caps.end(), NetconfServiceProvider::CANDIDATE) != client_caps.end()){
+    if(std::find(client_capabilities.begin(), client_capabilities.end(), NetconfServiceProvider::CANDIDATE) != client_capabilities.end()){
         //candidate is supported
         candidate_supported = true;
     }
-
-    core::DataNode* input = nc_rpc->input();
 
     if(candidate_supported){
         if(!input->create("target/candidate", "")){
@@ -332,37 +314,33 @@ core::DataNode* NetconfServiceProvider::handle_create_delete(core::Rpc* rpc, cor
         throw core::YDKIllegalStateException{"Failed to set rollback-on-error option"};
     }
 
-    auto e = rpc->input()->find("entity");
-    if(e.empty()){
+    auto entity = rpc->input()->find("entity");
+    if(entity.empty()){
         throw core::YDKInvalidArgumentException{"Failed to get entity node"};
     }
 
-    core::DataNode* entity_node = e[0];
+    core::DataNode* entity_node = entity[0];
 
-    std::string entity_val = entity_node->get();
-    //deserialize the entity_val
+    std::string entity_value = entity_node->get();
+    //deserialize the entity_value
 
-    dn = codec_service.decode(root_schema.get(), entity_val, core::CodecService::Format::XML);
+    datanode = codec_service.decode(root_schema.get(), entity_value, core::CodecService::Format::XML);
 
-    if(!dn){
+    if(!datanode){
         throw core::YDKInvalidArgumentException{"Failed to deserialize entity node"};
     }
 
-    std::unique_ptr<const core::DataNode> dn_ptr{dn->root()};
-
-
     std::string config_payload {};
 
-    for(auto child : dn->children()) {
-
+    for(auto child : datanode->children())
+    {
         child->add_annotation(ann);
         config_payload += codec_service.encode(child, core::CodecService::Format::XML, false);
-
     }
 
-
     auto config_node = input->create("config", config_payload);
-    if(!config_node){
+    if(!config_node)
+    {
         throw core::YDKIllegalStateException{"Failed to create config tree"};
     }
 
@@ -374,16 +352,19 @@ core::DataNode* NetconfServiceProvider::handle_create_delete(core::Rpc* rpc, cor
 
     std::string reply = client->execute_payload(payload);
     std::cout << reply << std::endl;
-    if(reply.find("<ok/>") == std::string::npos){
+    if(reply.find("<ok/>") == std::string::npos)
+    {
         //TODO at a later stage this should be changed to
         //another exception hierarchy
         throw core::YDKException{reply};
     }
 
-    if(candidate_supported){
+    if(candidate_supported)
+    {
         //need to send the commit request
         reply = client->execute_payload(get_commit_rpc_payload());
-        if(reply.find("<ok/>") == std::string::npos){
+        if(reply.find("<ok/>") == std::string::npos)
+        {
             //TODO at a later stage this should be changed to
             //another exception hierarchy
             throw core::YDKException{reply};
@@ -397,34 +378,54 @@ core::DataNode* NetconfServiceProvider::handle_create_delete(core::Rpc* rpc, cor
 core::DataNode* NetconfServiceProvider::invoke(core::Rpc* rpc) const
 {
     //sanity check of rpc
-    if(rpc == nullptr) {
+    if(rpc == nullptr)
+    {
         throw core::YDKInvalidArgumentException{"rpc is null!"};
     }
 
      //for now we only support crud rpc's
-    core::SchemaNode* rpc_sn = rpc->schema();
-    core::DataNode* dn = nullptr;
-
-
+    core::SchemaNode* rpc_schema = rpc->schema();
+    core::DataNode* datanode = nullptr;
     core::CodecService codec_service{};
 
-
-    if(rpc_sn == create_sn || rpc_sn == delete_sn || rpc_sn == update_sn) {
-
-        //for each child node in dn add the nc:operation attribute
-        core::Annotation an{NetconfServiceProvider::MODULE_NAME, "operation", rpc_sn == delete_sn ? "delete" : "merge"};
-
-        return handle_create_delete(rpc, an);
+    if(rpc_schema == create_schema || rpc_schema == delete_schema || rpc_schema == update_schema)
+    {
+        //for each child node in datanode add the nc:operation attribute
+        core::Annotation an{NetconfServiceProvider::MODULE_NAME, "operation", rpc_schema == delete_schema ? "delete" : "merge"};
+        return handle_edit(rpc, an);
     }
-    else if(rpc_sn == read_sn)
+    else if(rpc_schema == read_schema)
     {
         return handle_read(rpc);
 
-    } else {
+    }
+    else
+    {
         throw core::YDKOperationNotSupportedException{"rpc is not supported!"};
     }
 
-    return dn;
+    return datanode;
 }
 
+static unique_ptr<core::Rpc> create_rpc_instance(core::RootSchemaNode & root_schema, string rpc_name)
+{
+	auto rpc = unique_ptr<core::Rpc>(root_schema.rpc(rpc_name));
+	if(rpc == nullptr)
+	{
+		throw core::YDKIllegalStateException{"Cannot create payload for RPC: "+ rpc_name};
+	}
+	return rpc;
+}
+
+static core::DataNode* create_rpc_input(core::Rpc & netconf_rpc)
+{
+	return netconf_rpc.input();
+}
+
+static string get_commit_rpc_payload()
+{
+	return "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
+		   "<commit/>"
+			"</rpc>";
+}
 }

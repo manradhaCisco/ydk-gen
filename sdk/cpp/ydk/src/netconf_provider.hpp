@@ -53,7 +53,7 @@ namespace ydk {
         static const char* MODULE_NAME;
 
 	private:
-        core::DataNode* handle_create_delete(core::Rpc* rpc, core::Annotation ann) const;
+        core::DataNode* handle_edit(core::Rpc* rpc, core::Annotation ann) const;
 
         core::DataNode* handle_read(core::Rpc* rpc) const;
 
@@ -62,13 +62,13 @@ namespace ydk {
 		std::unique_ptr<ydk::core::RootSchemaNode> root_schema;
 		std::vector<ydk::core::Capability> capabilities;
 
-        std::vector<std::string> client_caps;
+        std::vector<std::string> client_capabilities;
         //crud related stuff
-        core::SchemaNode* create_sn;
-        core::SchemaNode* read_sn;
-        core::SchemaNode* update_sn;
-        core::SchemaNode* delete_sn;
-        
+        core::SchemaNode* create_schema;
+        core::SchemaNode* read_schema;
+        core::SchemaNode* update_schema;
+        core::SchemaNode* delete_schema;
+
 };
 }
 

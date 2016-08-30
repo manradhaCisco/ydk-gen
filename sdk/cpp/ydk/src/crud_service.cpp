@@ -64,6 +64,8 @@ unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & 
 {
 	unique_ptr<Entity> top_entity = get_top_entity_from_filter(filter);
 	core::DataNode* read_data_node = execute_rpc(provider, filter, "ydk:read", "filter");
+	if (read_data_node == nullptr)
+		return nullptr;
 
 	get_entity_from_data_node(read_data_node->children()[0], top_entity.get());
     return top_entity;

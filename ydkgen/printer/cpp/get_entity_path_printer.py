@@ -63,8 +63,8 @@ class GetEntityPathPrinter(object):
             predicates += insert_token
             predicates += ('%s.get()') % key_prop.name + insert_token + '"\']"'
 
-        self.ctx.writeln('std::ostringstream path;')
-        self.ctx.writeln('path << %s%s;' % (path, predicates))
+        self.ctx.writeln('std::ostringstream path_buffer;')
+        self.ctx.writeln('path_buffer << %s%s;' % (path, predicates))
         self.ctx.writeln('std::vector<std::pair<std::string, std::string> > leaf_name_values {%s};' % (', '.join('%s.get_name_value()' % (prop.name) for prop in leafs if not prop.is_many)))
         for leaf in leaf_lists:
             self.ctx.writeln('for( const Value & leaf : %s )' % leaf.name)
@@ -73,7 +73,7 @@ class GetEntityPathPrinter(object):
             self.ctx.writeln('leaf_name_values.push_back(leaf.get_name_value());')
             self.ctx.lvl_dec()
             self.ctx.writeln('}')
-        self.ctx.writeln('EntityPath entity_path {path.str(), leaf_name_values};')
+        self.ctx.writeln('EntityPath entity_path {path_buffer.str(), leaf_name_values};')
         self.ctx.writeln('return entity_path;')
 
     def _print_get_ydk_path_trailer(self, clazz):
