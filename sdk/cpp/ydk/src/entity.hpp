@@ -30,6 +30,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace ydk {
 
@@ -37,6 +38,8 @@ namespace core {
 class DataNode;
 class RootSchemaNode;
 }
+
+class Entity;
 
 struct EntityPath {
 	std::string path;

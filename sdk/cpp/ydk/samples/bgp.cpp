@@ -9,6 +9,7 @@
 
 
 #include <iostream>
+#include <memory>
 #include "../src/core.hpp"
 
 const char* TEST_HOME = "/Users/manradha/Development/github/manradha/ydk-gen/sdk/cpp/ydk/tests/models";
