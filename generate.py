@@ -163,7 +163,7 @@ def create_shared_libraries(output_directory, bundle, core):
         args = ['make &> /dev/null']
         exit_code2 = subprocess.call(args, env=os.environ.copy(), shell=True)
         args = ['make install']
-        exit_code2 = subprocess.call(args, env=os.environ.copy(), shell=True)
+        exit_code3 = subprocess.call(args, env=os.environ.copy(), shell=True)
 #         args = ['g++ -std=c++14 *.cpp  -shared  -fPIC -o %s/libydk_openconfig.so -lydk' % cpp_libs_root]
 #         exit_code1 = subprocess.call(args, env=os.environ.copy(), shell=True)
 #         args = ['ln -f -s %s/libydk_openconfig.so /usr/local/lib' % (cpp_libs_root)]
@@ -178,14 +178,14 @@ def create_shared_libraries(output_directory, bundle, core):
         args = ['make &> /dev/null']
         exit_code2 = subprocess.call(args, env=os.environ.copy(), shell=True)
         args = ['make install']
-        exit_code2 = subprocess.call(args, env=os.environ.copy(), shell=True)
+        exit_code3 = subprocess.call(args, env=os.environ.copy(), shell=True)
 #         os.chdir(src_dir)
 #         args = ['g++ -std=c++14 *.cpp  -shared -fPIC -lnetconf -lxml2 -lssh -lxslt -lyang  -o %s/libydk.so' % cpp_libs_root]
 #         exit_code1 = subprocess.call(args, env=os.environ.copy(), shell=True)
 #         args = ['ln -f -s %s/libydk.so /usr/local/lib' % (cpp_libs_root)]
 #         exit_code2 = subprocess.call(args, env=os.environ.copy(), shell=True)
 
-    if exit_code1 == 0 and exit_code2 == 0 :#and \
+    if exit_code1 == 0 and exit_code2 == 0 and exit_code3 == 0 :  # and \
     #   os.path.isfile(os.path.join(cpp_libs_root, 'libydk.so')) \
     # and os.path.isfile(os.path.join(cpp_libs_root, 'libydk_openconfig.so')):
         print('\nSuccessfully created and installed shared libraries')
