@@ -25,7 +25,6 @@
 #include "entity.hpp"
 #include "core.hpp"
 #include "entity_data_node_walker.hpp"
-#include <iostream>
 
 using namespace std;
 
@@ -63,22 +62,21 @@ bool CrudService::delete_(core::ServiceProvider & provider, Entity & entity)
 
 unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & filter)
 {
-	unique_ptr<Entity> top_entity = get_top_entity_from_filter(filter);
 	core::DataNode* read_data_node = execute_rpc(provider, filter, "ydk:read", "filter");
-	if (read_data_node == nullptr)
-		return nullptr;
-
-	get_entity_from_data_node(read_data_node->children()[0], top_entity.get());
-    return top_entity;
+	return read(provider, filter, read_data_node);
 }
 
 unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & filter, bool config_only)
 {
-	unique_ptr<Entity> top_entity = get_top_entity_from_filter(filter);
 	core::DataNode* read_data_node = execute_rpc(provider, filter, "ydk:read", "filter", config_only);
+	return read(provider, filter, read_data_node);
+}
+
+std::unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & filter, core::DataNode* read_data_node)
+{
 	if (read_data_node == nullptr)
 		return nullptr;
-
+	unique_ptr<Entity> top_entity = get_top_entity_from_filter(filter);
 	get_entity_from_data_node(read_data_node->children()[0], top_entity.get());
     return top_entity;
 }
