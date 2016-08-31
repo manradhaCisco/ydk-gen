@@ -48,7 +48,7 @@ ydk::core::segmentalize(const std::string& path)
 /////////////////////////////////////////////////////////////////////////
 /// YDKCodecException
 /////////////////////////////////////////////////////////////////////////
-ydk::core::YDKCodecException::YDKCodecException(YDKCodecException::Error ec) : YDKException(ly_errmsg()), err{ec}
+ydk::core::YDKCodecException::YDKCodecException(YDKCodecException::Error ec) : YDKCoreException(ly_errmsg()), err{ec}
 {
 
 }
@@ -1056,7 +1056,7 @@ ydk::core::Repository::create_root_schema(const std::vector<ydk::core::Capabilit
             ly_ctx_destroy(ctx, nullptr);
             //log and continue
             continue;
-            //throw YDKException{"Unable to parse module"};
+            //throw YDKCoreException{"Unable to parse module"};
         }
         for (auto f : c.features)
             lys_features_enable(p, f.c_str());

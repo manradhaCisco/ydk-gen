@@ -45,8 +45,7 @@ map<pair<string, string>, string> NetconfClient::password_lookup;
 
 NetconfClient::NetconfClient(string  username, string  password,
 		string  hostname, int port, int verbosity) :
-		username(username), hostname(hostname), port(port), sock(-1), return_status(
-				EXIT_SUCCESS)
+		username(username), hostname(hostname), port(port)
 {
 	nc_verbosity((NC_VERB_LEVEL) verbosity);
 	nc_callback_print(clb_print);
@@ -56,18 +55,13 @@ NetconfClient::NetconfClient(string  username, string  password,
 	password_lookup.insert(make_pair(make_pair(username, hostname), password));
 	session=NULL;
 }
-    
+
 
 
 int NetconfClient::connect()
 {
 	session = nc_session_connect(hostname.c_str(), port, username.c_str(), NULL);
-	if (session == NULL)
-	{
-		return_status = EXIT_FAILURE;
-		return (EXIT_FAILURE);
-	}
-
+	perform_session_check("Could not connect to " + hostname);
 	init_capabilities();
 	return EXIT_SUCCESS;
 }
@@ -88,20 +82,10 @@ void NetconfClient::init_capabilities()
 
 string NetconfClient::execute_payload(const string & payload)
 {
-	if(!is_session_active())
-	{
-		return_status = EXIT_FAILURE;
-		return "";
-	}
+	perform_session_check("Could not execute payload. Not connected to " + hostname);
 
 	nc_reply *reply;
-	nc_rpc *rpc;
-
-	rpc = build_rpc_request(payload);
-	if(rpc == NULL)
-	{
-		return "";
-	}
+	nc_rpc *rpc = build_rpc_request(payload);
 
 	NC_MSG_TYPE reply_type = nc_session_send_recv(session, rpc, &reply);
 	string reply_payload = process_rpc_reply(reply_type, reply);
@@ -114,19 +98,10 @@ string NetconfClient::execute_payload(const string & payload)
 
 int NetconfClient::close()
 {
-	if(session==NULL)
-	{
-		return_status = EXIT_FAILURE;
-		return EXIT_FAILURE;
-	}
+	perform_session_check("Could not close session. Not connected to " + hostname);
 
 	nc_session_free(session);
 	return EXIT_SUCCESS;
-}
-
-bool NetconfClient::is_session_active()
-{
-	return session != NULL;
 }
 
 nc_rpc* NetconfClient::build_rpc_request(const string & payload)
@@ -135,14 +110,12 @@ nc_rpc* NetconfClient::build_rpc_request(const string & payload)
 
 	if (rpc == NULL)
 	{
-		return_status = EXIT_FAILURE;
-		return NULL;
+		throw YDKClientException{"Could not build payload"};
 	}
 	else if(NC_RPC_UNKNOWN==nc_rpc_get_type(rpc))
 	{
 		nc_rpc_free(rpc);
-		return_status = EXIT_FAILURE;
-		return NULL;
+		throw YDKClientException{"Could not build payload"};
 	}
 	return rpc;
 }
@@ -152,14 +125,12 @@ string NetconfClient::process_rpc_reply(int reply_type, const nc_reply* reply)
 	switch (reply_type)
 	{
 		case NC_MSG_REPLY:
-			return_status = EXIT_SUCCESS;
 			return nc_reply_dump(reply);
 
 		default:
 		case NC_MSG_NONE:
 		case NC_MSG_UNKNOWN:
-			return_status = EXIT_FAILURE;
-			return "";
+			throw YDKClientException{"RPC error occured"};
 	}
 }
 
@@ -205,9 +176,12 @@ int NetconfClient::clb_ssh_host_authenticity_check(const char *hostname,
 	return EXIT_SUCCESS;
 }
 
-int NetconfClient::get_status()
+void NetconfClient::perform_session_check(string message)
 {
-	return return_status;
+	if (session == NULL)
+	{
+		throw YDKClientException{message};
+	}
 }
 
 

@@ -22,6 +22,8 @@
 
 #include <libnetconf/netconf.h>
 
+#include "exception.hpp"
+
 struct nc_session;
 typedef struct nc_msg nc_rpc;
 typedef struct nc_msg nc_reply;
@@ -35,6 +37,16 @@ typedef struct capabilities {
 
 namespace ydk
 {
+
+struct YDKClientException : public YDKException
+{
+	YDKClientException(const std::string& msg) : YDKException{msg}, err_msg{msg}
+	{
+	}
+
+	std::string err_msg;
+};
+
 class NetconfClient
 {
 
@@ -65,7 +77,7 @@ private:
 	nc_rpc* build_rpc_request(const std::string & payload);
 	std::string process_rpc_reply(int reply_type, const nc_reply* reply);
 	void init_capabilities();
-	bool is_session_active();
+	void perform_session_check(std::string message);
 
 private:
 	struct nc_session *session;
@@ -73,12 +85,8 @@ private:
 	std::string username;
 	std::string hostname;
 	int port;
-	int sock;
 	std::vector<std::string> capabilities;
-
-	int return_status;
 };
-
 
 
 

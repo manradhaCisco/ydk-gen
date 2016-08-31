@@ -35,7 +35,7 @@
 
 namespace ydk {
     namespace core {
-        
+
         ///
         /// @mainpage About
         ///
@@ -73,8 +73,8 @@ namespace ydk {
         /// specific language governing permissions and limitations
         /// under the License.
         ///
-        
-        
+
+
         ///
         /// @page howto How To ...
         ///
@@ -89,12 +89,12 @@ namespace ydk {
         /// - @subpage howtocodec
         /// - @subpage howtologger
         ///
-        
+
         ///
         /// @page howtoexceptions Exceptions and Error Handling.
         /// TODO
         ///
-        
+
         ///
         /// @page howtoserviceprovider ServiceProvider.
         /// A ServiceProvider extends the class ydk::ServiceProvider
@@ -117,7 +117,7 @@ namespace ydk {
         /// Use the Repository class to instantiate a SchemaTree based on the Capabilities.
         ///
         ///
-        
+
         ///
         /// @page howtoschemas SchemaNode Tree
         /// Talk about SchemaNodeTree , RootSchemaNodeTree.
@@ -126,7 +126,7 @@ namespace ydk {
         /// Inspecting YANG meta data
         /// Traversing the hierarchy (iterations and find)
         ///
-        
+
         ///
         /// @page howtodata DataNode Tree
         /// How to create DataNode Trees
@@ -135,13 +135,13 @@ namespace ydk {
         /// Accessing the Schema Tree
         /// Traversing the hierarchy (iteration and find)
         ///
-        
+
         ///
         /// @page howtomemory
         /// Node containment hierarchies
         /// Best practices
         /// TODO
-        
+
         /// @page howtopath Path Syntax.
         /// Full XPath notation is supported for find operations on DataNode(s). This XPath conforms to the YANG specification
         /// (RFC 6020 section 6.4). Some useful examples:
@@ -195,7 +195,7 @@ namespace ydk {
         /// can be prefixed by the module name. However, if the prefix is omitted, the module name is inherited from the
         /// previous (parent) node. It means, that the first node in the path is always supposed to have a prefix.
         ///
-        
+
         ///
         /// @page howtorpc Rpc
         /// An Rpc represents an instance of the YANG Rpc schema node.
@@ -210,32 +210,32 @@ namespace ydk {
         /// The config variable above is the DataNode representing the output of the rpc
         ///
         ///
-        
+
         ///
         /// @page howtovalidation Validation
         /// DataNode Tree can be validated using the ValidationService
         ///
-        
-        
-        
+
+
+
         ///
         /// @page howtocodec Encoding and Decoding.
         /// A given DataNode Tree can be encoded and decoded into a variety of formats using the CodecService.
         //
         /// DataNode Tree can be validated using the ValidationService
         ///
-        
+
         ///
         /// @page howtologger
         /// TODO
         ///
-        
+
         // Forward References
         class DataNode ;
         class Rpc;
         class SchemaNode ;
         class RootSchemaNode ;
-        
+
         ///
         /// @brief Validation Service
         ///
@@ -245,9 +245,9 @@ namespace ydk {
         class ValidationService
         {
         public:
-            
+
             virtual ~ValidationService() {};
-            
+
             ///
             /// @brief Options for validation.
             ///
@@ -260,7 +260,7 @@ namespace ydk {
                 GET, // Get validation
                 EDIT_CONFIG // Edit validation. Checks on the values of leafs etc
             };
-            
+
             ///
             /// @brief validates dn based on the option
             ///
@@ -271,7 +271,7 @@ namespace ydk {
             ///
             virtual void validate(const DataNode* dn, Option option);
         };
-        
+
         ///
         /// @brief CodecService
         ///
@@ -280,9 +280,9 @@ namespace ydk {
         class CodecService
         {
         public:
-            
+
             virtual ~CodecService() {}
-            
+
             ///
             /// @brief Options for encode
             ///
@@ -290,11 +290,11 @@ namespace ydk {
             enum class Format {
                 XML, /// XML
                 JSON /// JSON
-                
+
             };
-            
-            
-            
+
+
+
             ///
             /// @brief encode the given DataNode Tree
             ///
@@ -305,7 +305,7 @@ namespace ydk {
             //  @throws YDKInvalidArgumentException if the arguments are invalid.
             ///
             virtual std::string encode(const DataNode* dn, Format format, bool pretty);
-            
+
             ///
             /// @brief decode the buffer to return a DataNode
             ///
@@ -316,26 +316,31 @@ namespace ydk {
             /// @throws YDKInvalidArgumentException if the arguments are invalid.
             ///
             virtual DataNode* decode(const RootSchemaNode* root_schema, const std::string& buffer, Format format);
-            
-            
+
+
         };
-        
-        
+
+
         ///
         /// @brief Base class for YDK Exceptions
         ///
         /// The subclasses give a specialized view of the error that has occurred.
         ///
-        struct YDKException
+        struct YDKCoreException
         {
-            YDKException(const std::string& msg) : err_msg{msg}
+        	YDKCoreException()
+        	{
+
+        	}
+
+            YDKCoreException(const std::string& msg) : err_msg{msg}
             {
-                
+
             }
-            
+
             std::string err_msg;
         };
-        
+
         ///
         /// @brief Illegal State Exception.
         ///
@@ -343,64 +348,51 @@ namespace ydk {
         /// Thrown when an operation/service is invoked
         /// on an object that is not in the right state. Use the err_msg for the error.
         ///
-        struct YDKIllegalStateException : public YDKException
+        struct YDKIllegalStateException : public YDKCoreException
         {
-            YDKIllegalStateException(const std::string& msg) : YDKException{msg}
+            YDKIllegalStateException(const std::string& msg) : YDKCoreException{msg}
             {
-                
+
             }
         };
-        
+
         ///
         /// @brief Invalid Argument
         ///
         /// Use the err_msg for the error.
         ///
-        struct YDKInvalidArgumentException : public YDKException
+        struct YDKInvalidArgumentException : public YDKCoreException
         {
-            YDKInvalidArgumentException(const std::string& msg) : YDKException{msg}
+            YDKInvalidArgumentException(const std::string& msg) : YDKCoreException{msg}
             {
-                
+
             }
         };
-        
+
         ///
         /// @brief Operation Not Supported Exception
         ///
         /// Thrown when an operation is not supported.
         ///
-        struct YDKOperationNotSupportedException : public YDKException
+        struct YDKOperationNotSupportedException : public YDKCoreException
         {
-            YDKOperationNotSupportedException(const std::string& msg) : YDKException{msg}
+            YDKOperationNotSupportedException(const std::string& msg) : YDKCoreException{msg}
             {
-                
+
             }
         };
-        
-        ///
-        /// @brief Core Library Exception.
-        ///
-        /// If thrown it could indicate a problem with the library.
-        /// Analyze logs.
-        ///
-        struct YDKCoreException : public YDKException
-        {
-            YDKCoreException(): YDKException{"Core exception"}
-            {
-                
-            }
-        };
-        
+
+
         ///
         /// @brief Exception that encapsualtes the validation errors
         ///        on a data tree
         ///
-        struct YDKDataValidationException : public YDKException
+        struct YDKDataValidationException : public YDKCoreException
         {
             /// Data Validation Error Enum
             enum class Error {
                 SUCCESS,  /// no error
-                
+
                 TOOMANY,      /// too many instances of some object
                 DUPLEAFLIST,  /// multiple instances of leaf-list
                 DUPLIST,      /// multiple instances of list
@@ -428,32 +420,32 @@ namespace ydk {
                 NOREQINS,     /// required instance does not exits (data) */
                 NOLEAFREF,    /// eaf pointed to by leafref does not exist (data) */
                 NOMANDCHOICE, /// no mandatory choice case branch exists (data) */
-                
-                
+
+
             };
-            
-            YDKDataValidationException(): YDKException{"Data Validation Exception"}
+
+            YDKDataValidationException(): YDKCoreException{"Data Validation Exception"}
             {
-                
+
             }
-            
+
             /// List of pair<DataNode, ValidationError>. The Validation Error is specific to
             /// this node
             std::vector<std::pair<DataNode*,Error>> errors;
-            
+
         };
-        
-        struct YDKPathException : public YDKException
+
+        struct YDKPathException : public YDKCoreException
         {
             enum class Error {
                 SUCCESS,  /// no error
-                
+
                 XPATH_INTOK,  /// unexpected XPath token
                 XPATH_EOF,    /// unexpected end of an XPath expression
                 XPATH_INOP,   /// invalid XPath operation operands
                 /* */
                 XPATH_INCTX,  /// invalid XPath context type
-                
+
                 PATH_INCHAR,  /// invalid characters (path)
                 PATH_INMOD,   /// invalid module name (path)
                 PATH_MISSMOD, /// missing module name (path)
@@ -464,38 +456,38 @@ namespace ydk {
                 PATH_MISSPAR, /// some parent of the target node is missing (path)
                 PATH_AMBIGUOUS //// thrown in create where the path expression cannot uniquely identify a given node
             };
-            
+
             Error err;
-            
-            YDKPathException(YDKPathException::Error error_code) : YDKException{"Invalid path expression"}, err{error_code}
+
+            YDKPathException(YDKPathException::Error error_code) : YDKCoreException{"Invalid path expression"}, err{error_code}
             {
-                
+
             }
         };
-        
-        struct YDKCodecException : public YDKException
+
+        struct YDKCodecException : public YDKCoreException
         {
             enum class Error {
                 SUCCESS,  /// no error
-                
+
                 XML_MISS,     ///  missing XML object
                 XML_INVAL,    ///  invalid XML object
                 XML_INCHAR,   /// invalid XML character
-                
+
                 EOF_ERR,      /// unexpected end of input data
-                
+
             };
-            
+
             Error err;
-            
+
             YDKCodecException(YDKCodecException::Error merror);
         };
-        
-        struct YDKSchemaValidationException : public YDKException
+
+        struct YDKSchemaValidationException : public YDKCoreException
         {
             enum class Error {
                 SUCCESS,  /// no error
-                
+
                 INSTMT,       /// invalid statement (schema)
                 /* */
                 INID,         /// nvalid identifier (schema)
@@ -527,13 +519,13 @@ namespace ydk {
                 CIRC_LEAFREFS,/// circular chain of leafrefs detected (schema) */
                 CIRC_IMPORTS, /// circular chain of imports detected (schema) */
                 CIRC_INCLUDES,/// circular chain of includes detected (schema) */
-                
+
             };
-            
+
             /// The errors in form of pair {SchemaNode*, Error}
             std::vector<std::pair<SchemaNode*, Error>> errors;
         };
-        
+
         ///
         /// @brief Annotation
         ///
@@ -545,110 +537,110 @@ namespace ydk {
         /// to describe the kind of operation one needs to perform on the given DataNode.
         ///
         struct Annotation{
-            
+
             Annotation(const std::string& ns, const std::string& name, const std::string& val) : m_ns{ns}, m_name{name}, m_val{val}
             {
-                
+
             }
-            
+
             Annotation(const Annotation& an) : m_ns{an.m_ns}, m_name{an.m_name}, m_val{an.m_val}
             {
-                
+
             }
-            
+
             Annotation(Annotation&& an) : m_ns{std::move(an.m_ns)}, m_name{std::move(an.m_name)}, m_val{std::move(an.m_val)}
             {
-                
+
             }
-            
-            
+
+
             Annotation& operator=(const Annotation& an)
             {
                 m_ns = an.m_ns;
                 m_name = an.m_name;
                 m_val = an.m_val;
-                
+
                 return *this;
             }
-            
+
             Annotation& operator=(Annotation&& an)
             {
                 m_ns = std::move(an.m_ns);
                 m_name = std::move(an.m_name);
                 m_val = std::move(an.m_val);
-                
+
                 return *this;
             }
-            
+
             bool operator==(const Annotation& an) const
             {
                 return m_ns == an.m_ns && m_name == an.m_name;
             }
-            
-            
+
+
             std::string m_ns;
             std::string m_name;
             std::string m_val;
-            
+
         };
-        
-        
+
+
         ///
         /// @brief represents the YANG Statement
         ///
         struct Statement {
-            
+
             Statement(): keyword{}, arg{}
             {
-                
+
             }
-            
+
             Statement(const std::string& mkeyword, const std::string& marg) : keyword{mkeyword}, arg{marg}
             {
-                
+
             }
-            
-            
+
+
             Statement(const Statement& stmt) : keyword{stmt.keyword}, arg{stmt.arg}
             {
-                
-                
+
+
             }
-            
+
             Statement(Statement&& stmt) : keyword{std::move(stmt.keyword)}, arg{std::move(stmt.arg)}
             {
-                
+
             }
-            
+
             ~Statement(){};
-            
+
             Statement& operator=(const Statement& stmt)
             {
                 keyword = stmt.keyword;
                 arg = stmt.arg;
                 return *this;
             }
-            
+
             Statement& operator=(Statement&& stmt)
             {
                 keyword = std::move(stmt.keyword);
                 arg = std::move(stmt.arg);
                 return *this;
             }
-            
+
             /// YANG keyword corresponding to the Statement
             std::string keyword;
             /// the arg if any
             std::string  arg;
-            
+
         };
-        
+
         ///
         /// @brief Represents a Node in the SchemaTree.
         ///
         class SchemaNode
         {
-            
+
         public:
             ///
             /// @brief The destructor.
@@ -657,7 +649,7 @@ namespace ydk {
             /// invocation of the destructor will lead to the children of this
             /// node being destroyed.
             virtual ~SchemaNode() {};
-            
+
             ///
             /// @brief returns the XPath expression of this Node in the NodeTree
             ///
@@ -665,7 +657,7 @@ namespace ydk {
             /// @return std::string representing the path to this Node.
             ///
             virtual std::string path() const = 0;
-            
+
             ///
             /// @brief finds descendant nodes that match the given xpath expression
             ///
@@ -677,7 +669,7 @@ namespace ydk {
             /// @throws YDKInvalidArgumentException if the argument is invalid.
             ///
             virtual std::vector<SchemaNode*> find(const std::string& path) const = 0;
-            
+
             ///
             /// @brief get the Parent Node of this SchemaNode in the tree.
             ///
@@ -685,14 +677,14 @@ namespace ydk {
             /// @return pointer the parent Node or nullptr in case this is the root.
             ///
             virtual const SchemaNode* parent() const noexcept = 0 ;
-            
+
             ///
             /// @brief return the children of this SchemaNode in the NodeTree.
             ///
             /// Returns the children of this SchemaNode.
             ///@return the children of this node.
             virtual std::vector<SchemaNode*> children() const = 0;
-            
+
             ///
             /// @brief get the root of NodeTree this node is part of
             ///
@@ -700,7 +692,7 @@ namespace ydk {
             /// @return the pointer to the root
             ///
             virtual const SchemaNode* root() const noexcept = 0;
-            
+
             ///
             /// @brief return the YANG statement associated with this SchemaNode
             ///
@@ -708,9 +700,9 @@ namespace ydk {
             /// @return the yang statement for this SchemaNode
             ///
             virtual Statement statement() const = 0;
-            
+
         };
-        
+
         ///
         /// @brief The RootSchemeNode.
         ///
@@ -726,7 +718,7 @@ namespace ydk {
             /// @brief Destructor for the RootSchemaNode
             ///
             virtual ~RootSchemaNode() {};
-            
+
             ///
             /// @brief returns the XPath expression of this Node in the NodeTree
             ///
@@ -734,7 +726,7 @@ namespace ydk {
             /// @return std::string representing the path to this Node.
             ///
             std::string path() const { return "/"; }
-            
+
             ///
             /// @brief finds descendant nodes that match the given xpath expression
             ///
@@ -746,7 +738,7 @@ namespace ydk {
             /// @throws YDKInvalidArgumentException if the argument is invalid.
             ///
             virtual std::vector<SchemaNode*> find(const std::string& path) const = 0;
-            
+
             ///
             /// @brief get the Parent Node of this SchemaNode in the tree.
             ///
@@ -754,14 +746,14 @@ namespace ydk {
             /// @return pointer the parent Node or nullptr in case this is the root.
             ///
             virtual SchemaNode* parent() const noexcept { return nullptr;}
-            
+
             ///
             /// @brief return the children of this SchemaNode in the NodeTree.
             ///
             /// Returns the children of this SchemaNode.
             ///@return the children of this node.
             virtual std::vector<SchemaNode*> children() const = 0;
-            
+
             ///
             /// @brief get the root of NodeTree this node is part of
             ///
@@ -769,7 +761,7 @@ namespace ydk {
             /// @return the pointer to the root
             ///
             virtual const SchemaNode* root() const noexcept { return this; }
-            
+
             ///
             /// @brief create a DataNode corresponding to the path and set its value
             ///
@@ -790,7 +782,7 @@ namespace ydk {
             /// @throws YDKPathException In case the path is invalid.
             ///
             virtual DataNode* create(const std::string& path, const std::string& value) const = 0;
-            
+
             ///
             /// @brief create a DataNode corresponding to the path and set its value
             ///
@@ -809,7 +801,7 @@ namespace ydk {
             /// @throws YDKPathException In case the path is invalid.
             ///
             virtual DataNode* create(const std::string& path) const  = 0;
-            
+
             ///
             /// @brief return the Statement representing this SchemaNode
             ///
@@ -818,7 +810,7 @@ namespace ydk {
             /// @return an empty statement
             ///
             virtual Statement statement() const { return Statement{}; }
-            
+
             ///
             /// @brief create an rpc instance
             ///
@@ -829,17 +821,17 @@ namespace ydk {
             /// @throws YDKPathException if the path is invalid
             ///
             virtual Rpc* rpc(const std::string& path) const = 0;
-            
+
         };
-        
-        
-        
+
+
+
         ///
         /// @brief DataNode
         ///
         /// Class represents the DataNode
         class DataNode{
-            
+
         public:
             ///
             /// @brief The destructor.
@@ -848,7 +840,7 @@ namespace ydk {
             /// invocation of the destructor will lead to the children of this
             /// node being destroyed.
             virtual ~DataNode() {};
-            
+
             ///
             /// @brief Return the SchemaNode associated with this DataNode.
             ///
@@ -856,7 +848,7 @@ namespace ydk {
             /// @return SchemaNode associated with this DataNode
             ///
             virtual const SchemaNode* schema() const = 0;
-            
+
             ///
             /// @brief returns the XPath expression of this Node in the NodeTree
             ///
@@ -864,7 +856,7 @@ namespace ydk {
             /// @return std::string representing the path to this Node.
             ///
             virtual std::string path() const = 0;
-            
+
             ///
             /// @brief create a DataNode corresponding to the path and set its value
             ///
@@ -887,7 +879,7 @@ namespace ydk {
             {
                 return create(path, "");
             }
-            
+
             ///
             /// @brief create a DataNode corresponding to the path and set its value
             ///
@@ -906,7 +898,7 @@ namespace ydk {
             /// @throws YDKPathException In case the path is invalid.
             ///
             virtual DataNode* create(const std::string& path, const std::string& value) = 0;
-            
+
             ///
             /// @brief set the value of this DataNode.
             ///
@@ -919,18 +911,18 @@ namespace ydk {
             /// @throws YDKInvalidArgumentException if the DataNode's value cannot be set (for example it represents
             /// a container)
             virtual void set(const std::string& value) = 0;
-            
-            
-            
+
+
+
             ///
             /// @brief get the value in this DataNode
             ///
             /// Returns a copy of the value of this DataNode.
             ///
             // @returns The string representation of the value.
-            /// 
+            ///
             virtual std::string get() const = 0;
-            
+
             ///
             /// @brief finds nodes that satisfy the given path expression.
             ///
@@ -940,29 +932,29 @@ namespace ydk {
             /// @param[in] path The path expression.
             /// @return vector of DataNodes that satisfy the path expression supplied.
             virtual std::vector<DataNode*> find(const std::string& path) const = 0 ;
-            
-            
+
+
             ///
             /// @brief returns the parent of this DataNode or nullptr if None exist.
             ///
             /// Returns the parent of this DataNode or nullptr if None exist
             ///
             virtual DataNode* parent() const = 0;
-            
+
             ///
             /// @brief returns the children of this DataNode
             ///
             /// Returns the children of this DataNode
             ///
             virtual std::vector<DataNode*> children() const = 0;
-            
+
             ///
             /// @brief returns the root DataNode of this tree.
             ///
             /// Returns the root of the DataNode.
             ///
             virtual const DataNode* root() const = 0;
-            
+
             ///
             /// @brief Add the annotation to this datanode
             ///
@@ -972,7 +964,7 @@ namespace ydk {
             /// @throws YDKInvalidArgumentException In case the argument is invalid
             ///
             virtual void add_annotation(const Annotation& an) = 0;
-               
+
             ///
             /// @brief Remove the annotation
             ///
@@ -983,17 +975,17 @@ namespace ydk {
             /// @return bool If true the annotation was found and removed. false otherwise
             ///
             virtual bool remove_annotation(const Annotation& an) = 0;
-            
-            
+
+
             ///
             /// @brief Get the annotations associated with this data node
             ///
             /// @return vector of annotations for this node.
             ///
             virtual std::vector<Annotation> annotations() = 0;
-            
+
         };
-        
+
         ///
         /// @brief Capability
         ///
@@ -1004,104 +996,104 @@ namespace ydk {
         struct Capability {
             Capability(const std::string& mod, const std::string& rev) : module{mod}, revision{rev}
             {
-                
+
             }
-            
+
             Capability(const std::string& mod, const std::string& rev, const std::vector<std::string>& f,
                        const std::vector<std::string>& d): module{mod}, revision{rev}, features{f}, deviations({d})
             {
-                
+
             }
-            
+
             Capability(const Capability& cap) : module{cap.module}, revision{cap.revision}, features{cap.features}, deviations{cap.deviations}
             {
-                
+
             }
-            
+
             Capability(Capability&& cap) : module{std::move(cap.module)}, revision{std::move(cap.revision)},
             features{std::move(cap.features)}, deviations{std::move(cap.deviations)}
             {
-                
+
             }
-            
+
             Capability& operator=(const Capability& cap)
             {
                 module = cap.module;
                 revision = cap.revision;
                 features = cap.features;
                 deviations = cap.deviations;
-                
+
                 return *this;
             }
-            
+
             Capability& operator=(Capability&& cap)
             {
                 module = std::move(cap.module);
                 revision = std::move(cap.revision);
                 features = std::move(cap.features);
                 deviations = std::move(cap.deviations);
-                
+
                 return *this;
             }
-            
-            
+
+
             bool operator==(const Capability& cap)
             {
                 if( cap.module != module || cap.revision != revision ) {
                     return false;
                 }
-                
+
                 if (cap.features.size() != features.size()){
                     return false;
                 } else if(cap.features.size() != 0){
-                    
+
                     //sort and compare
                     std::vector<std::string> cap_features{cap.features};
                     std::sort(cap_features.begin(), cap_features.end());
-                    
+
                     //sort ourselves
                     std::sort(features.begin(), features.end());
-                    
+
                     if(cap_features != features) {
                         return false;
                     }
-                    
+
                 }
-                
+
                 if (cap.deviations.size() != deviations.size()) {
                     return false;
                 } else if(cap.deviations.size() != 0){
-                    
+
                     //sort and compare
                     std::vector<std::string> cap_deviations{cap.deviations};
                     std::sort(cap_deviations.begin(), cap_deviations.end());
-                    
+
                     //sort ourselves
                     std::sort(deviations.begin(), deviations.end());
-                    
+
                     if(cap_deviations != deviations) {
                         return false;
                     }
-                    
+
                 }
-                
+
                 return true;
             }
-            
+
             /// The module
             std::string module;
-            
+
             /// The revision
             std::string revision;
-            
+
             /// List of features defined in this module that are enabled.
             std::vector<std::string> features;
-            
+
             /// List of deviations that target nodes defined by this module.
             std::vector<std::string> deviations;
         };
-        
-        
+
+
         ///
         /// @brief represents the Repository of YANG models.
         ///
@@ -1120,7 +1112,7 @@ namespace ydk {
             /// @throws YDKInvalidArgumentException if the search_dir is not a valid directory in the
             /// filesystem
             Repository(const std::string& search_dir);
-           
+
             ///
             /// @brief Creates the root schema based on the capabilities passed in.
             ///
@@ -1132,13 +1124,13 @@ namespace ydk {
             /// @return pointer to the RootSchemaNode or nullptr if one could not be created.
             ///
             RootSchemaNode* create_root_schema(const std::vector<Capability> capabilities) const;
-            
-            
+
+
         private:
             std::string m_search_dir;
         };
-        
-        
+
+
         ///
         /// @brief Interface for all ServiceProvider implementations
         ///
@@ -1153,11 +1145,11 @@ namespace ydk {
             /// @return pointer to the RootSchemaNode or nullptr if one could not be created
             ///
             virtual RootSchemaNode* get_root_schema() = 0;
-            
-            
+
+
             virtual ~ServiceProvider() {};
-            
-            
+
+
             ///
             /// @brief invoke the Rpc
             ///
@@ -1168,9 +1160,9 @@ namespace ydk {
             /// @return The pointer to the DataNode representing the output.
             ///
             virtual DataNode* invoke(Rpc* rpc) const = 0 ;
-            
+
         };
-        
+
         ///
         ///
         /// @brief An instance of the YANG schmea rpc node
@@ -1184,9 +1176,9 @@ namespace ydk {
         class Rpc
         {
         public:
-            
+
             virtual ~Rpc() {};
-           
+
             ///
             /// @brief execute/invoke the rpc through the given service provider.
             ///
@@ -1194,7 +1186,7 @@ namespace ydk {
             /// @areturn pointer to the DataNode or nullptr if none exists
             ///
             virtual DataNode* operator()(const ServiceProvider& provider) = 0;
-            
+
             ///
             /// @brief get the input data tree
             ///
@@ -1202,18 +1194,18 @@ namespace ydk {
             /// an input element in the schema.
             ///
             virtual DataNode* input() const = 0;
-            
+
             ///
             /// @brief return the SchemaNode associated with this rpc
             ///
             /// @return pointer to the SchemaNode associated with this rpc.
             virtual SchemaNode* schema() const = 0;
 
-            
+
         };
-        
+
     }
-    
+
 }
 
 #endif /* YDK_CORE_HPP */

@@ -41,6 +41,6 @@ int main(int argc, char* argv[])
 	CrudService crud{};
 
 	auto bgp = make_unique<openconfig_bgp::Bgp>();
-	bool reply = crud.del(provider, *bgp);
+	bool reply = crud.delete_(provider, *bgp);
 	if(reply) cout << "Delete operation success" << endl; else cout << "Operation failed" << endl;
 }

@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include "../../src/netconf_client.hpp"
+#include "../../src/exception.hpp"
 #include <iostream>
 using namespace ydk;
 using namespace std;
@@ -109,15 +110,15 @@ BOOST_AUTO_TEST_CASE(LockUnlock)
 
 	int result = client.connect();
 	BOOST_REQUIRE(result == OK);
-   
+
     string reply = client.execute_payload(
                                           "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
                                           "<discard-changes/>"
                                           "</rpc>");
-    
+
     BOOST_REQUIRE(NULL != strstr(reply.c_str(), "<ok/>"));
-    
-    
+
+
 	reply = client.execute_payload(
 		 "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
 		 "<lock>"
@@ -174,25 +175,40 @@ BOOST_AUTO_TEST_CASE(RpcError)
 BOOST_AUTO_TEST_CASE(DeviceNotConnectedClose)
 {
 	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
-	int result = client.close();
-	BOOST_REQUIRE(0!=client.get_status());
-	BOOST_REQUIRE(result);
+	int result = 1;
+	try
+	{
+		result = client.close();
+	}
+	catch (YDKException & e)
+	{
+		BOOST_REQUIRE(e.err_msg=="Could not close session. Not connected to 127.0.0.1");
+	}
+
+
 }
 
 BOOST_AUTO_TEST_CASE(DeviceNotConnectedExecute)
 {
 	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
-	string s = client.execute_payload(
-			 "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-			 "<edit-config>"
-			 "<target><candidate/></target>"
-			 "<config>"
-			 "<runner xmlns=\"http://cisco.com/ns/yang/ydktest-sanity\"><ytypes><built-in-t><number8>aaa</number8></built-in-t></ytypes></runner>"
-			 "</config>"
-			 "</edit-config>"
-			 "</rpc>");
-	BOOST_REQUIRE(s== "");
-	BOOST_REQUIRE(0!=client.get_status());
+	try
+	{
+		string s = client.execute_payload(
+				 "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
+				 "<edit-config>"
+				 "<target><candidate/></target>"
+				 "<config>"
+				 "<runner xmlns=\"http://cisco.com/ns/yang/ydktest-sanity\"><ytypes><built-in-t><number8>aaa</number8></built-in-t></ytypes></runner>"
+				 "</config>"
+				 "</edit-config>"
+				 "</rpc>");
+		BOOST_REQUIRE(s== "");
+	}
+	catch (YDKException & e)
+	{
+		BOOST_REQUIRE(e.err_msg=="Could not execute payload. Not connected to 127.0.0.1");
+	}
+
 }
 
 
@@ -204,15 +220,22 @@ BOOST_AUTO_TEST_CASE(RpcInvalid)
 	int result = client.connect();
 	BOOST_REQUIRE(result == OK);
 
-	string reply = client.execute_payload(
-		 "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-		 "<lock>"
-		 "<source><candidate/></source>"
-		 "</lock>"
-		 "</rpc>");
+	try
+	{
+		string reply = client.execute_payload(
+			 "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
+			 "<lock>"
+			 "<source><candidate/></source>"
+			 "</lock>"
+			 "</rpc>");
 
-	BOOST_REQUIRE(NULL != strstr(reply.c_str(), ""));
-	BOOST_REQUIRE(OK!=client.get_status());
+		BOOST_REQUIRE(NULL != strstr(reply.c_str(), ""));
+
+	}
+	catch (YDKException & e)
+	{
+		BOOST_REQUIRE(e.err_msg=="Could not build payload");
+	}
 
 	result = client.close();
 	BOOST_REQUIRE(result == OK);
@@ -226,11 +249,17 @@ BOOST_AUTO_TEST_CASE(WrongXml)
 	int result = client.connect();
 	BOOST_REQUIRE(result == OK);
 
-	string reply = client.execute_payload(
-	 "<testing>"
-	 );
-	BOOST_REQUIRE(reply== "");
-	BOOST_REQUIRE(OK!=client.get_status());
+	try
+	{
+		string reply = client.execute_payload(
+				"<testing>"
+		 );
+		BOOST_REQUIRE(reply== "");
+	}
+	catch (YDKException & e)
+	{
+		BOOST_REQUIRE(e.err_msg=="Could not build payload");
+	}
 
 	result = client.close();
 	BOOST_REQUIRE(result == OK);
@@ -244,11 +273,18 @@ BOOST_AUTO_TEST_CASE(CorrectXmlWrongRpc)
 	int result = client.connect();
 	BOOST_REQUIRE(result == OK);
 
-	string reply = client.execute_payload(
-	 "<testing/>"
-	 );
-	BOOST_REQUIRE(reply== "");
-	BOOST_REQUIRE(OK!=client.get_status());
+	try
+	{
+		string reply = client.execute_payload(
+				"<testing/>"
+		);
+		BOOST_REQUIRE(reply== "");
+	}
+	catch (YDKException & e)
+	{
+		BOOST_REQUIRE(e.err_msg=="Could not build payload");
+	}
+
 
 	result = client.close();
 	BOOST_REQUIRE(result == OK);
@@ -262,9 +298,15 @@ BOOST_AUTO_TEST_CASE(EmptyRpc)
 	int result = client.connect();
 	BOOST_REQUIRE(result == OK);
 
-	string reply = client.execute_payload("");
-	BOOST_REQUIRE(reply== "");
-	BOOST_REQUIRE(OK!=client.get_status());
+	try
+	{
+		string reply = client.execute_payload("");
+		BOOST_REQUIRE(reply== "");
+	}
+	catch (YDKException & e)
+	{
+		BOOST_REQUIRE(e.err_msg=="Could not build payload");
+	}
 
 	result = client.close();
 	BOOST_REQUIRE(result == OK);
