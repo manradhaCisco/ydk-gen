@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 	CrudService crud{};
 
 	auto bgp_filter = make_unique<openconfig_bgp::Bgp>();
-	auto bgp_read = crud.read(provider, *bgp_filter);
+	auto bgp_read = crud.read(provider, *bgp_filter, true);
 	if(bgp_read == nullptr)
 	{
 		cout << "=================================================="<<endl;

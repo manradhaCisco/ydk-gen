@@ -23,29 +23,26 @@
 
 #include <iostream>
 
-//#include <boost/python.hpp>
-//#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-
 #include <libnetconf.h>
 #include <libnetconf_ssh.h>
-
-#include "entity.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include "entity.hpp"
-#include "netconf_client.hpp"
-#include "netconf_provider.hpp"
-#include "core.hpp"
-#include "entity_data_node_walker.hpp"
 #include <cstring>
 #include <iostream>
 #include <string>
 #include <algorithm>
 #include <sstream>
+
+#include "exception.hpp"
+#include "entity.hpp"
+#include "netconf_client.hpp"
+#include "netconf_provider.hpp"
+#include "core.hpp"
+#include "entity_data_node_walker.hpp"
 
 using namespace std;
 using namespace ydk;
@@ -386,7 +383,7 @@ static core::DataNode* handle_edit_reply(string reply, NetconfClient & client, b
 	{
 		//TODO at a later stage this should be changed to
 		//another exception hierarchy
-		throw core::YDKException{reply};
+		throw YDKException{reply};
 	}
 
 	if(candidate_supported)
@@ -397,7 +394,7 @@ static core::DataNode* handle_edit_reply(string reply, NetconfClient & client, b
 		{
 			//TODO at a later stage this should be changed to
 			//another exception hierarchy
-			throw core::YDKException{reply};
+			throw YDKException{reply};
 		}
 	}
 
@@ -419,13 +416,13 @@ static core::DataNode* handle_read_reply(string reply, core::RootSchemaNode * ro
 	{
 		//TODO at a later stage this should be changed to
 		//another exception hierarchy
-		throw core::YDKException{reply};
+		throw YDKException{reply};
 	}
 	data_start+= sizeof("<data>") - 1;
 	auto data_end = reply.find("</data>", data_start);
 	if(data_end == std::string::npos)
 	{
-		throw core::YDKException{"No end data tag found"};
+		throw YDKException{"No end data tag found"};
 	}
 
 	string data = reply.substr(data_start, data_end-data_start);
@@ -433,7 +430,7 @@ static core::DataNode* handle_read_reply(string reply, core::RootSchemaNode * ro
 	auto datanode = codec_service.decode(root_schema, data, core::CodecService::Format::XML);
 
 	if(!datanode){
-		throw core::YDKException{"Problems deserializing output"};
+		throw YDKException{"Problems deserializing output"};
 	}
 	return datanode;
 }
@@ -449,7 +446,7 @@ static string get_read_rpc_name(bool config)
 
 static bool is_config(core::Rpc & rpc)
 {
-	if(!rpc.input()->find("config").empty())
+	if(!rpc.input()->find("only-config").empty())
 	{
 		return true;
 	}

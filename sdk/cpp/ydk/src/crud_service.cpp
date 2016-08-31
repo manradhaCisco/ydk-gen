@@ -31,7 +31,8 @@ using namespace std;
 
 namespace ydk {
 static string get_data_payload(Entity & entity, core::RootSchemaNode & root_schema);
-static core::DataNode* execute_rpc(core::ServiceProvider & provider, Entity & entity, const string & operation, const string & data_tag);
+static core::DataNode* execute_rpc(core::ServiceProvider & provider, Entity & entity,
+		const string & operation, const string & data_tag, bool set_config_flag=false);
 static unique_ptr<Entity> get_top_entity_from_filter(Entity & filter);
 static bool operation_succeeded(core::DataNode * node);
 
@@ -53,7 +54,7 @@ bool CrudService::update(core::ServiceProvider & provider, Entity & entity)
 			);
 }
 
-bool CrudService::del(core::ServiceProvider & provider, Entity & entity)
+bool CrudService::delete_(core::ServiceProvider & provider, Entity & entity)
 {
 	return operation_succeeded(
 			execute_rpc(provider, entity, "ydk:delete", "entity")
@@ -64,6 +65,17 @@ unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & 
 {
 	unique_ptr<Entity> top_entity = get_top_entity_from_filter(filter);
 	core::DataNode* read_data_node = execute_rpc(provider, filter, "ydk:read", "filter");
+	if (read_data_node == nullptr)
+		return nullptr;
+
+	get_entity_from_data_node(read_data_node->children()[0], top_entity.get());
+    return top_entity;
+}
+
+unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & filter, bool config_only)
+{
+	unique_ptr<Entity> top_entity = get_top_entity_from_filter(filter);
+	core::DataNode* read_data_node = execute_rpc(provider, filter, "ydk:read", "filter", config_only);
 	if (read_data_node == nullptr)
 		return nullptr;
 
@@ -85,12 +97,16 @@ static unique_ptr<Entity> get_top_entity_from_filter(Entity & filter)
 }
 
 static core::DataNode* execute_rpc(core::ServiceProvider & provider, Entity & entity,
-		const string & operation, const string & data_tag)
+		const string & operation, const string & data_tag, bool set_config_flag)
 {
 	core::RootSchemaNode* root_schema = provider.get_root_schema();
 	std::unique_ptr<ydk::core::Rpc> ydk_rpc { root_schema->rpc(operation) };
 	string data = get_data_payload(entity, *root_schema);
 
+	if(set_config_flag)
+	{
+		ydk_rpc->input()->create("only-config");
+	}
 	ydk_rpc->input()->create(data_tag, data);
 	return (*ydk_rpc)(provider);
 }

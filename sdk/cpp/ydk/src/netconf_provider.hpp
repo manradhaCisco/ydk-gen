@@ -25,49 +25,49 @@
 
 namespace ydk {
 
+class NetconfClient;
 
-	class NetconfClient;
-    class NetconfServiceProvider : public core::ServiceProvider {
-	public:
-        NetconfServiceProvider(const core::Repository* repo,
-                std::string address,
-				std::string username,
-				std::string password,
-				int port);
-		~NetconfServiceProvider();
+class NetconfServiceProvider : public core::ServiceProvider {
+public:
+	NetconfServiceProvider(const core::Repository* repo,
+			std::string address,
+			std::string username,
+			std::string password,
+			int port);
+	~NetconfServiceProvider();
 
-        core::RootSchemaNode* get_root_schema();
+	core::RootSchemaNode* get_root_schema();
 
-        core::DataNode* invoke(core::Rpc* rpc) const;
+	core::DataNode* invoke(core::Rpc* rpc) const;
 
-        static const char* WRITABLE_RUNNING;
-        static const char* CANDIDATE;
-        static const char* ROLLBACK_ON_ERROR;
-        static const char* STARTUP;
-        static const char* URL;
-        static const char* XPATH;
-        static const char* BASE_1_1;
-        static const char* CONFIRMED_COMMIT_1_1;
-        static const char* VALIDATE_1_1;
-        static const char* NS;
-        static const char* MODULE_NAME;
+	static const char* WRITABLE_RUNNING;
+	static const char* CANDIDATE;
+	static const char* ROLLBACK_ON_ERROR;
+	static const char* STARTUP;
+	static const char* URL;
+	static const char* XPATH;
+	static const char* BASE_1_1;
+	static const char* CONFIRMED_COMMIT_1_1;
+	static const char* VALIDATE_1_1;
+	static const char* NS;
+	static const char* MODULE_NAME;
 
-	private:
-        core::DataNode* handle_edit(core::Rpc* rpc, core::Annotation ann) const;
+private:
+	core::DataNode* handle_edit(core::Rpc* rpc, core::Annotation ann) const;
 
-        core::DataNode* handle_read(core::Rpc* rpc) const;
+	core::DataNode* handle_read(core::Rpc* rpc) const;
 
-        const core::Repository* m_repo;
-		std::unique_ptr<NetconfClient> client;
-		std::unique_ptr<ydk::core::RootSchemaNode> root_schema;
-		std::vector<ydk::core::Capability> capabilities;
+	const core::Repository* m_repo;
+	std::unique_ptr<NetconfClient> client;
+	std::unique_ptr<ydk::core::RootSchemaNode> root_schema;
+	std::vector<ydk::core::Capability> capabilities;
 
-        std::vector<std::string> client_capabilities;
-        //crud related stuff
-        core::SchemaNode* create_schema;
-        core::SchemaNode* read_schema;
-        core::SchemaNode* update_schema;
-        core::SchemaNode* delete_schema;
+	std::vector<std::string> client_capabilities;
+	//crud related stuff
+	core::SchemaNode* create_schema;
+	core::SchemaNode* read_schema;
+	core::SchemaNode* update_schema;
+	core::SchemaNode* delete_schema;
 
 };
 }

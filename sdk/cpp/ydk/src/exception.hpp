@@ -1,6 +1,6 @@
 //
-// @file ydk.hpp
-// @brief The main ydk public header.
+// @file exception.hpp
+// @brief The ydk exception header.
 //
 // YANG Development Kit
 // Copyright 2016 Cisco Systems. All rights reserved
@@ -25,32 +25,27 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#ifndef CRUD_SERVICE_HPP
-#define CRUD_SERVICE_HPP
+#ifndef _EXCEPTION_HPP_
+#define _EXCEPTION_HPP_
 
 #include <string>
-#include <memory>
 
-#include "entity.hpp"
 
 namespace ydk {
-class Service {
+///
+/// @brief Base class for YDK Exceptions
+///
+/// The subclasses give a specialized view of the error that has occurred.
+///
+struct YDKException
+{
+	YDKException(const std::string& msg) : err_msg{msg}
+	{
+
+	}
+
+	std::string err_msg;
 };
-namespace core {
-class ServiceProvider;
 }
 
-class CrudService : public Service {
-	public:
-		CrudService();
-
-		bool create(core::ServiceProvider & provider, Entity & entity);
-		bool update(core::ServiceProvider & provider, Entity & entity);
-		bool delete_(core::ServiceProvider & provider, Entity & entity);
-		std::unique_ptr<Entity> read(core::ServiceProvider & provider, Entity & filter);
-		std::unique_ptr<Entity> read(core::ServiceProvider & provider, Entity & filter, bool config_only);
-};
-
-}
-
-#endif /* CRUD_SERVICE_HPP */
+#endif /* _EXCEPTION_HPP_ */
