@@ -22,19 +22,6 @@
 //////////////////////////////////////////////////////////////////
 
 #include <iostream>
-
-#include <libnetconf.h>
-#include <libnetconf_ssh.h>
-
-#include <fstream>
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <vector>
-#include <cstring>
-#include <iostream>
-#include <string>
-#include <algorithm>
 #include <sstream>
 
 #include "exception.hpp"

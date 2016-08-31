@@ -1,5 +1,5 @@
 //
-// @file ydk.hpp
+// @file crud_service.hpp
 // @brief The main ydk public header.
 //
 // YANG Development Kit
@@ -34,13 +34,17 @@
 #include "entity.hpp"
 
 namespace ydk {
-class Service {
+class Service
+{
 };
-namespace core {
+
+namespace core
+{
 class ServiceProvider;
 }
 
-class CrudService : public Service {
+class CrudService : public Service
+{
 	public:
 		CrudService();
 
@@ -49,6 +53,9 @@ class CrudService : public Service {
 		bool delete_(core::ServiceProvider & provider, Entity & entity);
 		std::unique_ptr<Entity> read(core::ServiceProvider & provider, Entity & filter);
 		std::unique_ptr<Entity> read(core::ServiceProvider & provider, Entity & filter, bool config_only);
+
+	private:
+		std::unique_ptr<Entity> read(core::ServiceProvider & provider, Entity & filter, core::DataNode* read_data_node);
 };
 
 }

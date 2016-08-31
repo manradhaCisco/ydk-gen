@@ -22,11 +22,8 @@
 //////////////////////////////////////////////////////////////////
 
 
-#include <fstream>
 #include <iostream>
 #include <stdio.h>
-#include <stdlib.h>
-#include <vector>
 
 #include <libnetconf.h>
 #include <libnetconf_ssh.h>
