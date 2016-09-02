@@ -16,7 +16,6 @@
 """compare.py
 return True if attributes in entity(lhs) = entity(rhs)
 """
-from builtins import str as newstr
 
 import logging
 from enum import Enum
@@ -33,7 +32,7 @@ LOGGER.setLevel(logging.DEBUG)
 
 def is_builtin_type(attr):
     # all the deridved types should have __cmp__ implemented
-    if (isinstance(attr, (int, bool, dict, str, int, long, newstr, float)) or
+    if (isinstance(attr, (int, bool, dict, str, int, long, float)) or
             isinstance(attr, (Enum, Empty, Decimal64, FixedBitsDict)) or
             isinstance(attr, (YLeafList, YListItem))):
         return True

@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from builtins import str
 #  ----------------------------------------------------------------
 # Copyright 2016 Cisco Systems
 #
@@ -16,6 +14,7 @@ from builtins import str
 # limitations under the License.
 # ------------------------------------------------------------------
 
+from __future__ import absolute_import
 import ydk.types as ytypes
 import unittest
 
@@ -200,7 +199,7 @@ class SanityTest(unittest.TestCase):
         result = is_equal(runner, runner1)
         self.assertEqual(result, True)
 
-    def test_string(self):
+    def test_string_1(self):
         runner = self._create_runner()
         runner.ytypes.built_in_t.name = 'name_str'
         self.crud.create(self.ncc, runner)
@@ -210,6 +209,20 @@ class SanityTest(unittest.TestCase):
         runner1 = self.crud.read(self.ncc, runner1)
 
         # Compare runners
+        result = is_equal(runner, runner1)
+        self.assertEqual(result, True)
+
+    def test_string_2(self):
+        runner = self._create_runner()
+        runner.ytypes.built_in_t.name = b'name_str'
+        self.crud.create(self.ncc, runner)
+
+        # Read into Runner2
+        runner1 = ysanity.Runner()
+        runner1 = self.crud.read(self.ncc, runner1)
+
+        # Compare runners
+        runner.ytypes.built_in_t.name = 'name_str'
         result = is_equal(runner, runner1)
         self.assertEqual(result, True)
 

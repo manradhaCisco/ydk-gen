@@ -18,7 +18,6 @@
         Unittest for DELETE object.
 """
 from __future__ import absolute_import
-from builtins import str
 import ydk.types as ytypes
 import unittest
 

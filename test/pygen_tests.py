@@ -3,7 +3,6 @@
 Copyright (c) 2015 by Cisco Systems, Inc.
 All rights reserved.
 """
-from builtins import filter
 
 #  ----------------------------------------------------------------
 # Copyright 2016 Cisco Systems
@@ -30,7 +29,9 @@ import argparse
 import subprocess
 from difflib import context_diff
 from itertools import tee
-from future.moves.itertools import filterfalse
+
+# from builtins import filter
+from six.moves import filterfalse
 from unittest import TestCase, TestSuite, TextTestRunner
 
 import pip

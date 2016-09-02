@@ -1,4 +1,3 @@
-from __future__ import print_function
 #  ----------------------------------------------------------------
 # Copyright 2016 Cisco Systems
 #
@@ -15,6 +14,7 @@ from __future__ import print_function
 # limitations under the License.
 # ------------------------------------------------------------------
 
+from __future__ import print_function
 from distutils import dir_util, file_util
 from optparse import OptionParser
 

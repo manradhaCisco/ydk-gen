@@ -18,7 +18,7 @@
    YDK PY converter
 
 '''
-from future.utils import iteritems
+from six import iteritems
 from ydkgen.common import yang_id
 
 from ydkgen.api_model import Class

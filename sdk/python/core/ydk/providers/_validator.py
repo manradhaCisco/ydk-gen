@@ -19,7 +19,6 @@
    uses ncclient (a Netconf client library) to provide CRUD services.
 
 """
-from builtins import str
 from ._value_encoder import ValueEncoder
 from ydk.errors import YPYModelError, YPYErrorCode
 from ydk.types import READ, DELETE, Decimal64, Empty, YList, YLeafList, YListItem
@@ -69,7 +68,6 @@ def validate_entity_delegate(entity, optype, errors):
         if  member.mtype in (ATTRIBUTE, REFERENCE_ENUM_CLASS, REFERENCE_LIST, REFERENCE_LEAFLIST):
             _dm_validate_value(member, value, entity, optype, errors)
 
-
 def _dm_validate_value(meta, value, parent, optype, errors):
     if value is None:
         return value
@@ -84,6 +82,10 @@ def _dm_validate_value(meta, value, parent, optype, errors):
         exec_import = 'from %s import %s' \
             % (meta.pmodule_name, meta.clazz_name.split('.')[0])
         exec(exec_import)
+    elif meta._ptype == 'str' and meta.mtype != REFERENCE_LEAFLIST and isinstance(value, bytes):
+        new_value = str(value.decode())
+        setattr(parent, meta.presentation_name, new_value)
+        value = new_value
 
     isNumber = False
     path = '%s.%s' % (parent.i_meta.name, meta.presentation_name)
@@ -178,8 +180,13 @@ def _dm_validate_value(meta, value, parent, optype, errors):
         value_len = len([v for v in value if v is not None])
 
         if min_elements <= value_len <= max_elements and value_len == len(value):
-            for v in value:
+            for i in range(len(value)):
+                v = value [i]
+                if meta.ptype == 'str' and isinstance(value[i], bytes):
+                    v = str(value[i].decode())
+                    value[i] = v
                 _dm_validate_value(meta, v, parent, optype, errors)
+            setattr(parent, meta.presentation_name, value)
         else:
             errmsg = "Invalid leaflist length, length = %d" % value_len
             _handle_error(meta, parent, errors, errmsg)

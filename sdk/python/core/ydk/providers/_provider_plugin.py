@@ -21,7 +21,6 @@
    to provide CRUD services.
 
 """
-from builtins import str
 from lxml import etree
 
 from ydk._core._dm_meta_info import REFERENCE_IDENTITY_CLASS, REFERENCE_ENUM_CLASS

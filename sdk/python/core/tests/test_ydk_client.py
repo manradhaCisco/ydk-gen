@@ -19,7 +19,6 @@
 """
 from __future__ import print_function
 from __future__ import absolute_import
-from builtins import str
 import unittest
 from compare import is_equal
 
@@ -95,8 +94,8 @@ class SanityTest(unittest.TestCase):
         native_end_time = time.time()
         ncc_result = self.netconf_service.get(ncc, None)
         ncc_end_time = time.time()
-        print('Native client time taken: ' + str(native_end_time - start_time) + ' seconds')
-        print('NCClient time taken: ' + str(ncc_end_time - native_end_time) + ' seconds')
+        print('Native client time taken: %s seconds' % (native_end_time - start_time))
+        print('NCClient time taken: %s seconds' % (ncc_end_time - native_end_time))
         self.assertEqual(True, is_equal(native_result, ncc_result))
 
 

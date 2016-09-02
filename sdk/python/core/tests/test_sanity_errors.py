@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from builtins import str
 #  ----------------------------------------------------------------
 # Copyright 2016 Cisco Systems
 #
@@ -16,6 +14,7 @@ from builtins import str
 # limitations under the License.
 # ------------------------------------------------------------------
 
+from __future__ import absolute_import
 import ydk.types as ytypes
 import unittest
 
