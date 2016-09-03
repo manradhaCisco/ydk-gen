@@ -45,6 +45,56 @@ ydk::core::segmentalize(const std::string& path)
 }
 
 /////////////////////////////////////////////////////////////////////////
+/// YDKCoreException
+/////////////////////////////////////////////////////////////////////////
+ydk::core::YDKCoreException::YDKCoreException(const std::string& msg) : ydk::YDKException{msg}
+{
+    
+}
+
+//////////////////////////////////////////////////////////////////////////
+/// YDKIllegalStateException
+//////////////////////////////////////////////////////////////////////////
+ydk::YDKIllegalStateException::YDKIllegalStateException(const std::string& msg) : ydk::YDKException{msg}
+{
+    
+}
+
+//////////////////////////////////////////////////////////////////////////
+/// YDKInvalidArgumentException
+//////////////////////////////////////////////////////////////////////////
+ydk::YDKInvalidArgumentException::YDKInvalidArgumentException(const std::string& msg) : ydk::YDKException{msg}
+{
+    
+}
+
+//////////////////////////////////////////////////////////////////////////
+/// YDKOperationNotSupportedException
+//////////////////////////////////////////////////////////////////////////
+ydk::YDKOperationNotSupportedException::YDKOperationNotSupportedException(const std::string& msg) : ydk::YDKException{msg}
+{
+    
+}
+
+//////////////////////////////////////////////////////////////////////////
+/// YDKDataValidationException
+//////////////////////////////////////////////////////////////////////////
+ydk::core::YDKDataValidationException::YDKDataValidationException() : ydk::core::YDKCoreException{"Data Validation Exception"}
+{
+    
+}
+
+//////////////////////////////////////////////////////////////////////////
+/// YDKPathException
+//////////////////////////////////////////////////////////////////////////
+ydk::core::YDKPathException::YDKPathException(ydk::core::YDKPathException::Error error_code) : ydk::core::YDKCoreException{"Data Validation Exception"}, err{error_code}
+{
+    
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////
 /// YDKCodecException
 /////////////////////////////////////////////////////////////////////////
 ydk::core::YDKCodecException::YDKCodecException(YDKCodecException::Error ec) : YDKCoreException(ly_errmsg()), err{ec}
@@ -52,13 +102,727 @@ ydk::core::YDKCodecException::YDKCodecException(YDKCodecException::Error ec) : Y
 
 }
 
+////////////////////////////////////////////////////////////////////////////
+/// Annotation
+///////////////////////////////////////////////////////////////////////////
+ydk::core::Annotation::Annotation(const std::string& ns, const std::string& name, const std::string& val) : m_ns{ns}, m_name{name}, m_val{val}
+{
+    
+}
+
+ydk::core::Annotation::Annotation(const Annotation& an) : m_ns{an.m_ns}, m_name{an.m_name}, m_val{an.m_val}
+{
+    
+}
+
+ydk::core::Annotation::Annotation(Annotation&& an) : m_ns{std::move(an.m_ns)}, m_name{std::move(an.m_name)}, m_val{std::move(an.m_val)}
+{
+    
+}
+
+ydk::core::Annotation&
+ydk::core::Annotation::operator=(const ydk::core::Annotation& an)
+{
+    m_ns = an.m_ns;
+    m_name = an.m_name;
+    m_val = an.m_val;
+    
+    return *this;
+}
+
+ydk::core::Annotation&
+ydk::core::Annotation::operator=(ydk::core::Annotation&& an)
+{
+    m_ns = std::move(an.m_ns);
+    m_name = std::move(an.m_name);
+    m_val = std::move(an.m_val);
+    
+    return *this;
+}
+
+bool
+ydk::core::Annotation::operator==(const Annotation& an) const
+{
+    return m_ns == an.m_ns && m_name == an.m_name;
+}
+
+///////////////////////////////////////////////////////////////////////////
+/// Statement
+///////////////////////////////////////////////////////////////////////////
+
+ydk::core::Statement::Statement(): keyword{}, arg{}
+{
+    
+}
+
+ydk::core::Statement::Statement(const std::string& mkeyword, const std::string& marg) : keyword{mkeyword}, arg{marg}
+{
+    
+}
+
+ydk::core::Statement::Statement(const ydk::core::Statement& stmt): keyword{stmt.keyword}, arg{stmt.arg}
+{
+    
+}
+
+ydk::core::Statement::Statement(ydk::core::Statement&& stmt): keyword{std::move(stmt.keyword)}, arg{std::move(stmt.arg)}
+{
+    
+}
+
+ydk::core::Statement::~Statement()
+{
+    
+}
+
+ydk::core::Statement&
+ydk::core::Statement::operator=(const ydk::core::Statement& stmt)
+{
+    keyword = stmt.keyword;
+    arg = stmt.arg;
+    return *this;
+}
+
+ydk::core::Statement&
+ydk::core::Statement::operator=(ydk::core::Statement&& stmt)
+{
+    keyword = std::move(stmt.keyword);
+    arg = std::move(stmt.arg);
+    return *this;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+/// SchemaValueType
+///////////////////////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueType::~SchemaValueType()
+{
+    
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// ydk::core::SchemaValueBinaryType
+/////////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueBinaryType::~SchemaValueBinaryType()
+{
+    
+}
+
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueBinaryType::validate(const std::string& value) const
+{
+    DiagnosticNode<std::string, ydk::core::ValidationError> diag {};
+    
+    if(value.empty()){
+        diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+    }
+    return diag;
+};
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+/// ydk::core::SchemaValueBitsType::Bit
+//////////////////////////////////////////////////////////////////////////////////
+ydk::core::SchemaValueBitsType::Bit::Bit(std::string m_name, uint32_t m_pos) : name{m_name} ,
+pos{m_pos} {
+    
+}
+
+
+namespace ydk {
+    namespace core {
+        static std::vector<std::string> split(const std::string &s, char delim) {
+            std::stringstream ss(s);
+            std::string item;
+            std::vector<std::string> tokens;
+            while (std::getline(ss, item, delim)) {
+                tokens.push_back(item);
+            }
+            return tokens;
+        }
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////
+// ydk::core::SchemaValueBitsType
+////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueBitsType::~SchemaValueBitsType()
+{
+    
+}
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueBitsType::validate(const std::string& value) const
+{
+    DiagnosticNode<std::string, ydk::core::ValidationError> diag {};
+    
+    if(value.empty()){
+        diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+    } else {
+        //tokenize and make sure all tokens are accounted for
+        auto tokens = ydk::core::split(value, ' ');
+        std::map<std::string, ydk::core::SchemaValueBitsType::Bit*> name_bit_map{};
+        for(auto bit : bits){
+            name_bit_map.insert(std::make_pair(bit.name,&bit));
+        }
+        for(auto token : tokens) {
+            if(name_bit_map.find(token) == name_bit_map.end()){
+                diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+            }
+        }
+        
+    }
+    return diag;
+}
+
+////////////////////////////////////////////////////////////////////
+// ydk::core::SchemaValueDec64Type
+////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueDec64Type::~SchemaValueDec64Type()
+{
+    
+}
+
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueDec64Type::validate(const std::string& value) const
+{
+    DiagnosticNode<std::string, ydk::core::ValidationError> diag {};
+    
+    if(value.empty()){
+        diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+    }
+    return diag;
+}
+
+//////////////////////////////////////////////////////////////////////
+/// ydk::core::SchemaValueEnumerationType::Enum
+/////////////////////////////////////////////////////////////////////
+ydk::core::SchemaValueEnumerationType::Enum::Enum(std::string m_name, uint8_t m_flags, int32_t m_value) : name{m_name}, flags{m_flags}, value{m_value}
+{
+    
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+// ydk::core::SchemaValueEnumerationType
+////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueEnumerationType::~SchemaValueEnumerationType()
+{
+    
+}
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueEnumerationType::validate(const std::string& value) const
+{
+    DiagnosticNode<std::string, ydk::core::ValidationError> diag {};
+    
+    if(value.empty()){
+        diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+        
+    } else {
+    
+        for(auto e : enums){
+            if(e.name == value){
+                return diag;
+            }
+        }
+    }
+    
+    diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+    
+    return diag;
+}
+
+////////////////////////////////////////////////////////////////////
+// ydk::core::SchemaValueIdentityType
+////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueIdentityType::~SchemaValueIdentityType()
+{
+    
+}
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueIdentityType::validate(const std::string& value) const
+{
+    DiagnosticNode<std::string, ydk::core::ValidationError> diag {};
+    
+    if(value.empty()){
+        diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+    }
+    return diag;
+}
+
+////////////////////////////////////////////////////////////////////
+// ydk::core::SchemaValueInstanceIdType
+////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueInstanceIdType::~SchemaValueInstanceIdType()
+{
+    
+}
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueInstanceIdType::validate(const std::string& value) const
+{
+    DiagnosticNode<std::string, ydk::core::ValidationError> diag {};
+    
+    if(value.empty()){
+        diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+    }
+    return diag;
+}
+
+////////////////////////////////////////////////////////////////////
+// ydk::core::SchemaValueLeafrefType
+////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueLeafrefType::~SchemaValueLeafrefType()
+{
+    
+}
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueLeafrefType::validate(const std::string& value) const
+{
+    
+    SchemaNode* sn = target;
+    
+    if(sn == nullptr) {
+        throw YDKIllegalStateException{"Leafref target is not resolved"};
+    }
+ 
+    return sn->type()->validate(value);
+}
+
+////////////////////////////////////////////////////////////////////
+// ydk::core::SchemaValueStringType
+////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueStringType::~SchemaValueStringType()
+{
+    
+}
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueStringType::validate(const std::string& value) const
+{
+    DiagnosticNode<std::string, ydk::core::ValidationError> diag {};
+    
+    if(value.empty()){
+        diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+    }
+    
+    //TODO
+    
+    /// first do a length check
+    
+    
+    /// then a pattern check
+    
+    return diag;
+}
+
+////////////////////////////////////////////////////////////////////
+// ydk::core::SchemaValueUnionType
+////////////////////////////////////////////////////////////////////////
+
+
+ydk::core::SchemaValueUnionType::~SchemaValueUnionType()
+{
+    for(auto type : types) {
+        delete type;
+    }
+}
+
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueUnionType::validate(const std::string& value) const
+{
+    
+    for(auto type : types){
+        auto diag = type->validate(value);
+        if(!diag.has_errors()){
+            return diag;
+        }
+    }
+    
+    DiagnosticNode<std::string, ydk::core::ValidationError> diag{};
+    diag.errors.push_back(ValidationError::INVALATTR);
+    
+    return diag;
+}
+
+////////////////////////////////////////////////////////////////////
+// ydk::core::SchemaValueEmptyType
+////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueEmptyType::~SchemaValueEmptyType()
+{
+    
+}
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueEmptyType::validate(const std::string& value) const
+{
+    DiagnosticNode<std::string, ydk::core::ValidationError> diag {};
+    
+    if(value.empty()){
+        diag.errors.push_back(ydk::core::ValidationError::INVALID_EMPTY_VAL);
+    } else if(value != leaf_name){
+        diag.errors.push_back(ydk::core::ValidationError::INVALID_EMPTY_VAL);
+    }
+    return diag;
+}
+
+////////////////////////////////////////////////////////////////////
+// ydk::core::SchemaValueBoolType
+////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueBoolType::~SchemaValueBoolType()
+{
+    
+}
+
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueBoolType::validate(const std::string& value) const
+{
+    DiagnosticNode<std::string, ydk::core::ValidationError> diag {};
+    
+    if(value.empty()){
+        diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+    } else {
+        
+        if(value != "true" && value != "false")
+            diag.errors.push_back(ValidationError::INVALID_BOOL_VAL);
+    }
+    
+    return diag;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// ydk::core::SchemaValueNumType
+///////////////////////////////////////////////////////////////////////////////
+
+ydk::core::SchemaValueNumType::~SchemaValueNumType()
+{
+    
+}
+
+ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError>
+ydk::core::SchemaValueNumType::validate(const std::string& value) const
+{
+    DiagnosticNode<std::string, ydk::core::ValidationError> diag {};
+    
+    if(value.empty()){
+        diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+    }
+    
+    return diag;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+/// SchemaNode
+///////////////////////////////////////////////////////////////////////////////
+ydk::core::SchemaNode::~SchemaNode()
+{
+    
+}
+
+//////////////////////////////////////////////////////////////////////////////
+/// RootSchemaNode
+/////////////////////////////////////////////////////////////////////////////
+ydk::core::RootSchemaNode::~RootSchemaNode()
+{
+    
+}
+
+std::string
+ydk::core::RootSchemaNode::path() const
+{
+    return "/";
+}
+
+ydk::core::SchemaNode*
+ydk::core::RootSchemaNode::parent() const noexcept
+{
+    return nullptr;
+}
+
+const ydk::core::SchemaNode*
+ydk::core::RootSchemaNode::root() const noexcept
+{
+    return this;
+}
+
+ydk::core::Statement
+ydk::core::RootSchemaNode::statement() const
+{
+    return Statement{};
+}
+
+std::vector<ydk::core::Statement>
+ydk::core::RootSchemaNode::keys() const
+{
+    return std::vector<Statement>{};
+    
+}
+
+////////////////////////////////////////////////////////////////////////
+/// DataNode
+////////////////////////////////////////////////////////////////////////
+
+ydk::core::DataNode::~DataNode()
+{
+    
+}
+
+ydk::core::DataNode*
+ydk::core::DataNode::create(const std::string& path)
+{
+    return create(path, "");
+}
+
+/////////////////////////////////////////////////////////////////////////////
+/// Capability
+/////////////////////////////////////////////////////////////////////////////
+
+ydk::core::Capability::Capability(const std::string& mod, const std::string& rev): module{mod}, revision{rev}
+{
+    
+}
+
+ydk::core::Capability::Capability(const std::string& mod, const std::string& rev, const std::vector<std::string>& f,
+           const std::vector<std::string>& d): module{mod}, revision{rev}, features{f}, deviations({d})
+{
+    
+}
+
+ydk::core::Capability::Capability(const Capability& cap): module{cap.module}, revision{cap.revision}, features{cap.features}, deviations{cap.deviations}
+{
+    
+}
+
+ydk::core::Capability::Capability(ydk::core::Capability&& cap): module{std::move(cap.module)}, revision{std::move(cap.revision)},
+features{std::move(cap.features)}, deviations{std::move(cap.deviations)}
+{
+    
+}
+
+ydk::core::Capability&
+ydk::core::Capability::operator=(const ydk::core::Capability& cap)
+{
+    module = cap.module;
+    revision = cap.revision;
+    features = cap.features;
+    deviations = cap.deviations;
+    
+    return *this;
+}
+
+
+ydk::core::Capability&
+ydk::core::Capability::operator=(ydk::core::Capability&& cap)
+{
+    module = std::move(cap.module);
+    revision = std::move(cap.revision);
+    features = std::move(cap.features);
+    deviations = std::move(cap.deviations);
+    
+    return *this;
+}
+
+bool
+ydk::core::Capability::operator==(const ydk::core::Capability& cap)
+{
+    if( cap.module != module || cap.revision != revision ) {
+        return false;
+    }
+    
+    if (cap.features.size() != features.size()){
+        return false;
+    } else if(cap.features.size() != 0){
+        
+        //sort and compare
+        std::vector<std::string> cap_features{cap.features};
+        std::sort(cap_features.begin(), cap_features.end());
+        
+        //sort ourselves
+        std::sort(features.begin(), features.end());
+        
+        if(cap_features != features) {
+            return false;
+        }
+        
+    }
+    
+    if (cap.deviations.size() != deviations.size()) {
+        return false;
+    } else if(cap.deviations.size() != 0){
+        
+        //sort and compare
+        std::vector<std::string> cap_deviations{cap.deviations};
+        std::sort(cap_deviations.begin(), cap_deviations.end());
+        
+        //sort ourselves
+        std::sort(deviations.begin(), deviations.end());
+        
+        if(cap_deviations != deviations) {
+            return false;
+        }
+        
+    }
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////
+/// ServiceProvider
+///////////////////////////////////////////////////////////////////
+ydk::core::ServiceProvider::~ServiceProvider()
+{
+    
+}
 
 /////////////////////////////////////////////////////////////////////////
+/// Rpc
+////////////////////////////////////////////////////////////////////////
+ydk::core::Rpc::~Rpc()
+{
+    
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////
+namespace ydk {
+    namespace core {
+       
+        SchemaValueType* create_schema_value_type(struct lys_node_leaf* leaf,
+                                                  struct lys_type* type)
+        {
+            
+            SchemaValueType* m_type = nullptr;
+            
+            LY_DATA_TYPE data_type = type->base;
+            
+            switch(data_type){
+                case LY_TYPE_BINARY: {
+                    SchemaValueBinaryType* binary = new SchemaValueBinaryType{};
+                    m_type = binary;
+                    break;
+                }
+                case LY_TYPE_BITS: {
+                    SchemaValueBitsType* bits = new SchemaValueBitsType{};
+                    m_type = bits;
+                    break;
+                }
+                case LY_TYPE_BOOL: {
+                    SchemaValueBoolType* boolean = new SchemaValueBoolType{};
+                    m_type = boolean;
+                    break;
+                }
+                case LY_TYPE_DEC64: {
+                    SchemaValueDec64Type* dec64 = new SchemaValueDec64Type{};
+                    m_type = dec64;
+                    break;
+                }
+                case LY_TYPE_EMPTY: {
+                    SchemaValueEmptyType* empty = new SchemaValueEmptyType{leaf->name};
+                    m_type = empty;
+                    break;
+                }
+                case LY_TYPE_ENUM: {
+                    SchemaValueEnumerationType* enum_type = new SchemaValueEnumerationType{};
+                    m_type = enum_type;
+                    break;
+                }
+                case LY_TYPE_IDENT: {
+                    SchemaValueIdentityType* identity= new SchemaValueIdentityType{};
+                    m_type = identity;
+                    break;
+                }
+                case LY_TYPE_INST: {
+                    SchemaValueInstanceIdType* instance_id = new SchemaValueInstanceIdType{};
+                    m_type = instance_id;
+                    break;
+                }
+                case LY_TYPE_LEAFREF: {
+                    SchemaValueLeafrefType* leafref = new SchemaValueLeafrefType{};
+                    m_type = leafref;
+                    break;
+                }
+                case LY_TYPE_STRING: {
+                    SchemaValueStringType* stringType = new SchemaValueStringType{};
+                    m_type = stringType;
+                    break;
+                }
+                case LY_TYPE_UNION: {
+                    
+                    if(type->info.uni.count != 0) {
+                        SchemaValueUnionType* unionType = new SchemaValueUnionType{};
+                        m_type = unionType;
+                        for(int i=0; i< type->info.uni.count; ++i) {
+                            SchemaValueType* child_type =
+                                create_schema_value_type(leaf,&(type->info.uni.types[i]));
+                            unionType->types.push_back(child_type);
+                        }
+                    } else if(type->der){
+                        m_type = create_schema_value_type(leaf, &(type->der->type));
+                    } else {
+                        throw ydk::YDKIllegalStateException{"Unable to determine union's types"};
+                    }
+                    
+                    
+                    break;
+                }
+                case LY_TYPE_INT8:
+                case LY_TYPE_UINT8:
+                case LY_TYPE_INT16:
+                case LY_TYPE_UINT16:
+                case LY_TYPE_INT32:
+                case LY_TYPE_UINT32:
+                case LY_TYPE_INT64:
+                case LY_TYPE_UINT64: {
+                    SchemaValueNumType* numType = new SchemaValueNumType{};
+                    m_type = numType;
+                    break;
+                }
+                default:
+                    throw YDKIllegalStateException{"Unknown type to process for schema"};
+                    
+            }
+
+            return m_type;
+        }
+        
+        SchemaValueType* create_schema_value_type(struct lys_node_leaf* leaf)
+        {
+            return create_schema_value_type(leaf, &(leaf->type));
+        }
+        
+        
+    }
+}
 
 /////////////////////////////////////////////////////////////////////
 // ydk::SchemaNodeImpl
 ////////////////////////////////////////////////////////////////////
-ydk::core::SchemaNodeImpl::SchemaNodeImpl(const SchemaNode* parent, struct lys_node* node):m_parent{parent}, m_node{node}, m_children{}
+ydk::core::SchemaNodeImpl::SchemaNodeImpl(const SchemaNode* parent, struct lys_node* node):m_parent{parent}, m_node{node}, m_children{}, m_type{nullptr}
 {
 	node->priv = this;
     if(node->nodetype != LYS_LEAF && node->nodetype != LYS_LEAFLIST) {
@@ -69,6 +833,10 @@ ydk::core::SchemaNodeImpl::SchemaNodeImpl(const SchemaNode* parent, struct lys_n
             m_children.emplace_back(new SchemaNodeImpl{this,const_cast<struct lys_node*>(q)});
             last = q;
         }
+    } else {
+        struct lys_node_leaf* node_leaf = reinterpret_cast<struct lys_node_leaf*>(m_node);
+        m_type = ydk::core::create_schema_value_type(node_leaf);
+        
     }
 
 }
@@ -79,6 +847,11 @@ ydk::core::SchemaNodeImpl::~SchemaNodeImpl()
 	for(auto p : children()) {
 		delete p;
 	}
+    
+    if(m_type){
+        delete m_type;
+    }
+    m_type = nullptr;
 }
 
 std::string
@@ -120,12 +893,12 @@ std::vector<ydk::core::SchemaNode*>
 ydk::core::SchemaNodeImpl::find(const std::string& path) const
 {
 	if(path.empty()) {
-		throw ydk::core::YDKInvalidArgumentException{"path is empty"};
+		throw YDKInvalidArgumentException{"path is empty"};
 	}
 
 	//has to be a relative path
 	if(path.at(0) == '/') {
-		throw ydk::core::YDKInvalidArgumentException{"path must be a relative path"};
+		throw YDKInvalidArgumentException{"path must be a relative path"};
 	}
 
     std::vector<SchemaNode*> ret;
@@ -136,7 +909,7 @@ ydk::core::SchemaNodeImpl::find(const std::string& path) const
 	if (found_node){
 		auto p = reinterpret_cast<SchemaNode*>(found_node->priv);
 		if(p) {
-			ret.push_back(p);
+		    ret.push_back(p);
 		}
 	}
 
@@ -221,6 +994,44 @@ ydk::core::SchemaNodeImpl::statement() const
 	return s;
 }
 
+///
+/// @brief return YANG statement corresponding the the keys
+///
+/// Returns the vector of Statement keys
+/// @return vector of Statement that represent keys
+///
+std::vector<ydk::core::Statement>
+ydk::core::SchemaNodeImpl::keys() const
+{
+    std::vector<Statement> stmts{};
+    
+    Statement stmt = statement();
+    if(stmt.keyword == "list") {
+        //sanity check
+        if(m_node->nodetype != LYS_LIST) {
+            throw YDKIllegalStateException{"Mismatch in schema"};
+        }
+        struct lys_node_list *slist = (struct lys_node_list *)m_node;
+        for(uint8_t i=0; i < slist->keys_size; ++i) {
+            SchemaNode* sn = reinterpret_cast<SchemaNode*>(slist->keys[i]->priv);
+            if(sn != nullptr){
+                stmts.push_back(sn->statement());
+            }
+        }
+    }
+    
+    return stmts;
+}
+
+
+
+ydk::core::SchemaValueType*
+ydk::core::SchemaNodeImpl::type() const
+{
+  
+    return m_type;
+}
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -253,12 +1064,12 @@ std::vector<ydk::core::SchemaNode*>
 ydk::core::RootSchemaNodeImpl::find(const std::string& path) const
 {
 	if(path.empty()) {
-		throw ydk::core::YDKInvalidArgumentException{"path is empty"};
+		throw YDKInvalidArgumentException{"path is empty"};
 	}
 
 	//has to be a relative path
 	if(path.at(0) == '/') {
-		throw ydk::core::YDKInvalidArgumentException{"path must be a relative path"};
+		throw YDKInvalidArgumentException{"path must be a relative path"};
 	}
 
 	std::vector<SchemaNode*> ret;
@@ -373,12 +1184,12 @@ ydk::core::DataNode*
 ydk::core::RootDataImpl::create(const std::string& path, const std::string& value)
 {
     if(path.empty()){
-        throw ydk::core::YDKInvalidArgumentException{"Path is empty"};
+        throw YDKInvalidArgumentException{"Path is empty"};
 
     }
     //path should not start with /
     if(path.at(0) == '/'){
-        throw ydk::core::YDKInvalidArgumentException{"Path starts with /"};
+        throw YDKInvalidArgumentException{"Path starts with /"};
     }
     std::vector<std::string> segments = segmentalize(path);
 
@@ -392,7 +1203,7 @@ ydk::core::RootDataImpl::create(const std::string& path, const std::string& valu
 
 
     if( dnode == nullptr){
-        throw ydk::core::YDKInvalidArgumentException{"Path is invalid."};
+        throw YDKInvalidArgumentException{"Path is invalid."};
     }
 
     DataNodeImpl* dn = nullptr;
@@ -441,7 +1252,7 @@ void
 ydk::core::RootDataImpl::set(const std::string& value)
 {
     if(!value.empty())
-        throw ydk::core::YDKInvalidArgumentException{"Invalid value being assigned to root."};
+        throw YDKInvalidArgumentException{"Invalid value being assigned to root."};
 }
 
 std::string
@@ -600,7 +1411,7 @@ ydk::core::DataNode*
 ydk::core::DataNodeImpl::create(const std::string& path, const std::string& value)
 {
 	if(path.empty()){
-		throw ydk::core::YDKInvalidArgumentException{"Path is empty."};
+		throw YDKInvalidArgumentException{"Path is empty."};
 	}
 
     std::vector<std::string> segments = segmentalize(path);
@@ -618,7 +1429,7 @@ ydk::core::DataNodeImpl::create(const std::string& path, const std::string& valu
 	    } else {
 	    	dn = dynamic_cast<DataNodeImpl*>(r[0]);
 	    	if (dn == nullptr) {
-	    		throw YDKCoreException{};
+	    		throw YDKCoreException{"Invalid data node"};
 	    	}
 	        ++iter;
             start_index++;
@@ -626,7 +1437,7 @@ ydk::core::DataNodeImpl::create(const std::string& path, const std::string& valu
 	}
 
 	if (segments.empty()) {
-		throw ydk::core::YDKInvalidArgumentException{"path points to existing node."};
+		throw YDKInvalidArgumentException{"path points to existing node."};
 	}
 
 	std::vector<struct lyd_node*> nodes_created;
@@ -645,7 +1456,7 @@ ydk::core::DataNodeImpl::create(const std::string& path, const std::string& valu
 			if(first_node_created) {
 				lyd_unlink(first_node_created);
 				lyd_free(first_node_created);
-				throw ydk::core::YDKInvalidArgumentException{"invalid path"};
+				throw YDKInvalidArgumentException{"invalid path"};
 			}
 
 		} else if (!first_node_created) {
@@ -675,7 +1486,7 @@ ydk::core::DataNodeImpl::set(const std::string& value)
 	if (s_node->nodetype == LYS_LEAF || s_node->nodetype == LYS_LEAFLIST) {
 		struct lyd_node_leaf_list* leaf= reinterpret_cast<struct lyd_node_leaf_list *>(m_node);
 		if(lyd_change_leaf(leaf, value.c_str())) {
-			throw ydk::core::YDKInvalidArgumentException{"Invalid value"};
+			throw YDKInvalidArgumentException{"Invalid value"};
 		}
 
 	} else if (s_node->nodetype == LYS_ANYXML) {
@@ -684,7 +1495,7 @@ ydk::core::DataNodeImpl::set(const std::string& value)
 		anyxml->value.str = value.c_str();
 
 	}else {
-		throw ydk::core::YDKInvalidArgumentException{"Cannot set value for this Data Node"};
+		throw YDKInvalidArgumentException{"Cannot set value for this Data Node"};
 	}
 }
 
@@ -827,11 +1638,11 @@ ydk::core::DataNodeImpl::get_dn_for_desc_node(struct lyd_node* desc_node) const
                if(res != parent->child_map.end()){
                    dn = res->second;
                } else {
-                   throw YDKCoreException{};
+                   throw YDKCoreException{"Cannot find child!"};
                }
 
            } else {
-               throw YDKCoreException{};
+               throw YDKCoreException{"Parent is nullptr"};
            }
 	   }
 	   parent = dn;
@@ -974,7 +1785,7 @@ ydk::core::CodecService::encode(const ydk::core::DataNode* dn, ydk::core::CodecS
 
     const DataNodeImpl* impl = dynamic_cast<const DataNodeImpl *>(dn);
     if( !impl) {
-        throw YDKCoreException{};
+        throw YDKCoreException{"DataNode is null"};
     }
     m_node = impl->m_node;
 
@@ -1002,7 +1813,7 @@ ydk::core::CodecService::decode(const RootSchemaNode* root_schema, const std::st
     }
     const RootSchemaNodeImpl* rs_impl = dynamic_cast<const RootSchemaNodeImpl*>(root_schema);
     if(!rs_impl){
-        throw YDKCoreException{};
+        throw YDKCoreException{"Root Schema Node is null"};
     }
 
     struct lyd_node *root = lyd_parse_mem(rs_impl->m_ctx, buffer.c_str(), scheme, LYD_OPT_TRUSTED |  LYD_OPT_KEEPEMPTYCONT | LYD_WD_TRIM | LYD_OPT_GET);

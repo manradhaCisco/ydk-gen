@@ -6,6 +6,9 @@ set(core_tests bgptest)
 #set(netconf_tests bgpnctest;test_entity;test_value;test_netconf_client;test_entity_lookup)
 set(netconf_tests bgpnctest;test_entity;test_value;test_netconf_client;testsanitynctest)
 
+
+set(entity_tests testsanityvalidationtest)
+
 include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
@@ -32,6 +35,21 @@ foreach(test_name IN LISTS netconf_tests)
     set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 14)
     set_property(TARGET ${test_name} PROPERTY CXX_STANDARD_REQUIRED ON)
     target_include_directories(${test_name} PRIVATE ${BOOST_INCLUDE_DIRS})
+    target_compile_definitions(${test_name} PRIVATE "BOOST_TEST_DYN_LINK=1")
+    target_link_libraries(${test_name} ydk ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+    add_test(NAME ${test_name} COMMAND $<TARGET_FILE:${test_name}>)
+endforeach(test_name)
+
+
+foreach(test_name IN LISTS entity_tests)
+    add_executable(${test_name} entity/${test_name}.cpp models_gen/ydktest_filterread.cpp models_gen/ydktest_sanity.cpp
+     models_gen/ydktest_sanity_augm.cpp models_gen/ydktest_sanity_submodule.cpp 
+     models_gen/ydktest_sanity_types.cpp models_gen/ydktest_types.cpp)
+
+    set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 14)
+    set_property(TARGET ${test_name} PROPERTY CXX STANDARD_REQUIRED ON)
+    target_include_directories(${test_name} PRIVATE ${BOOST_INCLUDE_DIRS}  models_gen)
+
     target_compile_definitions(${test_name} PRIVATE "BOOST_TEST_DYN_LINK=1")
     target_link_libraries(${test_name} ydk ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
     add_test(NAME ${test_name} COMMAND $<TARGET_FILE:${test_name}>)

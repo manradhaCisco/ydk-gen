@@ -30,7 +30,7 @@ public:
 	}
 
     
-	ydk::core::RootSchemaNode* get_root_schema()
+	ydk::core::RootSchemaNode* get_root_schema() const
 	{
 		auto repo = ydk::core::Repository{m_searchdir};
         
