@@ -71,12 +71,12 @@ struct EntityPath {
 
 	inline bool operator == (EntityPath & other) const
 	{
-		return path == other.path && value_paths == other.value_paths;
+	    return path == other.path && value_paths == other.value_paths;
 	}
 
 	inline bool operator == (const EntityPath & other) const
 	{
-		return path == other.path && value_paths == other.value_paths;
+	    return path == other.path && value_paths == other.value_paths;
 	}
 };
 
@@ -87,26 +87,39 @@ class Entity {
 
   public:
 	virtual bool has_data() const = 0;
-	virtual EntityPath get_entity_path() const = 0;
+    
+    //
+    // @brief Get the EntityPath relative to the parent passed in
+    //
+    // Returns the EntityPath relative to the parent passed in.
+    // The parent must either be null in which case the absolute path
+    // from the root is returned or some parent that is an ancestor of this Entity.
+    //
+    // @param[in] parent The ancestor relative to which the path is calculated or nullptr
+    // @return EntityPath
+    // @throws YDKInvalidArgumentException if the parent is invalid
+    virtual EntityPath get_entity_path(Entity* parent) const = 0;
 
+    virtual std::string get_segment_path() const = 0;
+    
     virtual Entity* set_child(std::string path) = 0;
 
     virtual void set_value(std::string value_path, std::string value) = 0;
 
-	virtual std::vector<Entity*> & get_children()
-	{
-		return children;
-	}
+    virtual std::vector<Entity*> & get_children()
+    {
+	return children;
+    }
 
-	virtual std::unique_ptr<Entity> clone_ptr()
-	{
-		return nullptr;
-	}
+    virtual std::unique_ptr<Entity> clone_ptr()
+    {
+	return nullptr;
+    }
 
-	void add_child(Entity* child)
-	{
-		children.push_back(child);
-	}
+    void add_child(Entity* child)
+    {
+	children.push_back(child);
+    }
 
   public:
 	Entity* parent;
@@ -163,6 +176,13 @@ class Value {
 	Value(YType type, std::string name);
 	~Value();
 
+    Value(const Value& val);
+    Value(Value&& val);
+    
+    
+    Value& operator=(const Value& val);
+    Value& operator=(Value&& val);
+    
 	const std::string & get() const;
 	std::pair<std::string, std::string> get_name_value() const;
 

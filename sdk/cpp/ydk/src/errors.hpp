@@ -49,11 +49,44 @@ struct YDKException
 
 struct YDKServiceProviderException : public YDKException
 {
-	YDKServiceProviderException(const std::string& msg) : YDKException{msg}
+    YDKServiceProviderException(const std::string& msg) : YDKException{msg}
     {
 
     }
 };
+
+///
+/// @brief Illegal State Exception.
+///
+///
+/// Thrown when an operation/service is invoked
+/// on an object that is not in the right state. Use the err_msg for the error.
+///
+struct YDKIllegalStateException : public YDKException
+{
+     YDKIllegalStateException(const std::string& msg);
+};
+
+///
+/// @brief Invalid Argument
+///
+/// Use the err_msg for the error.
+///
+struct YDKInvalidArgumentException : public YDKException
+{
+     YDKInvalidArgumentException(const std::string& msg);
+};
+
+///
+/// @brief Operation Not Supported Exception
+///
+/// Thrown when an operation is not supported.
+///
+struct YDKOperationNotSupportedException : public YDKException
+{
+    YDKOperationNotSupportedException(const std::string& msg);
+};
+
 }
 
 #endif /* _EXCEPTION_HPP_ */

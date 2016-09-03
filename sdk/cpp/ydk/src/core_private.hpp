@@ -34,6 +34,15 @@
 
 #include "core.hpp"
 
+#include <algorithm>
+#include <map>
+#include <cstdlib>
+#include <functional>
+#include <iostream>
+#include <cstring>
+#include <cassert>
+#include <sstream>
+
 namespace ydk {
     namespace core {
 
@@ -61,11 +70,17 @@ namespace ydk {
 
             Statement statement() const;
 
+            std::vector<Statement> keys() const;
+            
+            SchemaValueType* type() const;
+            
             const SchemaNode* m_parent;
             struct lys_node* m_node;
             std::vector<SchemaNode*> m_children;
-
-
+            
+            SchemaValueType* m_type;
+            
+            
         };
 
         class RootSchemaNodeImpl : public RootSchemaNode
@@ -88,6 +103,13 @@ namespace ydk {
             Rpc* rpc(const std::string& path) const;
 
 
+            
+            SchemaValueType* type() const
+            {
+                return nullptr;
+            }
+            
+            
             struct ly_ctx* m_ctx;
             std::vector<SchemaNode*> m_children;
 

@@ -72,7 +72,7 @@ NetconfServiceProvider::NetconfServiceProvider(const core::Repository* repo, str
     : m_repo{repo}, client(make_unique<NetconfClient>(username, password, address, port, 0))
 {
     if(m_repo == nullptr) {
-        throw core::YDKInvalidArgumentException{"repo is null"};
+        throw YDKInvalidArgumentException{"repo is null"};
     }
 
     client->connect();
@@ -163,7 +163,7 @@ NetconfServiceProvider::NetconfServiceProvider(const core::Repository* repo, str
     root_schema = std::unique_ptr<ydk::core::RootSchemaNode>(m_repo->create_root_schema(yang_caps));
 
     if(root_schema.get() == nullptr) {
-        throw core::YDKIllegalStateException{"Root schema cannot be obtained"};
+        throw YDKIllegalStateException{"Root schema cannot be obtained"};
     }
 
     create_schema = get_schema_for_operation(*root_schema, "ydk:create");
@@ -177,7 +177,7 @@ NetconfServiceProvider::~NetconfServiceProvider()
 	client->close();
 }
 
-core::RootSchemaNode* NetconfServiceProvider::get_root_schema()
+core::RootSchemaNode* NetconfServiceProvider::get_root_schema() const
 {
     return root_schema.get();
 }
@@ -223,7 +223,7 @@ core::DataNode* NetconfServiceProvider::invoke(core::Rpc* rpc) const
     //sanity check of rpc
     if(rpc == nullptr)
     {
-        throw core::YDKInvalidArgumentException{"rpc is null!"};
+        throw YDKInvalidArgumentException{"rpc is null!"};
     }
 
      //for now we only support crud rpc's
@@ -243,7 +243,7 @@ core::DataNode* NetconfServiceProvider::invoke(core::Rpc* rpc) const
     }
     else
     {
-        throw core::YDKOperationNotSupportedException{"rpc is not supported!"};
+        throw YDKOperationNotSupportedException{"rpc is not supported!"};
     }
 
     return datanode;
@@ -254,7 +254,7 @@ static unique_ptr<core::Rpc> create_rpc_instance(core::RootSchemaNode & root_sch
 	auto rpc = unique_ptr<core::Rpc>(root_schema.rpc(rpc_name));
 	if(rpc == nullptr)
 	{
-		throw core::YDKIllegalStateException{"Cannot create payload for RPC: "+ rpc_name};
+		throw YDKIllegalStateException{"Cannot create payload for RPC: "+ rpc_name};
 	}
 	return rpc;
 }
@@ -263,7 +263,7 @@ static core::DataNode* create_rpc_input(core::Rpc & netconf_rpc)
 {
 	return netconf_rpc.input();
 }
-
+    
 static string get_commit_rpc_payload()
 {
 	return "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
@@ -284,11 +284,11 @@ static void create_input_target(core::DataNode & input, bool candidate_supported
 {
     if(candidate_supported){
         if(!input.create("target/candidate", "")){
-            throw core::YDKIllegalStateException{"Failed setting target datastore"};
+            throw YDKIllegalStateException{"Failed setting target datastore"};
         }
     } else {
         if(!input.create("target/running", "")){
-            throw core::YDKIllegalStateException{"Failed setting running datastore"};
+            throw YDKIllegalStateException{"Failed setting running datastore"};
         }
     }
 }
@@ -297,7 +297,7 @@ static void create_input_error_option(core::DataNode & input)
 {
 	if(!input.create("error-option", "rollback-on-error"))
 	{
-		throw core::YDKIllegalStateException{"Failed to set rollback-on-error option"};
+		throw YDKIllegalStateException{"Failed to set rollback-on-error option"};
 	}
 }
 
@@ -305,17 +305,17 @@ static void create_input_source(core::DataNode & input, bool config)
 {
 	if(config && !input.create("source/running"))
 	{
-		throw core::YDKIllegalStateException{"Failed setting source"};
+		throw YDKIllegalStateException{"Failed setting source"};
 	}
 }
 
 static string get_annotated_config_payload(core::RootSchemaNode* root_schema,
 		core::Rpc & rpc, core::Annotation & annotation)
 {
-	core::CodecService codec_service{};
+    core::CodecService codec_service{};
     auto entity = rpc.input()->find("entity");
     if(entity.empty()){
-        throw core::YDKInvalidArgumentException{"Failed to get entity node"};
+        throw YDKInvalidArgumentException{"Failed to get entity node"};
     }
 
     core::DataNode* entity_node = entity[0];
@@ -325,7 +325,7 @@ static string get_annotated_config_payload(core::RootSchemaNode* root_schema,
     core::DataNode* datanode = codec_service.decode(root_schema, entity_value, core::CodecService::Format::XML);
 
     if(!datanode){
-        throw core::YDKInvalidArgumentException{"Failed to deserialize entity node"};
+        throw YDKInvalidArgumentException{"Failed to deserialize entity node"};
     }
 
     std::string config_payload {};
@@ -342,7 +342,7 @@ static string get_filter_payload(core::Rpc & ydk_rpc)
 {
     auto entity = ydk_rpc.input()->find("filter");
     if(entity.empty()){
-        throw core::YDKInvalidArgumentException{"Failed to get entity node"};
+        throw YDKInvalidArgumentException{"Failed to get entity node"};
     }
 
     auto datanode = entity[0];
@@ -351,11 +351,11 @@ static string get_filter_payload(core::Rpc & ydk_rpc)
 
 static string get_netconf_payload(core::DataNode* input, string data_value, string data_tag)
 {
-	core::CodecService codec_service{};
+    core::CodecService codec_service{};
     auto config_node = input->create(data_tag, data_value);
     if(!config_node)
     {
-        throw core::YDKIllegalStateException{"Failed to create data tree"};
+        throw YDKIllegalStateException{"Failed to create data tree"};
     }
 
     std::string payload{"<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"};
@@ -438,7 +438,7 @@ static core::SchemaNode* get_schema_for_operation(core::RootSchemaNode & root_sc
 {
 	auto c = root_schema.find(operation);
 	if(c.empty()){
-		throw core::YDKIllegalStateException{"CRUD create rpc schema not found!"};
+		throw YDKIllegalStateException{"CRUD create rpc schema not found!"};
 	}
 	return c[0];
 }

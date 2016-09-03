@@ -23,7 +23,12 @@ class TestEntity:public Entity
 		return name.is_set || enabled.is_set;
 	}
 
-	EntityPath get_entity_path() const
+        std::string get_segment_path() const
+        {
+            return "test";
+        }
+
+	EntityPath get_entity_path(Entity* parent) const
 	{
 		return {{"test"}, {name.get_name_value(), enabled.get_name_value()}};
 	}
@@ -57,12 +62,12 @@ BOOST_AUTO_TEST_CASE(entity)
 	string test_value = "value for test";
 	EntityPath expected {"test", {{"name", test_value}, {"enabled", "true"}}};
 
-	BOOST_REQUIRE(test.get_entity_path().path == "test");
+	BOOST_REQUIRE(test.get_entity_path(nullptr).path == "test");
 	BOOST_REQUIRE(test.has_data() == false);
 
 	test.name = test_value;
 	test.enabled = true;
 	BOOST_REQUIRE(test.has_data() == true);
 
-	BOOST_REQUIRE(test.get_entity_path() == expected);
+	BOOST_REQUIRE(test.get_entity_path(nullptr) == expected);
 }

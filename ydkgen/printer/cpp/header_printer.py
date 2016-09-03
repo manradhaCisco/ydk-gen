@@ -51,6 +51,7 @@ class HeaderPrinter(FilePrinter):
         self.ctx.writeln('#include <vector>')
         self.ctx.writeln('#include <string>')
         self.ctx.writeln('#include "ydk/types.hpp"')
+        self.ctx.writeln('#include "ydk/errors.hpp"')
         self.ctx.bline()
 
     def _print_unique_imports(self, package):
@@ -170,7 +171,8 @@ class HeaderPrinter(FilePrinter):
 
     def _print_common_method_declarations(self, clazz):
         self.ctx.writeln('bool has_data() const;')
-        self.ctx.writeln('EntityPath get_entity_path() const;')                
+        self.ctx.writeln('EntityPath get_entity_path(ydk::Entity* parent) const;')
+        self.ctx.writeln('std::string get_segment_path() const;')
         self.ctx.writeln('Entity* set_child(std::string path);')
         self.ctx.writeln('void set_value(std::string value_path, std::string value);')
 

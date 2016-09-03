@@ -24,7 +24,7 @@ from ydkgen.api_model import Class, DataType, Enum, Package
 from ydkgen.common import sort_classes_at_same_level
 from ydkgen.printer.file_printer import FilePrinter
 from .get_entity_path_printer import GetEntityPathPrinter
-
+from .get_entity_path_printer import GetSegmentPathPrinter
 
 class SourcePrinter(FilePrinter):
     def __init__(self, ctx, sort_clazz):
@@ -71,6 +71,7 @@ class SourcePrinter(FilePrinter):
         if clazz.is_identity():
             return
         self._print_class_has_data(clazz, leafs, children)
+        self._print_class_get_segment_path(clazz)
         self._print_class_get_path(clazz, leafs)
         self._print_class_set_child(clazz, children)
         self._print_class_get_children(clazz, children)
@@ -196,6 +197,9 @@ class SourcePrinter(FilePrinter):
         self.ctx.lvl_dec()
         self.ctx.writeln('}')
 
+    def _print_class_get_segment_path(self, clazz):
+        GetSegmentPathPrinter(self.ctx).print_output(clazz)
+    
     def _print_class_get_path(self, clazz, leafs):
         GetEntityPathPrinter(self.ctx).print_output(clazz, leafs)
 

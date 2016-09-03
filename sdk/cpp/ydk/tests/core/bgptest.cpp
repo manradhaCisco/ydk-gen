@@ -43,7 +43,7 @@ public:
 	}
 
     
-	ydk::core::RootSchemaNode* get_root_schema()
+	ydk::core::RootSchemaNode* get_root_schema() const
 	{
 		auto repo = ydk::core::Repository{m_searchdir};
         
@@ -390,79 +390,3 @@ BOOST_AUTO_TEST_CASE( bgp_validation )
     
     
 }
-
-BOOST_AUTO_TEST_CASE( bgp_peer )
-{
-    std::string searchdir{TEST_HOME};
-  //  searchdir+="";
-    std::cout << searchdir << std::endl;
-    mock::MockServiceProvider sp{searchdir, test_openconfig};
-
-    std::unique_ptr<ydk::core::RootSchemaNode> schema{sp.get_root_schema()};
-    BOOST_REQUIRE(schema.get() != nullptr);
-
-    auto bgp = schema->create("openconfig-bgp:bgp", "");
-    BOOST_REQUIRE( bgp != nullptr );
-
-
-    auto s = ydk::core::CodecService{};
-
-
-    //XML Codec Test
-    auto xml = s.encode(bgp, ydk::core::CodecService::Format::XML, false);
-
-    BOOST_CHECK_MESSAGE( !xml.empty(),
-                        "XML output is empty");
-
-    BOOST_REQUIRE(xml == expected_bgp_peer_xml);
-
-    auto new_bgp = s.decode(schema.get(), xml, ydk::core::CodecService::Format::XML);
-
-    BOOST_REQUIRE( new_bgp != nullptr);
-
-    auto new_xml = s.encode(new_bgp, ydk::core::CodecService::Format::XML, false);
-    BOOST_CHECK_MESSAGE(!new_xml.empty(),
-                        "Deserialized XML output is empty.");
-
-    BOOST_REQUIRE(new_xml == expected_bgp_peer_xml);
-
-
-    //JSON codec test
-    auto json = s.encode(bgp, ydk::core::CodecService::Format::JSON, false);
-
-    BOOST_CHECK_MESSAGE( !json.empty(),
-                           "JSON output :" << json);
-
-    std::cout << "*********************************************" << std::endl;
-    std::cout << json << std::endl;
-    std::cout << "*********************************************" << std::endl;
-
-    BOOST_REQUIRE(json == expected_bgp_peer_json);
-
-    auto new_bgp1 = s.decode(schema.get(), json, ydk::core::CodecService::Format::JSON);
-
-    BOOST_REQUIRE( new_bgp1 != nullptr);
-
-    auto new_json = s.encode(new_bgp1, ydk::core::CodecService::Format::JSON, false);
-
-    std::cout << "*********************************************" << std::endl;
-    std::cout << new_json << std::endl;
-    std::cout << "*********************************************" << std::endl;
-
-    BOOST_CHECK_MESSAGE(!new_json.empty(),
-                        "Deserialized json output is empty.");
-
-    BOOST_REQUIRE(new_json == expected_bgp_peer_json);
-
-
-    //TODO fix rpc
-    std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("/ydk:create") };
-    create_rpc->input()->create("entity", xml);
-
-    //call create
-    (*create_rpc)(sp);
-
-    BOOST_TEST_MESSAGE(xml);
-    BOOST_TEST_MESSAGE(json);
-}
-

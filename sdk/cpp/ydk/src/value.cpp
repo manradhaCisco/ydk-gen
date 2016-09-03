@@ -36,6 +36,49 @@ Value::Value(YType type, std::string name):
 		type(type)
 {
 }
+    
+Value::Value(const Value& val):
+    is_set{val.is_set},
+    name{val.name},
+    value{val.value},
+    type{val.type}
+{
+   
+}
+    
+   
+Value::Value(Value&& val):
+    is_set{val.is_set},
+    name{std::move(val.name)},
+    value{std::move(val.value)},
+    type{val.type}
+{
+    val.is_set = false;
+}
+
+ydk::Value&
+Value::operator=(const Value& val)
+{
+    is_set = val.is_set;
+    name = val.name;
+    value = val.value;
+    type = val.type;
+    
+    return *this;
+}
+
+ydk::Value&
+Value::operator=(Value&& val)
+{
+    is_set = val.is_set;
+    name = std::move(val.name);
+    value = std::move(val.value);
+    type = val.type;
+    
+    return *this;
+}
+
+    
 Value::~Value()
 {
 }
