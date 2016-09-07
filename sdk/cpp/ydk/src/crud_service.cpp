@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////
 
 #include "crud_service.hpp"
-#include "entity.hpp"
+#include "types.hpp"
 #include "core.hpp"
 #include "entity_data_node_walker.hpp"
 

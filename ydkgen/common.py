@@ -14,7 +14,6 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------
-import sys
 import logging
 import hashlib
 import keyword
@@ -121,7 +120,13 @@ def merge_file_path_segments(segs):
 
 
 def iskeyword(word):
-    return keyword.iskeyword(word) or word in ('None', 'parent', 'operator', 'inline')
+    return keyword.iskeyword(word) or word in ('None', 'parent', 'operator',
+            'inline', 'default', 'virtual', 'children', 'value', 'auto', 'entity',
+            'int', 'static', 'final', 'template', 'index', 'protected')
+
+
+def iscppkeyword(word):
+    return word in ('operator', 'inline', 'default', 'virtual')
 
 
 def get_sphinx_ref_label(named_element):

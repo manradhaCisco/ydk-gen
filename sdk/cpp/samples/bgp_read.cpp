@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 
 	for(size_t index=0; index < bgp_read_ptr->global_->afi_safis->afi_safi.size(); index++)
 	{
-		openconfig_bgp::Bgp::Global::AfiSafis::AfiSafi & afi_safi = *(bgp_read_ptr->global_->afi_safis->afi_safi[index]);
+		openconfig_bgp::Bgp::Global_::AfiSafis::AfiSafi & afi_safi = *(bgp_read_ptr->global_->afi_safis->afi_safi[index]);
 
 		cout << "AFI-SAFI name: " << afi_safi.afi_safi_name <<endl;
 		cout << "AFI-SAFI config name: " <<  afi_safi.config->afi_safi_name <<endl;

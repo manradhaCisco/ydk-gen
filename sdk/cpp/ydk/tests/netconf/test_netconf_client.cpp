@@ -18,7 +18,7 @@
 #include <string.h>
 
 #include "../../src/netconf_client.hpp"
-#include "../../src/exception.hpp"
+#include "../../src/errors.hpp"
 #include <iostream>
 using namespace ydk;
 using namespace std;

@@ -86,7 +86,7 @@ class SourcePrinter(FilePrinter):
         self.ctx.writeln(clazz.qualified_cpp_name() + '::' + clazz.name + '()')
         self.ctx.lvl_inc()
         if clazz.is_identity():
-            self.ctx.bline()
+            self.ctx.writeln(' : Identity("%s:%s")' % (clazz.module.arg, clazz.stmt.arg))
         else:
             self._print_class_inits(clazz, leafs, children)
         self.ctx.lvl_dec()
@@ -115,7 +115,7 @@ class SourcePrinter(FilePrinter):
     def _print_class_inits(self, clazz, ls, children):
         leafs = [prop for prop in ls if not prop.is_many]
         if len(leafs) > 0:
-            self.ctx.writeln(': %s' % ', '.join('%s{Type::%s, "%s"}' % (prop.name, get_type_name(prop.property_type), prop.stmt.arg) for prop in leafs))
+            self.ctx.writeln(': %s' % ', '.join('%s{YType::%s, "%s"}' % (prop.name, get_type_name(prop.property_type), prop.stmt.arg) for prop in leafs))
         children_init = ''
         parent_init = ''
         if len(leafs) > 0:
@@ -312,7 +312,7 @@ def get_type_name(prop_type):
     elif prop_type.name == 'binary':
         return 'str'
     elif isinstance(prop_type, Class) and prop_type.is_identity():
-        return 'str'
+        return 'identityref'
     elif isinstance(prop_type, DataType):
         return 'str'
     return prop_type.name

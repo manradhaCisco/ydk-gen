@@ -41,7 +41,8 @@ else()
 endif()
 
 set(libydk_src src/netconf_provider.cpp src/netconf_client.cpp src/value.cpp src/crud_service.cpp src/core.cpp src/entity_data_node_walker.cpp )
-set(libydk_headers src/netconf_provider.hpp src/netconf_client.hpp src/core.hpp src/value.hpp src/entity_data_node_walker.hpp src/crud_service.hpp src/entity.hpp src/value_types.hpp )
+set(libydk_headers src/netconf_provider.hpp src/netconf_client.hpp src/core.hpp src/entity_data_node_walker.hpp src/types.hpp src/errors.hpp)
+set(libydk_install_headers src/netconf_provider.hpp src/core.hpp src/crud_service.hpp src/errors.hpp src/types.hpp)
 
 # Find dependent libraries
 find_library(netconf_location netconf)
@@ -72,16 +73,13 @@ target_link_libraries(ydk
 )
 
 
-
-#set_target_properties(ydk PROPERTIES VERSION ${YDK_VERSION} SOVERSION ${YDK_SOVERSION})
-
 set_property(TARGET ydk PROPERTY CXX_STANDARD 14)
 set_property(TARGET ydk PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # find YANG library
 
 install(TARGETS ydk DESTINATION ${LIB_INSTALL_DIR})
-install(FILES ${libydk_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
+install(FILES ${libydk_install_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
 
 
 # generate doxygen documentation for ydk_core API

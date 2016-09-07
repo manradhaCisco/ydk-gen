@@ -45,8 +45,7 @@ class HeaderPrinter(FilePrinter):
         self.ctx.writeln('#include <memory>')
         self.ctx.writeln('#include <vector>')
         self.ctx.writeln('#include <string>')
-        self.ctx.writeln('#include "ydk/entity.hpp"')
-        self.ctx.writeln('#include "ydk/value.hpp"')
+        self.ctx.writeln('#include "ydk/types.hpp"')
         self.ctx.bline()
 
     def _print_unique_imports(self, package):
@@ -91,9 +90,14 @@ class HeaderPrinter(FilePrinter):
             self.ctx.writeln('public:')
         if len(clazz.extends) > 0:
             parents = ', '.join([sup.fully_qualified_cpp_name() for sup in clazz.extends])
-            self.ctx.writeln('class ' + clazz.name + ' : public ' + parents + ' {')
+            if clazz.is_identity():
+                parents += ', virtual Identity'
+            self.ctx.writeln('class ' + clazz.name + ' : public ' + parents)
+        elif clazz.is_identity():
+            self.ctx.writeln('class ' + clazz.name + ' : public virtual Identity')
         else:
-            self.ctx.writeln('class ' + clazz.name + ' : public Entity {')
+            self.ctx.writeln('class ' + clazz.name + ' : public Entity')
+        self.ctx.writeln('{')
         self.ctx.lvl_inc()
 
     def _print_class_body(self, clazz):

@@ -20,7 +20,6 @@
 #include <memory>
 #include <string>
 
-#include "entity.hpp"
 #include "core.hpp"
 
 namespace ydk {

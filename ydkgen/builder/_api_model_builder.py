@@ -23,7 +23,7 @@
 from pyang import statements
 
 from ._types_extractor import TypesExtractor
-from ydkgen.common import YdkGenException
+from ydkgen.common import YdkGenException, iskeyword
 from ydkgen.api_model import Enum, Class, Bits, Package, Property, Deviation
 
 
@@ -269,8 +269,15 @@ class ApiModelBuilder(object):
                 clazz = Class()
                 stmt.i_class = clazz
                 clazz.stmt = stmt
+
+                if(iskeyword(stmt.arg)):
+                    clazz.name = clazz.name + '_'
                 parent_element.owned_elements.append(clazz)
                 clazz.owner = parent_element
+
+                if name_matches_ancestor(clazz.name, parent_element):
+                    clazz.name = clazz.name + '_'
+
                 element = clazz
 
                 if not isinstance(parent_element, Package):
@@ -558,3 +565,16 @@ class SubModuleBuilder(object):
             package.stmt = sub
             packages.append(package)
         return packages
+
+
+def name_matches_ancestor(name, parent_element):
+    if parent_element is None or isinstance(parent_element, Package):
+        return False
+
+    if name == parent_element.name:
+        return True
+
+    if not hasattr(parent_element, 'owner'):
+        return False
+
+    return name_matches_ancestor(name, parent_element.owner)

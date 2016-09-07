@@ -147,47 +147,24 @@ def create_pip_packages(output_directory):
         py_sdk_root,))
 
 
-def create_shared_libraries(output_directory, bundle, core):
+def create_shared_libraries(output_directory):
     cpp_sdk_root = os.path.join(output_directory)
     # src_dir = os.path.join(output_directory, 'src')
 #    cpp_libs_root = os.path.join(output_directory, './../.libs')
     cmake_build_dir = os.path.join(output_directory, 'build')
 
-    if bundle:
-        # models_dir = os.path.join(output_directory, 'ydk/models')
-        if not os.path.exists(cmake_build_dir):
-            os.makedirs(cmake_build_dir)
-        os.chdir(cmake_build_dir)
-        args = ['cmake ..']
-        exit_code1 = subprocess.call(args, env=os.environ.copy(), shell=True)
-        args = ['make &> /dev/null']
-        exit_code2 = subprocess.call(args, env=os.environ.copy(), shell=True)
-        args = ['make install']
-        exit_code3 = subprocess.call(args, env=os.environ.copy(), shell=True)
-#         args = ['g++ -std=c++14 *.cpp  -shared  -fPIC -o %s/libydk_openconfig.so -lydk' % cpp_libs_root]
-#         exit_code1 = subprocess.call(args, env=os.environ.copy(), shell=True)
-#         args = ['ln -f -s %s/libydk_openconfig.so /usr/local/lib' % (cpp_libs_root)]
-#         exit_code2 = subprocess.call(args, env=os.environ.copy(), shell=True)
+    # models_dir = os.path.join(output_directory, 'ydk/models')
+    if not os.path.exists(cmake_build_dir):
+        os.makedirs(cmake_build_dir)
+    os.chdir(cmake_build_dir)
+    args = ['cmake ..']
+    exit_code1 = subprocess.call(args, env=os.environ.copy(), shell=True)
+    args = ['make -j5 &> /dev/null']
+    exit_code2 = subprocess.call(args, env=os.environ.copy(), shell=True)
+    args = ['make install']
+    exit_code3 = subprocess.call(args, env=os.environ.copy(), shell=True)
 
-    if core:
-        if not os.path.exists(cmake_build_dir):
-            os.makedirs(cmake_build_dir)
-        os.chdir(cmake_build_dir)
-        args = ['cmake ..']
-        exit_code1 = subprocess.call(args, env=os.environ.copy(), shell=True)
-        args = ['make &> /dev/null']
-        exit_code2 = subprocess.call(args, env=os.environ.copy(), shell=True)
-        args = ['make install']
-        exit_code3 = subprocess.call(args, env=os.environ.copy(), shell=True)
-#         os.chdir(src_dir)
-#         args = ['g++ -std=c++14 *.cpp  -shared -fPIC -lnetconf -lxml2 -lssh -lxslt -lyang  -o %s/libydk.so' % cpp_libs_root]
-#         exit_code1 = subprocess.call(args, env=os.environ.copy(), shell=True)
-#         args = ['ln -f -s %s/libydk.so /usr/local/lib' % (cpp_libs_root)]
-#         exit_code2 = subprocess.call(args, env=os.environ.copy(), shell=True)
-
-    if exit_code1 == 0 and exit_code2 == 0 and exit_code3 == 0 :  # and \
-    #   os.path.isfile(os.path.join(cpp_libs_root, 'libydk.so')) \
-    # and os.path.isfile(os.path.join(cpp_libs_root, 'libydk_openconfig.so')):
+    if exit_code1 == 0 and exit_code2 == 0 and exit_code3 == 0 :
         print('\nSuccessfully created and installed shared libraries')
     else:
         print('\nERROR: Failed to create shared library!\n')
@@ -332,7 +309,7 @@ if __name__ == '__main__':
         generate_documentations(output_directory, ydk_root, language, options.bundle, options.core)
 
     if options.cpp:
-        create_shared_libraries(output_directory, options.bundle, options.core)
+        create_shared_libraries(output_directory)
     else:
         create_pip_packages(output_directory)
 

@@ -1,6 +1,6 @@
 //
-// @file identity.hpp
-// @brief Header for ydk value
+// @file exception.hpp
+// @brief The ydk exception header.
 //
 // YANG Development Kit
 // Copyright 2016 Cisco Systems. All rights reserved
@@ -25,21 +25,35 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#ifndef IDENTITY_HPP
-#define IDENTITY_HPP
+#ifndef _EXCEPTION_HPP_
+#define _EXCEPTION_HPP_
 
 #include <string>
 
+
 namespace ydk {
+///
+/// @brief Base class for YDK Exceptions
+///
+/// The subclasses give a specialized view of the error that has occurred.
+///
+struct YDKException
+{
+	YDKException(const std::string& msg) : err_msg{msg}
+	{
 
-class Identity {
-	  public:
-		Identity(){}
-	  	virtual ~Identity(){}
+	}
 
-	  	virtual std::string get_tag(){return "";}
+	std::string err_msg;
 };
 
+struct YDKServiceProviderException : public YDKException
+{
+	YDKServiceProviderException(const std::string& msg) : YDKException{msg}
+    {
+
+    }
+};
 }
 
-#endif /* IDENTITY_HPP */
+#endif /* _EXCEPTION_HPP_ */

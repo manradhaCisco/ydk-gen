@@ -22,7 +22,7 @@
 
 #include <libnetconf/netconf.h>
 
-#include "exception.hpp"
+#include "errors.hpp"
 
 struct nc_session;
 typedef struct nc_msg nc_rpc;
