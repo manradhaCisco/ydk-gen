@@ -417,12 +417,6 @@
          "version":"0.1.0",
          "ydk_version":"0.5.0",
          "uri":"file://profiles/bundles/ietf.json"
-      },
-      {
-         "name":"openconfig",
-         "version":"0.1.0",
-         "ydk_version":"0.5.0",
-         "uri":"file://profiles/bundles/openconfig.json"
       }
    ]
 }
