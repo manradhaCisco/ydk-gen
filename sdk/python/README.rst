@@ -6,16 +6,13 @@
 Getting Started
 ===============
 
-Overview:
-----------
+Overview
+--------
 
-YDK or YANG Development Kit is a Software Development Kit that provides API's that are modeled
-in YANG. The main goal of YDK is to reduce the learning curve by expressing the model semantics
-in API and abstracting protocol/encoding details. The API's are generated from YANG models found
-in the profile files under `https://github.com/CiscoDevNet/ydk-gen/blob/master/profiles/bundles` using the ydk-gen tool `https://github.com/CiscoDevNet/ydk-gen` .
+The YANG Development Kit (YDK) is a Software Development Kit that provides API's that are modeled in YANG. The main goal of YDK is to reduce the learning curve of YANG data models by expressing the model semantics in an API and abstracting protocol/encoding details.  YDK is composed of a core package that defines services and providers, plus one or more module bundles that are based on YANG models.  Each module bundle is generated using a `bundle profile <https://github.com/CiscoDevNet/ydk-gen/blob/master/profiles/bundles>`_ and the `ydk-gen <https://github.com/CiscoDevNet/ydk-gen>`_ tool.
 
-System Requirements:
---------------------
+System Requirements
+-------------------
 Linux
   Ubuntu (Debian-based) - The following packages must be present in your system before installing YDK-Py::
 
@@ -27,42 +24,54 @@ Mac
     $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     $ xcode-select --install
 
-Install Tips:
--------------
-We recommend that you perform the installation under a Python virtual environment (virtualenv).  To install virtualenv, execute::
+Install Tips
+------------
+We recommend that you perform the installation under a Python virtual environment (``virtualenv``/``virtualenvwrapper``).  To install in your system, execute::
 
-  $ pip install virtualenv
+  ydk-py$ pip install virtualenv virtualenvwrapper
+  ydk-py$ source /usr/local/bin/virtualenvwrapper.sh
 
-Create a new virtual environment::
+In some systems (e.g. Debian-based Linux), you may need to install support for Python virtual environments as root::
 
-    $ virtualenv -p python2.7 ydk-py
-    $ source ydk-py/bin/activate
+  ydk-py$ sudo pip install virtualenv virtualenvwrapper
+  ydk-py$ source /usr/local/bin/virtualenvwrapper.sh
 
-Create a source distribution for YDK and bundle packages::
+Once you have installed support for Python virtual environments, create a new virtual environment::
 
-    $ cd <package-dir> # package-dir is one of core, openconfig, ietf or cisco-ios-xr 
-    $ (ydk-py)$ python setup.py sdist
+  ydk-py$ mkvirtualenv -p python2.7 ydk-py
 
-Install YDK-Py::
+Now you can install the ``core`` package::
 
-    (ydk-py)$ pip install dist/ydk-*.tar.gz
+  (ydk-py)ydk-py$ cd core
+  (ydk-py)core$ python setup.py sdist
+  (ydk-py)core$ pip install dist/ydk*.gz
 
-Notes:
-------
-- YANG Development Kit is a Python SDK that provides an API to access/modify configuration and operational entities that are modeled using YANG
-- The modules under the package ydk.models are derived from YANG models
-- YDK provides a simple CRUD (Create/Read/Update/Delete) api that allows the developer to perform these operations on entities on a server that supports them
+Once you installed the ``core`` package, you can install one more model bundles.  Note that some bundles have dependencies which are already captured in the bundle package.  To install the IEFT bundle, execute::
 
+  (ydk-py)core$ cd ../ietf
+  (ydk-py)ietf$ python setup.py sdist
+  (ydk-py)ietf$ pip install dist/ydk*.gz
+
+To install the OpenConfig bundle, execute::
+
+  (ydk-py)ietf$ cd ../openconfig
+  (ydk-py)openconfig$ python setup.py sdist
+  (ydk-py)openconfig$ pip install dist/ydk*.gz
+
+To install the cisco-ios-xr bundle, execute::
+
+  (ydk-py)openconfig$ cd ../cisco-ios-xr
+  (ydk-py)cisco-ios-xr$ python setup.py sdist
+  (ydk-py)cisco-ios-xr$ pip install dist/ydk*.gz
+  (ydk-py)cisco-ios-xr$ cd ..
 
 Example Usage
-========================
+=============
 
-In this example we are going to set some configuration on the openconfig bgp model.
-The complete sample is available in samples/bgp.py. The sample can be run with the below steps.
-::
+In this example, we are going to set some BGP configuration using the OpenConfig model, the CRUD (Create/Read/Update/Delete) service and the NETCONF service provider. The complete sample is available in samples/bgp.py. The sample can be run with the below steps::
 
-    (ydk-py)$ cd samples 
-    (ydk-py)$ ./bgp.py -h
+    (ydk-py)ydk-py$ cd core/samples
+    (ydk-py)samples$ ./bgp.py -h
     Usage: bgp.py [-h | --help] [options]
 
     Options:
@@ -76,15 +85,11 @@ The complete sample is available in samples/bgp.py. The sample can be run with t
     --host=HOST           NETCONF agent hostname
     --port=PORT           NETCONF agent SSH port
 
-    (ydk-py)$ ./bgp.py --host <ip-address-of-netconf-server> -u <username> -p <password> --port <port-number>
-
+    (ydk-py)samples$ ./bgp.py --host <ip-address-of-netconf-server> -u <username> -p <password> --port <port-number>
 
 Service Providers
 ------------------------
-The first step in any application is create a 'Service Provider Instance'. 'Service Providers'
-are responsible for mapping between the CRUD service API and the underlying manageability
-protocol. In the current version of YDK we have one service provider which is the
-ydk.providers.NetconfServiceProvider . It maps the CRUD api's to netconf rpc.
+The first step in any application is to create a service provider instance. In this case, the NETCONF service provider (defined in ``ydk.providers.NetconfServiceProvider``) is responsible for mapping between the CRUD service API and the underlying manageability protocol (NETCONF RPCs).
 
 In this example we instantiate an instance of the service provider that creates a netconf
 session to the machine at ip 10.0.0.1 ::
@@ -157,7 +162,7 @@ The current YDK release version is 0.5.0 (beta). YDK-Py is licensed under the Ap
 
 Documentation and Support
 --------------------------
-- Samples can be found under the <git_root>/samples directory
+- Samples can be found under the ``samples`` directory
 - API documentation can be found at http://ydk.cisco.com/py/docs
 - Additional samples can be found at https://github.com/CiscoDevNet/ydk-py-samples
 - For queries related to usage of the API, please join the YDK community at https://communities.cisco.com/community/developer/ydk
