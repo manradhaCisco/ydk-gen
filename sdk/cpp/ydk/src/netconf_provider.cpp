@@ -24,12 +24,12 @@
 #include <iostream>
 #include <sstream>
 
-#include "exception.hpp"
-#include "entity.hpp"
+#include "types.hpp"
 #include "netconf_client.hpp"
 #include "netconf_provider.hpp"
 #include "core.hpp"
 #include "entity_data_node_walker.hpp"
+#include "errors.hpp"
 
 using namespace std;
 using namespace ydk;
@@ -368,9 +368,7 @@ static core::DataNode* handle_edit_reply(string reply, NetconfClient & client, b
 {
 	if(reply.find("<ok/>") == std::string::npos)
 	{
-		//TODO at a later stage this should be changed to
-		//another exception hierarchy
-		throw YDKException{reply};
+		throw YDKServiceProviderException{reply};
 	}
 
 	if(candidate_supported)
@@ -379,9 +377,7 @@ static core::DataNode* handle_edit_reply(string reply, NetconfClient & client, b
 		reply = client.execute_payload(get_commit_rpc_payload());
 		if(reply.find("<ok/>") == std::string::npos)
 		{
-			//TODO at a later stage this should be changed to
-			//another exception hierarchy
-			throw YDKException{reply};
+			throw YDKServiceProviderException{reply};
 		}
 	}
 
@@ -401,9 +397,7 @@ static core::DataNode* handle_read_reply(string reply, core::RootSchemaNode * ro
 	auto data_start = reply.find("<data>");
 	if(data_start == std::string::npos)
 	{
-		//TODO at a later stage this should be changed to
-		//another exception hierarchy
-		throw YDKException{reply};
+		throw YDKServiceProviderException{reply};
 	}
 	data_start+= sizeof("<data>") - 1;
 	auto data_end = reply.find("</data>", data_start);

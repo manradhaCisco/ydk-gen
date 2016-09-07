@@ -1,9 +1,10 @@
 #include "entity_data_node_walker.hpp"
 
-#include <assert.h>
-#include "core.hpp"
-#include "entity.hpp"
 #include <iostream>
+#include <assert.h>
+
+#include "core.hpp"
+#include "types.hpp"
 
 using namespace std;
 

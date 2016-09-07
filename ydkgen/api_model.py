@@ -22,7 +22,7 @@
 """
 from __future__ import absolute_import
 
-from .common import camel_case, iskeyword
+from .common import camel_case, iskeyword, iscppkeyword
 from .common import snake_case, escape_name
 
 from pyang.types import UnionTypeSpec

@@ -146,7 +146,7 @@ class YdkGenerator(object):
         gen_api_root = self._init_dirs(pkg_name='ydk', pkg_type='core')
         return gen_api_root
 
-    def _get_api_pkgs(self, bundle):
+    def _get_api_pkgs(self, resolved_model_dir):
         """ Return api packages for resolved YANG modules. Each module will be
             represented as an api package.
 
@@ -157,7 +157,7 @@ class YdkGenerator(object):
             api_pkgs (List[.api_model.Package]): List of api packages.
         """
 
-        pyang_builder = PyangModelBuilder(bundle)
+        pyang_builder = PyangModelBuilder(resolved_model_dir)
         modules = pyang_builder.parse_and_return_modules()
 
         # build api model packages
@@ -266,15 +266,12 @@ class YdkGenerator(object):
                                  'ydk-models-%s' % bundle.name,
                                  bundle.str_version,
                                  bundle.dependencies)
-            with open(os.path.join(bundle_model_dir, '__init__.py'), 'w') as init_file:
-                init_file.close()
 
         elif self.language == 'cpp':
             _modify_cpp_cmake(gen_api_root,
-                              'ydk_%s' % bundle.name,
-                              api_pkgs,
-                              bundle.version,
-                              bundle.dependencies)
+                              bundle.name,
+                              bundle.models,
+                              bundle.version)
         # write init file for bundle models directory.
         bundle_model_dir = os.path.join(gen_api_root, 'ydk')
         os.mkdir(bundle_model_dir)
@@ -353,7 +350,7 @@ def _modify_python_setup(gen_api_root, pkg_name, version, dependencies=None):
             print(line, end='')
 
 
-def _modify_cpp_cmake(gen_api_root, pkg_name, api_pkgs, version, dependencies=None, descriptions=""):
+def _modify_cpp_cmake(gen_api_root, pkg_name, models, version, descriptions=""):
     """ Modify CMakeLists.txt template for cpp libraries.
 
     Args:
@@ -362,13 +359,9 @@ def _modify_cpp_cmake(gen_api_root, pkg_name, api_pkgs, version, dependencies=No
         version (str): Package version for generated APIs.
     """
     cmake_file = os.path.join(gen_api_root, 'CMakeLists.txt')
-    pkg_name = pkg_name.lstrip('ydk_')
-    if '_' in pkg_name:
-        # might need to add brief_name attribute to profile file
-        # or have some algorithm to extract brief name,
-        pkg_name = ''.join([s[0] for s in pkg_name.split('_')])
-    header_files = _get_cpp_files(api_pkgs, 'h')
-    source_files = _get_cpp_files(api_pkgs, 'cpp')
+
+    header_files = _get_cpp_files(models, 'h')
+    source_files = _get_cpp_files(models, 'cpp')
     for line in fileinput.input(cmake_file, inplace=True):
         if "@DESCRIPTIONS@" in line:
             print(line.replace("@DESCRIPTIONS@", descriptions), end='')
@@ -385,10 +378,10 @@ def _modify_cpp_cmake(gen_api_root, pkg_name, api_pkgs, version, dependencies=No
             print(line, end='')
 
 
-def _get_cpp_files(api_pkgs, ext):
+def _get_cpp_files(models, ext):
     files = []
-    for pkg in api_pkgs:
-        file_name = 'ydk/models/%s.%s' % (pkg.name, ext)
+    for model in models:
+        file_name = 'ydk/models/%s.%s' % (model.pkg_name, ext)
         files.append(file_name)
     return ' '.join(files)
 

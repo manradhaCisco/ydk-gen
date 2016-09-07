@@ -31,8 +31,6 @@
 #include <string>
 #include <memory>
 
-#include "entity.hpp"
-
 namespace ydk {
 class Service
 {
@@ -40,8 +38,11 @@ class Service
 
 namespace core
 {
+class DataNode;
 class ServiceProvider;
 }
+
+class Entity;
 
 class CrudService : public Service
 {

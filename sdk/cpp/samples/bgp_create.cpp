@@ -18,6 +18,7 @@
 #include "ydk/netconf_provider.hpp"
 #include "ydk/crud_service.hpp"
 #include "ydk_openconfig/openconfig_bgp.h"
+#include "ydk_openconfig/openconfig_bgp_types.h"
 
 #include "args_parser.h"
 
@@ -32,9 +33,9 @@ void config_bgp(openconfig_bgp::Bgp* bgp)
 	bgp->global_->config->as_ = 65001;
 	bgp->global_->config->router_id = "1.2.3.4";
 
-	auto afi_safi = make_unique<openconfig_bgp::Bgp::Global::AfiSafis::AfiSafi>();
-	afi_safi->afi_safi_name = "openconfig-bgp-types:L3VPN_IPV4_UNICAST";
-	afi_safi->config->afi_safi_name = "openconfig-bgp-types:L3VPN_IPV4_UNICAST";
+	auto afi_safi = make_unique<openconfig_bgp::Bgp::Global_::AfiSafis::AfiSafi>();
+	afi_safi->afi_safi_name = openconfig_bgp_types::L3Vpn_Ipv4_UnicastIdentity();
+	afi_safi->config->afi_safi_name = openconfig_bgp_types::L3Vpn_Ipv4_UnicastIdentity();
 	afi_safi->config->enabled = false;
 	afi_safi->parent = bgp->global_->afi_safis.get();
 	bgp->global_->afi_safis->afi_safi.push_back(move(afi_safi));

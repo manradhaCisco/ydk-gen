@@ -1,13 +1,13 @@
 #include <iostream>
 
 #include "core.hpp"
-#include "value.hpp"
+#include "types.hpp"
 
 namespace ydk {
 
-std::string to_str(Type t)
+std::string to_str(YType t)
 {
-#define TOSTRING(t) case Type::t: return #t
+#define TOSTRING(t) case YType::t: return #t
     switch(t)
     {
         TOSTRING(uint8);
@@ -26,7 +26,7 @@ std::string to_str(Type t)
     return "";
 }
 
-Value::Value(Type type, std::string name):
+Value::Value(YType type, std::string name):
 		is_set(false),
 		name(name),
 		value(""),
@@ -110,19 +110,19 @@ void Value::operator = (Empty val)
 	store_value();
 }
 
-//void Value::operator = (Identity val)
-//{
-//	value_buffer << val.get_tag();
-//	std::cerr<<"identiy"<<std::endl;
-//	store_value();
-//}
+void Value::operator = (Identity val)
+{
+	value_buffer << val.get_tag();
+	std::cerr<<"identity. val: "<<val.get_tag()<<std::endl;
+	store_value();
+}
 
-//void Value::operator = (Enum val)
-//{
-//	value_buffer << val.get_tag();
-//	std::cerr<<"enum"<<std::endl;
-//	store_value();
-//}
+void Value::operator = (Enum val)
+{
+	value_buffer << val.get_tag();
+	std::cerr<<"enum"<<std::endl;
+	store_value();
+}
 
 void Value::operator = (std::string val)
 {
@@ -143,7 +143,7 @@ void Value::operator = (std::string val)
 void Value::store_value()
 {
 	is_set=true;
-	if(type == Type::boolean)
+	if(type == YType::boolean)
 	{
 		if(value_buffer.str()=="1")
 		{
