@@ -26,7 +26,7 @@ Mac
 
 Install Tips
 ------------
-We recommend that you perform the installation under a Python virtual environment (``virtualenv``/``virtualenvwrapper``).  To install in your system, execute::
+We recommend that you perform the installation under a Python virtual environment (``virtualenv``/``virtualenvwrapper``).  To install support in your system, execute::
 
   ydk-py$ pip install virtualenv virtualenvwrapper
   ydk-py$ source /usr/local/bin/virtualenvwrapper.sh
@@ -36,7 +36,7 @@ In some systems (e.g. Debian-based Linux), you may need to install support for P
   ydk-py$ sudo pip install virtualenv virtualenvwrapper
   ydk-py$ source /usr/local/bin/virtualenvwrapper.sh
 
-Once you have installed support for Python virtual environments, create a new virtual environment::
+At this point, create a new virtual environment::
 
   ydk-py$ mkvirtualenv -p python2.7 ydk-py
 
@@ -46,7 +46,7 @@ Now you can install the ``core`` package::
   (ydk-py)core$ python setup.py sdist
   (ydk-py)core$ pip install dist/ydk*.gz
 
-Once you installed the ``core`` package, you can install one more model bundles.  Note that some bundles have dependencies which are already captured in the bundle package.  To install the IEFT bundle, execute::
+Once you installed the ``core`` package, you can install one more model bundles.  Note that some bundles have dependencies on other bundles.  Those dependencies are already captured in the bundle package.  To install the IEFT bundle, execute::
 
   (ydk-py)core$ cd ../ietf
   (ydk-py)ietf$ python setup.py sdist
@@ -68,7 +68,7 @@ To install the cisco-ios-xr bundle, execute::
 Example Usage
 =============
 
-In this example, we are going to set some BGP configuration using the OpenConfig model, the CRUD (Create/Read/Update/Delete) service and the NETCONF service provider. The complete sample is available in samples/bgp.py. The sample can be run with the below steps::
+In this example, we set some BGP configuration using the OpenConfig model, the CRUD (Create/Read/Update/Delete) service and the NETCONF service provider. The example in this document is a simplified version of the more complete sample that is available in ``samples/bgp.py``. That more complete sample can be run with the below steps::
 
     (ydk-py)ydk-py$ cd core/samples
     (ydk-py)samples$ ./bgp.py -h
@@ -88,11 +88,10 @@ In this example, we are going to set some BGP configuration using the OpenConfig
     (ydk-py)samples$ ./bgp.py --host <ip-address-of-netconf-server> -u <username> -p <password> --port <port-number>
 
 Service Providers
-------------------------
+-----------------
 The first step in any application is to create a service provider instance. In this case, the NETCONF service provider (defined in ``ydk.providers.NetconfServiceProvider``) is responsible for mapping between the CRUD service API and the underlying manageability protocol (NETCONF RPCs).
 
-In this example we instantiate an instance of the service provider that creates a netconf
-session to the machine at ip 10.0.0.1 ::
+We instantiate an instance of the service provider that creates a NETCONF session to the machine with address 10.0.0.1 ::
 
  from ydk.providers import NetconfServiceProvider
 
@@ -104,13 +103,11 @@ session to the machine at ip 10.0.0.1 ::
 
 Using the model APIs
 ------------------------
-After establishing the connection, it's time to instantiate the entities and set some data.
-
-First import the types from the module::
+After establishing the connection, we instantiate the entities and set some data. First, we import the types from the OpenConfig BGP module::
 
  from ydk.models.openconfig import bgp
 
-Next set the attributes ::
+Next, create a BGP configuraiton boject and set the attributes::
 
  # create BGP object
  bgp_cfg = bgp.Bgp()
@@ -127,28 +124,28 @@ Next set the attributes ::
  # Add the AFI SAFI config to the global AFI SAFI list
  bgp_cfg.global_.afi_safis.afi_safi.append(ipv4_afsf)
 
-Invoking the CRUDService
+Invoking the CRUD Service
 --------------------------
-First we need to import the CRUDService class::
+The CRUD service provides methods to create, read, update and delete entities on a device making use of the session provided by a service provider (NETCONF in this case).  In order to use the CRUD service, we need to import the ``CRUDService`` class::
 
  from ydk.services import CRUDService
 
-Next we instantiate the CRUDService::
+Next, we instantiate the CRUD service::
 
  crud_service = CRUDService()
 
-And finally we invoke the create method of the CRUDService class passing in the
+Finally, we invoke the create method of the ``CRUDService`` class passing in the
 service provider instance and our entity (bgp_cfg)::
 
  try:
      crud_service.create(sp_instance, bgp_cfg)
  except YPYError:
 
-Note if there were any errors the above API will raise YPYError.
+Note if there were any errors the above API will raise a YPYError exception.
 
 Logging
 -------
-Uses common Python logging.  All modules are based off "ydk" log::
+YDK uses common Python logging.  All modules are based on the "ydk" log::
 
  import logging
  log = logging.getLogger('ydk')
