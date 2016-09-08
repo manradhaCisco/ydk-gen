@@ -107,7 +107,7 @@ After establishing the connection, we instantiate the entities and set some data
 
  from ydk.models.openconfig import bgp
 
-Next, create a BGP configuraiton boject and set the attributes::
+Next, create a BGP configuration object and set the attributes::
 
  # create BGP object
  bgp_cfg = bgp.Bgp()
