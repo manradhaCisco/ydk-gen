@@ -94,7 +94,7 @@ function setup_env {
     cd ~
     git clone https://github.com/unittest-cpp/unittest-cpp.git
     git clone https://github.com/abhikeshav/libnetconf
-
+    git clone https://github.com/manradhaCisco/libyang
 
     printf "\nMaking unittest-cpp...\n"
     cd ~/unittest-cpp/builds
@@ -102,9 +102,23 @@ function setup_env {
     cmake ..
     cmake --build ./ --target install
 
-    printf "\nMaking libnetconf...\n"
-    cd ~/libnetconf
-    ./configure && make && make install
+    # printf "\nMaking libnetconf...\n"
+    # cd ~/libnetconf
+    # ./configure && make
+    # make install
+
+    # printf "\nMaking libyang"
+    # cd ~/libyang
+    # mkdir build
+    # cd build
+    # cmake ..
+    # make
+
+    # cd $YDKGEN_HOME/sdk/cpp/ydk/libs
+    # mkdir libnetconf
+    # mkdir libyang
+    # tar -xf ~/libnetconf/.libs/libnetconf.a -C libnetconf
+    # tar -xf ~/libyang/build/libyang.a -C libyang
 
     printf "Generating api in $PY_GENERATE"
     printf "Testing api in $PY_TEST"
