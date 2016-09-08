@@ -20,9 +20,14 @@ header_printer.py
  prints C++ classes
 
 """
-from ydkgen.api_model import Class, Package
+from pyang.types import UnionTypeSpec
+
+from ydkgen.api_model import Class, Enum, Package
+from ydkgen.builder import TypesExtractor
 from ydkgen.common import sort_classes_at_same_level
 from ydkgen.printer.file_printer import FilePrinter
+
+from .enum_printer import EnumPrinter
 
 
 class HeaderPrinter(FilePrinter):
@@ -72,6 +77,25 @@ class HeaderPrinter(FilePrinter):
 
     def print_body(self, package):
         self._print_classes([clazz for clazz in package.owned_elements if isinstance(clazz, Class)])
+        self._print_enums_for_element(package)
+
+    def _print_enums_for_element(self, element):
+        enums = []
+        enum_name_map = {}
+        for child in element.owned_elements:
+            if isinstance(child, Enum) and not child.name in enum_name_map:
+                enums.append(child)
+                enum_name_map[child.name] = child
+        self._print_enums(enums)
+        for child in element.owned_elements:
+            self._print_enums_for_element(child)
+
+    def _print_enums(self, enums):
+        for enum in enums:
+            self._print_enum(enum)
+
+    def _print_enum(self, enum):
+        EnumPrinter(self.ctx).print_enum(enum)
 
     def _print_classes(self, clazzes):
         sorted_classes = sort_classes_at_same_level(clazzes, self.sort_clazz)
@@ -108,6 +132,7 @@ class HeaderPrinter(FilePrinter):
         if len(child_classes) > 0:
             self._print_classes(child_classes)
         self._print_class_inits(clazz)
+        self._print_class_enums_forward_declarations(clazz)
 
     def _print_constructor_destructor(self, clazz):
         self.ctx.writeln('public:')
@@ -197,11 +222,11 @@ class HeaderPrinter(FilePrinter):
 
     def _get_class_inits_unique(self, prop):
         if isinstance(prop.property_type, Class) and not prop.property_type.is_identity():
-            return 'std::unique_ptr<%s> %s;' % (prop.property_type.fully_qualified_cpp_name(), prop.name,)
+            return 'std::unique_ptr<%s> %s;' % (prop.property_type.fully_qualified_cpp_name(), prop.name)
 
     def _get_class_inits_many(self, prop):
         if prop.is_many and isinstance(prop.property_type, Class) and not prop.property_type.is_identity():
-            return 'std::vector<std::unique_ptr<%s> > %s;' % (prop.property_type.fully_qualified_cpp_name(), prop.name,)
+            return 'std::vector<std::unique_ptr<%s> > %s;' % (prop.property_type.fully_qualified_cpp_name(), prop.name)
 
     def _get_children(self, clazz):
         class_inits_properties = []
@@ -216,10 +241,33 @@ class HeaderPrinter(FilePrinter):
         return class_inits_properties
 
     def _print_class_trailer(self, clazz):
+        self.ctx.bline()
+        self.ctx.lvl_dec()
+        self.ctx.writeln('}; // ' + clazz.qualified_cpp_name())
+        self.ctx.bline()
+
+    def _print_class_enums_forward_declarations(self, clazz):
+        self.ctx.bline()
+        self.ctx.writeln('public:');
+        self.ctx.lvl_inc()
+        for prop in clazz.properties():
+            if isinstance(prop.property_type, Enum):
+                self.ctx.writeln('class %s;' % prop.property_type.name)
+            elif isinstance(prop.property_type, UnionTypeSpec):
+                for enum_name in self._get_union_contained_enums(prop.property_type):
+                    self.ctx.writeln('class %s;' % enum_name)
         self.ctx.lvl_dec()
         self.ctx.bline()
-        self.ctx.writeln('}; // ' + clazz.name)
-        self.ctx.bline()
+
+    def _get_union_contained_enums(self, union_type):
+        contained_enums = set()
+        for contained_type_stmt in union_type.types:
+            contained_property_type = TypesExtractor().get_property_type(contained_type_stmt)
+            if isinstance(contained_property_type, Enum):
+                contained_enums.add(contained_property_type.name)
+            elif isinstance(contained_property_type, UnionTypeSpec):
+                contained_enums.update(self._get_union_contained_enums(contained_property_type))
+        return contained_enums
 
     def _print_include_guard_header(self, package):
         self.ctx.writeln('#ifndef _{0}_'.format(package.name.upper()))

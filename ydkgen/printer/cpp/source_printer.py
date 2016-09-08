@@ -20,7 +20,7 @@ source_printer.py
  prints C++ classes
 
 """
-from ydkgen.api_model import Class, Package, DataType
+from ydkgen.api_model import Class, DataType, Enum, Package
 from ydkgen.common import sort_classes_at_same_level
 from ydkgen.printer.file_printer import FilePrinter
 from .get_entity_path_printer import GetEntityPathPrinter
@@ -79,7 +79,7 @@ class SourcePrinter(FilePrinter):
 
     def _print_class_constructor(self, clazz, leafs, children):
         self._print_class_constructor_header(clazz, leafs, children)
-        self._print_class_constructor_body(clazz, children)
+        self._print_class_constructor_body(clazz, leafs, children)
         self._print_class_constructor_trailer()
 
     def _print_class_constructor_header(self, clazz, leafs, children):
@@ -93,13 +93,22 @@ class SourcePrinter(FilePrinter):
         self.ctx.writeln('{')
         self.ctx.lvl_inc()
 
-    def _print_class_constructor_body(self, clazz, children):
+    def _print_class_constructor_body(self, clazz, leafs, children):
+        self._print_init_children(children)
+        self._print_init_leafs(leafs)
+
+    def _print_init_children(self, children):
         for child in children:
             if child.is_many:
                 continue
             self.ctx.writeln('%s->parent = this;' % child.name)
             self.ctx.writeln('add_child(%s.get());' % child.name)
             self.ctx.bline()
+
+    def _print_init_leafs(self, leafs):
+        for leaf in leafs:
+            if not leaf.is_many and isinstance(leaf.property_type, Enum):
+                self.ctx.writeln('%s.enum_to_string_func = %s::%s_to_string;' % (leaf.name, leaf.property_type.get_package().name, leaf.property_type.qualified_cpp_name().replace('::', '_')))
 
     def _print_class_constructor_trailer(self):
         self.ctx.lvl_dec()
@@ -188,11 +197,7 @@ class SourcePrinter(FilePrinter):
         self.ctx.writeln('}')
 
     def _print_class_get_path(self, clazz, leafs):
-        self.ctx.writeln('EntityPath %s::get_entity_path() const' % clazz.qualified_cpp_name())
-        self.ctx.writeln('{')
         GetEntityPathPrinter(self.ctx).print_output(clazz, leafs)
-        self.ctx.writeln('}')
-        self.ctx.bline()
 
     def _print_class_set_child(self, clazz, children):
         self._print_class_set_child_header(clazz)
@@ -313,7 +318,8 @@ def get_type_name(prop_type):
         return 'str'
     elif isinstance(prop_type, Class) and prop_type.is_identity():
         return 'identityref'
+    elif isinstance(prop_type, Enum):
+        return 'enumeration'
     elif isinstance(prop_type, DataType):
         return 'str'
     return prop_type.name
-

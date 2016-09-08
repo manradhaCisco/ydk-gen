@@ -805,6 +805,19 @@ class EnumLiteral(NamedElement):
         if self.name[0:1].isdigit():
             self.name = 'Y_%s' % self.name
 
+        if self.name.lower() == 'true' or self.name.lower() == 'false' \
+         or self.name.lower() == 'default' or self.name.lower() == 'auto' \
+         or self.name.lower() == 'static' or self.name.lower() == 'or' \
+         or self.name.lower() == 'do' or self.name.lower() == 'new' \
+         or self.name.lower() == 'delete' or self.name.lower() == 'protected' \
+         or self.name.lower() == 'private' or self.name.lower() == 'public' \
+         or self.name.lower() == 'export' or self.name.lower() == 'virtual' \
+         or self.name.lower() == 'for' or self.name.lower() == 'and' \
+         or self.name.lower() == 'break' or self.name.lower() == 'case' \
+         or self.name.lower() == 'catch' or self.name.lower() == 'float' \
+         or self.name.lower() == 'long' or self.name.lower() == 'return':
+            self.name = self.name + '_'
+
         if self.name[0] == '_':
             self.name = 'Y%s' % self.name
 

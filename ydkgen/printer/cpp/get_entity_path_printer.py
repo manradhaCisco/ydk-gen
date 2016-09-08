@@ -42,18 +42,37 @@ class GetEntityPathPrinter(object):
 
         """
         self._print_get_ydk_path_header(clazz)
-        self._print_get_ydk_path_body(clazz, leafs)
+        self._print_get_ydk_path_func(clazz, leafs)
         self._print_get_ydk_path_trailer(clazz)
 
     def _print_get_ydk_path_header(self, clazz):
+        self.ctx.writeln('EntityPath %s::get_entity_path() const' % clazz.qualified_cpp_name())
+        self.ctx.writeln('{')
         self.ctx.lvl_inc()
 
-    def _print_get_ydk_path_body(self, clazz, leafs):
-        leaf_lists = [leaf for leaf in leafs if leaf.is_many]
+    def _print_get_ydk_path_func(self, clazz, leafs):
         path = '"'
         if clazz.owner is not None and isinstance(clazz.owner, Package):
             path += clazz.owner.stmt.arg + ':'
         path += '%s"' % (clazz.stmt.arg)
+        self.ctx.writeln('std::ostringstream path_buffer;')
+        self.ctx.writeln('path_buffer << %s%s;' % (path, self._get_path_predicate(clazz)))
+        self.ctx.writeln('std::vector<std::pair<std::string, std::string> > leaf_name_values {%s};' % (', '.join('%s.get_name_value()' % (prop.name) for prop in leafs if not prop.is_many)))
+        self._print_get_ydk_path_leaflists(leafs)
+        self.ctx.writeln('EntityPath entity_path {path_buffer.str(), leaf_name_values};')
+        self.ctx.writeln('return entity_path;')
+
+    def _print_get_ydk_path_leaflists(self, leafs):
+        leaf_lists = [leaf for leaf in leafs if leaf.is_many]
+        for leaf in leaf_lists:
+            self.ctx.writeln('for( const Value & leaf : %s )' % leaf.name)
+            self.ctx.writeln('{')
+            self.ctx.lvl_inc()
+            self.ctx.writeln('leaf_name_values.push_back(leaf.get_name_value());')
+            self.ctx.lvl_dec()
+            self.ctx.writeln('}')
+
+    def _get_path_predicate(self, clazz):
         predicates = ''
         insert_token = ' << '
         key_props = clazz.get_key_props()
@@ -62,20 +81,10 @@ class GetEntityPathPrinter(object):
             predicates += '"[' + key_prop.stmt.arg + '=\'"'
             predicates += insert_token
             predicates += ('%s.get()') % key_prop.name + insert_token + '"\']"'
-
-        self.ctx.writeln('std::ostringstream path_buffer;')
-        self.ctx.writeln('path_buffer << %s%s;' % (path, predicates))
-        self.ctx.writeln('std::vector<std::pair<std::string, std::string> > leaf_name_values {%s};' % (', '.join('%s.get_name_value()' % (prop.name) for prop in leafs if not prop.is_many)))
-        for leaf in leaf_lists:
-            self.ctx.writeln('for( const Value & leaf : %s )' % leaf.name)
-            self.ctx.writeln('{')
-            self.ctx.lvl_inc()
-            self.ctx.writeln('leaf_name_values.push_back(leaf.get_name_value());')
-            self.ctx.lvl_dec()
-            self.ctx.writeln('}')
-        self.ctx.writeln('EntityPath entity_path {path_buffer.str(), leaf_name_values};')
-        self.ctx.writeln('return entity_path;')
+        return predicates
 
     def _print_get_ydk_path_trailer(self, clazz):
         self.ctx.lvl_dec()
+        self.ctx.bline()
+        self.ctx.writeln('}')
         self.ctx.bline()
