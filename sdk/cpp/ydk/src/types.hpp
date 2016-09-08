@@ -115,25 +115,6 @@ class Entity {
 	std::vector<Entity*> children;
 };
 
-
-class Enum {
-  public:
-	Enum(std::string tag) : tag(tag)
-	{
-	}
-
-	virtual ~Enum(){}
-
-	std::string get_tag()
-	{
-		return tag;
-	}
-
-  private:
-	std::string tag;
-};
-
-
 class Identity {
   public:
 	Identity(std::string tag) : tag(tag)
@@ -142,13 +123,23 @@ class Identity {
 
 	virtual ~Identity(){}
 
-	std::string get_tag()
+	std::string to_string()
 	{
 		return tag;
 	}
 
   private:
 	std::string tag;
+};
+
+class Enum {
+  public:
+	Enum()
+	{
+	}
+	~Enum()
+	{
+	}
 };
 
 enum class YType {
@@ -163,7 +154,8 @@ enum class YType {
 	empty,
 	identityref,
 	str,
-	boolean
+	boolean,
+	enumeration
 };
 
 class Value {
@@ -182,18 +174,19 @@ class Value {
 	void operator = (int64 val);
 	void operator = (Empty val);
 	void operator = (Identity val);
-	void operator = (Enum val);
 	void operator = (std::string val);
-//	void operator = (bool val);
 
 	operator std::string() const;
 	bool operator == (Value & other) const;
 	bool operator == (const Value & other) const;
 
 	bool is_set;
+	std::string (*enum_to_string_func)(int);
 
   private:
 	void store_value();
+
+	bool is_enum();
 
 	std::string name;
 	std::ostringstream value_buffer;

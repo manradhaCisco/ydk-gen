@@ -69,10 +69,10 @@ unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & 
 unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & filter, bool config_only)
 {
 	core::DataNode* read_data_node = execute_rpc(provider, filter, "ydk:read", "filter", config_only);
-	return read(provider, filter, read_data_node);
+	return read(filter, read_data_node);
 }
 
-std::unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & filter, core::DataNode* read_data_node)
+std::unique_ptr<Entity> CrudService::read(Entity & filter, core::DataNode* read_data_node)
 {
 	if (read_data_node == nullptr)
 		return nullptr;

@@ -56,7 +56,7 @@ class CrudService : public Service
 		std::unique_ptr<Entity> read(core::ServiceProvider & provider, Entity & filter, bool config_only);
 
 	private:
-		std::unique_ptr<Entity> read(core::ServiceProvider & provider, Entity & filter, core::DataNode* read_data_node);
+		std::unique_ptr<Entity> read(Entity & filter, core::DataNode* read_data_node);
 };
 
 }

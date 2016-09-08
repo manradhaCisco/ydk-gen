@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "core.hpp"
+#include "errors.hpp"
 #include "types.hpp"
 
 namespace ydk {
@@ -22,12 +23,14 @@ std::string to_str(YType t)
     	TOSTRING(identityref);
     	TOSTRING(str);
     	TOSTRING(boolean);
+    	TOSTRING(enumeration);
     }
     return "";
 }
 
 Value::Value(YType type, std::string name):
 		is_set(false),
+		enum_to_string_func(nullptr),
 		name(name),
 		value(""),
 		type(type)
@@ -87,9 +90,23 @@ void Value::operator = (int32 val)
 {
 	value_buffer.clear();
 	value_buffer.str("");
-	value_buffer << val;
+	if(is_enum())
+	{
+		if(enum_to_string_func == nullptr)
+			throw YDKException("Enum to string function not set for " + name);
+		value_buffer << enum_to_string_func(val);
+	}
+	else
+	{
+		value_buffer << val;
+	}
 //	std::cerr<<"int32"<<std::endl;
 	store_value();
+}
+
+bool Value::is_enum()
+{
+	return type == YType::enumeration;
 }
 
 void Value::operator = (int64 val)
@@ -112,15 +129,7 @@ void Value::operator = (Empty val)
 
 void Value::operator = (Identity val)
 {
-	value_buffer << val.get_tag();
-	std::cerr<<"identity. val: "<<val.get_tag()<<std::endl;
-	store_value();
-}
-
-void Value::operator = (Enum val)
-{
-	value_buffer << val.get_tag();
-	std::cerr<<"enum"<<std::endl;
+	value_buffer << val.to_string();
 	store_value();
 }
 
@@ -129,7 +138,6 @@ void Value::operator = (std::string val)
 	value_buffer.clear();
 	value_buffer.str("");
 	value_buffer << val;
-//	std::cerr<<"str"<<std::endl;
 	store_value();
 }
 

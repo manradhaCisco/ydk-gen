@@ -19,8 +19,6 @@
   
   YANG model driven API, python emitter.
 """
-from builtins import int as newint
-
 from ydkgen.api_model import Class, Enum, Bits
 from ydkgen.builder import TypesExtractor
 from ydkgen.common import convert_to_reStructuredText, get_module_name
@@ -351,17 +349,11 @@ def get_meta_info_data(prop, property_type, type_stmt, identity_subclasses=None)
             meta_info_data.mtype = 'REFERENCE_UNION'
             meta_info_data.ptype = 'str'
             meta_info_data.property_type = type_spec
-            if len(type_spec.types) > 0:
-                # meta_info_data.doc_link += 'one of { '
-                for contained_type_stmt in type_spec.types:
-                    contained_property_type = types_extractor.get_property_type(contained_type_stmt)
-                    child_meta_info_data = get_meta_info_data(
-                        prop, contained_property_type, contained_type_stmt, identity_subclasses)
-                    meta_info_data.children.append(child_meta_info_data)
-                    # if meta_info_data.doc_link[-1:] != ' ':
-                    #    meta_info_data.doc_link += ' | '
-                    # meta_info_data.doc_link += child_meta_info_data.doc_link
-                # meta_info_data.doc_link += ' }'
+            for contained_type_stmt in type_spec.types:
+                contained_property_type = types_extractor.get_property_type(contained_type_stmt)
+                child_meta_info_data = get_meta_info_data(
+                    prop, contained_property_type, contained_type_stmt, identity_subclasses)
+                meta_info_data.children.append(child_meta_info_data)
 
         elif isinstance(type_spec, TypeSpec) and type_spec.name == 'instance-identifier':
             # Treat as string

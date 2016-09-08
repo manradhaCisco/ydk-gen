@@ -308,11 +308,15 @@ if __name__ == '__main__':
     if options.gendoc:
         generate_documentations(output_directory, ydk_root, language, options.bundle, options.core)
 
+    minutes_str, seconds_str = _get_time_taken(start_time)
+    print('\nTime taken for code/doc generation: {0} {1}\n'.format(minutes_str, seconds_str))
+    print('\nPerforming compilation and/or installation...\n')
+
     if options.cpp:
         create_shared_libraries(output_directory)
     else:
         create_pip_packages(output_directory)
 
     minutes_str, seconds_str = _get_time_taken(start_time)
-    print('Code generation completed successfully!')
-    print('Time taken: {0} {1}\n'.format(minutes_str, seconds_str))
+    print('Code generation and installation completed successfully!')
+    print('Total time taken: {0} {1}\n'.format(minutes_str, seconds_str))
