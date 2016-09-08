@@ -16,9 +16,8 @@
 #define BOOST_TEST_MODULE NetconfClientTest
 #include <boost/test/unit_test.hpp>
 #include <string.h>
-
-#include "../../src/netconf_client.hpp"
-#include "../../src/errors.hpp"
+#include "../ydk/src/netconf_client.hpp"
+#include "../ydk/src/exception.hpp"
 #include <iostream>
 using namespace ydk;
 using namespace std;

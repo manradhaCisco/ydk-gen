@@ -144,6 +144,38 @@ class YdkGenerator(object):
             gen_api_root (str): Root directory for generated APIs.
         """
         gen_api_root = self._init_dirs(pkg_name='ydk', pkg_type='core')
+
+        if options.core:
+            import git
+            import os
+            from subprocess import call
+
+            git.Git().clone("https://github.com/abhikeshav/libnetconf")
+            git.Git().clone("https://github.com/manradhaCisco/libyang")
+
+            ydkgen_home = os.getcwd()
+            archive_dir = '%s/sdk/cpp/ydk/libs' % ydkgen_home
+            libnetconf = '%s/libnetconf' % ydkgen_home
+            libyang = '%s/libyang' % ydkgen_home
+            
+            os.chdir(libnetconf)
+            call(["./configure"])
+            call(["make"])
+
+            os.chdir(libyang)
+            call(["mkdir", "build"])
+            os.chdir("build")
+            call(["cmake", ".."])
+            call(["make"])
+
+            libnetconf_archive = '%s/.libs/libnetconf.a' % libnetconf
+            libyang_archive = '%s/build/libyang.a' % libyang
+            os.chdir(archive_dir)
+            call(["mkdir", "libnetconf"])
+            call(["mkdir", "libyang"])
+            call(["tar", "-xf", libnetconf_archive, "-C", "libnetconf" ])
+            call(["tar", "-xf", libyang_archive, "-C", "libyang" ])
+
         return gen_api_root
 
     def _get_api_pkgs(self, resolved_model_dir):

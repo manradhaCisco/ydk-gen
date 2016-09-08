@@ -24,9 +24,9 @@
 #define BOOST_TEST_MODULE OCBgpTest
 #include <boost/test/unit_test.hpp>
 #include <iostream>
-#include "../../src/core.hpp"
-#include "../config.hpp"
-#include "../../src/netconf_provider.hpp"
+#include "../ydk/src/core.hpp"
+#include "../ydk/tests/config.hpp"
+#include "../ydk/src/netconf_provider.hpp"
 
 const char* expected_bgp_output ="\
 <bgp xmlns=\"http://openconfig.net/yang/bgp\">\
