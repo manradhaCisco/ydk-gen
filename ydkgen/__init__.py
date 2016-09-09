@@ -23,7 +23,7 @@ import shutil
 import logging
 import tempfile
 import fileinput
-
+from subprocess import call
 from .common import YdkGenException
 from ydkgen.builder import (ApiModelBuilder, GroupingClassApiModelBuilder,
                             PyangModelBuilder, SubModuleBuilder)
@@ -145,37 +145,55 @@ class YdkGenerator(object):
         """
         gen_api_root = self._init_dirs(pkg_name='ydk', pkg_type='core')
 
-#        if options.core:
-        import git
-        import os
-        from subprocess import call
+        if self.language == 'cpp':
+            ydkgen_home     = os.getcwd()
+            temp            = '%s/.temp' % ydkgen_home                  # ydkgen_home/.temp
+            cpp_libs        = '%s/gen-api/cpp/ydk/.libs' % ydkgen_home  # ydgen_home/gen-api/cpp/ydk/.libs
 
-        git.Git().clone("https://github.com/abhikeshav/libnetconf")
-        git.Git().clone("https://github.com/manradhaCisco/libyang")
+            self._init_archive_dirs(temp, cpp_libs)
+            self._clone_libs(temp)
+            self._make_archives(temp)
+            self._unpack_archives(temp, cpp_libs)
 
-        ydkgen_home = os.getcwd()
-        archive_dir = '%s/sdk/cpp/ydk/libs' % ydkgen_home
-        libnetconf = '%s/libnetconf' % ydkgen_home
-        libyang = '%s/libyang' % ydkgen_home
-        
+        return gen_api_root
+
+    def _init_archive_dirs(self, src_dir, dest_dir):
+        if os.path.exists(src_dir):     # ydkgen_home/.temp
+            shutil.rmtree(src_dir)
+        os.makedirs(src_dir)
+
+        if os.path.exists(dest_dir):    # ydgen_home/gen-api/cpp/ydk/.libs
+            shutil.rmtree(dest_dir)
+        os.makedirs(dest_dir)
+        os.makedirs('%s/libnetconf' % dest_dir)
+        os.makedirs('%s/libyang' % dest_dir)
+
+    def _clone_libs(self, dest_dir):
+        os.chdir(dest_dir)
+        call(["git", "clone", "https://github.com/abhikeshav/libnetconf"])
+        call(["git", "clone", "-b", "ydk_core", "https://github.com/manradhaCisco/libyang"])
+
+    def _make_archives(self, dest_dir):
+        libnetconf      = '%s/libnetconf' % dest_dir    # ydkgen_home/.temp/libnetconf
+        libyang         = '%s/libyang' % dest_dir       # ydkgen_home/.temp/libyang
+
         os.chdir(libnetconf)
         call(["./configure"])
         call(["make"])
 
         os.chdir(libyang)
-        call(["mkdir", "build"])
+        os.makedirs("build")
         os.chdir("build")
         call(["cmake", ".."])
         call(["make"])
 
-        libnetconf_archive = '%s/.libs/libnetconf.a' % libnetconf
-        libyang_archive = '%s/build/libyang.a' % libyang
-        os.chdir(archive_dir)
-        call(["mkdir", "libnetconf"])
-        call(["mkdir", "libyang"])
+    def _unpack_archives(self, src_dir, dest_dir):
+        libnetconf_archive  = '%s/libnetconf/.libs/libnetconf.a' % src_dir  # ydkgen_home/.temp/libnetconf/.libs/libnetconf.a
+        libyang_archive     = '%s/libyang/build/libyang.a' % src_dir        # ydkgen_home/.temp/libyang/build/libyang.a
+        
+        os.chdir(dest_dir)
         call(["tar", "-xf", libnetconf_archive, "-C", "libnetconf" ])
         call(["tar", "-xf", libyang_archive, "-C", "libyang" ])
-
         return gen_api_root
 
     def _get_api_pkgs(self, resolved_model_dir):
