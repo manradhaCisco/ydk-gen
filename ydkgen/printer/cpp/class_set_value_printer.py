@@ -1,0 +1,60 @@
+#  ----------------------------------------------------------------
+# Copyright 2016 Cisco Systems
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------
+
+"""
+source_printer.py
+
+ prints C++ classes
+
+"""
+
+
+class ClassSetValuePrinter(object):
+    def __init__(self, ctx, get_path):
+        self.ctx = ctx
+        self.get_path = get_path
+
+    def print_class_set_value(self, clazz, leafs):
+        self._print_class_set_value_header(clazz)
+        self._print_class_set_value_body(leafs)
+        self._print_class_set_value_trailer(clazz)
+
+    def _print_class_set_value_header(self, clazz):
+        self.ctx.writeln('void %s::set_value(std::string value_path, std::string value)' % clazz.qualified_cpp_name())
+        self.ctx.writeln('{')
+        self.ctx.lvl_inc()
+
+    def _print_class_set_value_body(self, leafs):
+        for leaf in leafs:
+            self._print_class_set_values(leaf)
+
+    def _print_class_set_values(self, leaf):
+        child_path = self.get_path(leaf)
+        self.ctx.writeln('if(value_path == "%s")' % (child_path))
+        self.ctx.writeln('{')
+        self.ctx.lvl_inc()
+        if(leaf.is_many):
+            self.ctx.writeln('//%s.push_back(value);' % leaf.name)
+        else:
+            self.ctx.writeln('%s = value;' % leaf.name)
+        self.ctx.lvl_dec()
+        self.ctx.writeln('}')
+
+    def _print_class_set_value_trailer(self, clazz):
+        self.ctx.lvl_dec()
+        self.ctx.writeln('}')
+        self.ctx.bline()
+

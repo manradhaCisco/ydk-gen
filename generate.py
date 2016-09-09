@@ -21,6 +21,7 @@ from optparse import OptionParser
 import fileinput
 import logging
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -149,13 +150,10 @@ def create_pip_packages(output_directory):
 
 def create_shared_libraries(output_directory):
     cpp_sdk_root = os.path.join(output_directory)
-    # src_dir = os.path.join(output_directory, 'src')
-#    cpp_libs_root = os.path.join(output_directory, './../.libs')
     cmake_build_dir = os.path.join(output_directory, 'build')
-
-    # models_dir = os.path.join(output_directory, 'ydk/models')
-    if not os.path.exists(cmake_build_dir):
-        os.makedirs(cmake_build_dir)
+    if os.path.exists(cmake_build_dir):
+        shutil.rmtree(cmake_build_dir)
+    os.makedirs(cmake_build_dir)
     os.chdir(cmake_build_dir)
     args = ['cmake ..']
     exit_code1 = subprocess.call(args, env=os.environ.copy(), shell=True)

@@ -51,6 +51,7 @@ find_library(curl_location curl)
 find_library(ssh_location ssh)
 find_library(ssh_threads_location ssh_threads)
 find_library(xslt_location xslt)
+find_library(pcre_location pcre)
 find_package(LibYANG REQUIRED)
 find_package(BOOST REQUIRED)
 
@@ -69,6 +70,7 @@ target_link_libraries(ydk
 	${ssh_location}
 	${ssh_threads_location}
 	${xslt_location}
+	${pcre_location}
         ${LIBYANG_LIBRARIES}
 )
 
