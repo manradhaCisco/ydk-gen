@@ -75,7 +75,7 @@ class GetEntityPathPrinter(object):
             #the parent is irrelevant here 
             self.ctx.writeln('if (parent != nullptr) {')
             self.ctx.lvl_inc()
-            self.ctx.writeln('throw ydk::YDKInvalidArgumentException{"parent has to be nullptr"};')
+            self.ctx.writeln('throw YDKInvalidArgumentException{"parent has to be nullptr"};')
             self.ctx.lvl_dec()
             self.ctx.writeln('}')
             self.ctx.bline()
@@ -87,7 +87,7 @@ class GetEntityPathPrinter(object):
             self.ctx.lvl_inc()
             
             if self._is_parent_needed_for_abs_path(clazz):
-                self.ctx.writeln('throw ydk::YDKInvalidArgumentException{"parent cannot be nullptr"};')
+                self.ctx.writeln('throw YDKInvalidArgumentException{"parent cannot be nullptr"};')
             else:
                 parents = []
                 p = clazz
@@ -98,16 +98,16 @@ class GetEntityPathPrinter(object):
                 parents.reverse()
                 path = ''
                 for p in parents:
-                   if len(path) == 0:
-                       path+= p.owner.stmt.arg
-                       path+=':'
-                       path+=p.stmt.arg
-                   else:
-                       path+='/'
-                       if p.stmt.i_module.arg != p.owner.stmt.i_module.arg:
-                           path+=p.stmt.i_module.arg
-                           path+=':'
-                       path+=p.stmt.arg
+                    if len(path) == 0:
+                        path += p.owner.stmt.arg
+                        path += ':'
+                        path += p.stmt.arg
+                    else:
+                        path += '/'
+                        if p.stmt.i_module.arg != p.owner.stmt.i_module.arg:
+                            path += p.stmt.i_module.arg
+                            path += ':'
+                        path += p.stmt.arg
 
                 self.ctx.writeln('path_buffer << "%s";' % path)
 
@@ -127,7 +127,7 @@ class GetEntityPathPrinter(object):
             self.ctx.bline()
             self.ctx.writeln('if (p == nullptr) {')
             self.ctx.lvl_inc()
-            self.ctx.writeln('throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};')
+            self.ctx.writeln('throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};')
             self.ctx.lvl_dec()
             self.ctx.writeln('}')
             self.ctx.bline()
@@ -251,11 +251,13 @@ class GetSegmentPathPrinter(object):
             predicates += insert_token
             
             predicates += ('%s.get()') % key_prop.name + insert_token
+
+            predicates += '"'
                 
             if not isinstance(property_type, IntTypeSpec):
-                predicates+= "'"
+                predicates += "'"
                 
-            predicates+='"]"'
+            predicates += ']"'
             
         self.ctx.writeln('std::ostringstream path_buffer;')
         self.ctx.writeln('path_buffer << %s%s;' % (path, predicates))
