@@ -48,8 +48,8 @@ add_library(temp OBJECT ${libydk_src} ${libydk_headers})
 set_property(TARGET temp PROPERTY CXX_STANDARD 14)
 set_property(TARGET temp PROPERTY CXX_STANDARD_REQUIRED ON)
 
-file(GLOB libnetconf RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} libs/libnetconf/*.o)
-file(GLOB libyang RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} libs/libyang/*.o)
+file(GLOB libnetconf RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} .libs/libnetconf/*.o)
+file(GLOB libyang RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} .libs/libyang/*.o)
 
 # Find dependent libraries
 find_library(xml2_location xml2)
