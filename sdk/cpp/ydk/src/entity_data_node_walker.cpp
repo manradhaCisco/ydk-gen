@@ -109,106 +109,141 @@ static string strip_keys(string path)
 
 	return strip_keys(stripped_path);
 }
+
+static void
+validate_missing_keys(const EntityPath& entity_path,
+                      const ydk::core::SchemaNode& schema_node,
+                      EntityDiagnostic& diagnostic)
+{
+    auto keys = schema_node.keys();
+    //create a map of the keys
+    std::map<std::string, std::string> name_value_map{};
+    for(auto value_path : entity_path.value_paths) {
+        name_value_map.insert(value_path);
+    }
+        
+    //we need a key
+    for(auto key : keys) {
+        //check if the value list has the value's
+        if(name_value_map.find(key.arg) == name_value_map.end()) {
+            ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError> attr{};
+            attr.source = key.arg;
+            attr.errors.push_back(ydk::core::ValidationError::MISSELEM);
+            diagnostic.attrs.push_back(std::move(attr));
+        }
+    }
     
+}
+
+static void
+validate_attributes(const EntityPath& entity_path, const ydk::core::SchemaNode& schema_node,
+                    EntityDiagnostic& diagnostic)
+{
+    //now validate the values in the value_path that have some values in them
+    for(auto value_path : entity_path.value_paths) {
+        if(value_path.second.empty())
+            continue;
+        auto leaf_schema_node_list = schema_node.find(value_path.first);
+        if(leaf_schema_node_list.empty()) {
+            //the leaf is invalid or not present in the schema
+            ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError> attr{};
+            attr.source = value_path.first;
+            attr.errors.push_back(ydk::core::ValidationError::SCHEMA_NOT_FOUND);
+            diagnostic.attrs.push_back(std::move(attr));
+        } else {
+            ydk::core::SchemaNode* leaf_schema_node = leaf_schema_node_list[0];
+            //now test to see if the value is correct
+            ydk::core::SchemaValueType* type = leaf_schema_node->type();
+            
+            if(type == nullptr) {
+                //TODO log this
+                throw YDKIllegalStateException{"Cannot derive type for "};
+            } else {
+                auto attr = type->validate(value_path.second);
+                if(attr.has_errors()){
+                    attr.source = value_path.first;
+                    diagnostic.attrs.push_back(std::move(attr));
+                }
+                
+            }
+            
+        }
+    }
     
-ydk::EntityDiagnostic 
-ydk::ValidationService::validate(const ydk::core::ServiceProvider& sp, ydk::Entity& entity, ydk::ValidationService::Option option)
+}
+
+static bool
+keyword_is_leaf(std::string & keyword)
+{
+    if(keyword == "leaf" || keyword == "leaf-list" || keyword == "anyxml")
+        return true;
+        
+    return false;
+}
+    
+static EntityDiagnostic
+validate(const ydk::core::ServiceProvider& sp, ydk::Entity& entity, ydk::Entity* parent,
+             ydk::ValidationService::Option option)
 {
    
-    EntityPath root_path = entity.get_entity_path(entity.parent);
+    EntityPath entity_path = entity.get_entity_path(parent);
     
     //validation checking
     //first check if the schema node that represents this path
     //actually exists and then throw an error
     
-    auto root_sn = sp.get_root_schema();
-    auto sn_vec = root_sn->find(root_path.path);
+    auto root_schema_node = sp.get_root_schema();
+    auto schema_node_list = root_schema_node->find(entity_path.path);
     
     EntityDiagnostic diagnostic{};
+    diagnostic.source = &entity;
     
-    if(sn_vec.empty()) {
+    if(schema_node_list.empty()) {
         diagnostic.errors.push_back(ydk::core::ValidationError::SCHEMA_NOT_FOUND);
         //no point processing children
         return diagnostic;
         
-    } else {
+    }
         
-        //schema node cannot be leaf, leaf-list or anyxml
-        auto sn = sn_vec[0];
-        auto stmt = sn->statement();
-        if(stmt.keyword == "leaf" || stmt.keyword == "leaf-list" || stmt.keyword == "anyxml") {
-            diagnostic.errors.push_back(ydk::core::ValidationError::INVALID_USE_OF_SCHEMA);
+    //schema node cannot be leaf, leaf-list or anyxml
+    ydk::core::SchemaNode* schema_node = schema_node_list[0];
+    auto stmt = schema_node->statement();
+    if(keyword_is_leaf(stmt.keyword)) {
+        diagnostic.errors.push_back(ydk::core::ValidationError::INVALID_USE_OF_SCHEMA);
             
-        } else {
-            // there is no error with the schema for this node
-            // first check if is a list
+    } else {
+        // there is no error with the schema for this node
+        // first check if is a list
             
-            if(option == ValidationService::Option::EDIT_CONFIG || option == ValidationService::Option::DATASTORE) {
+        if(option == ValidationService::Option::EDIT_CONFIG || option == ValidationService::Option::DATASTORE) {
             
-                if(stmt.keyword == "list") {
-                    auto keys = sn->keys();
-                    if(!keys.empty()) {
-                        //create a map of the keys
-                        std::map<std::string, std::string> name_value_map{};
-                        for(auto value_path : root_path.value_paths) {
-                            name_value_map.insert(value_path);
-                        }
-                    
-                        //we need a key
-                        for(auto key : sn->keys()) {
-                            //check if the value list has the value's
-                            if(name_value_map.find(key.arg) == name_value_map.end()) {
-                                ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError> attr{};
-                                attr.source = key.arg;
-                                attr.errors.push_back(ydk::core::ValidationError::MISSELEM);
-                                diagnostic.attrs.push_back(std::move(attr));
-                            }
-                        }
-                    }
-                }
-                
-                //now validate the values in the value_path that have some values in them
-                for(auto value_path : root_path.value_paths) {
-                    if(value_path.second.empty())
-                        continue;
-                    auto leaf_sn_vec = sn->find(value_path.first);
-                    if(leaf_sn_vec.empty()) {
-                        //the leaf is invalid or not present in the schema
-                        ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError> attr{};
-                        attr.source = value_path.first;
-                        attr.errors.push_back(ydk::core::ValidationError::SCHEMA_NOT_FOUND);
-                        diagnostic.attrs.push_back(std::move(attr));
-                    } else {
-                        ydk::core::SchemaNode* sn = leaf_sn_vec[0];
-                        //now test to see if the value is correct
-                        ydk::core::SchemaValueType* type = sn->type();
-                        
-                        if(type == nullptr) {
-                            //TODO log this
-                            throw YDKIllegalStateException{"Cannot derive type for "};
-                        } else {
-                            ydk::core::DiagnosticNode<std::string, ydk::core::ValidationError> attr = type->validate(value_path.second);
-                            if(attr.has_errors()){
-                                attr.source = value_path.first;
-                                diagnostic.attrs.push_back(std::move(attr));
-                            }
-                            
-                        }
-                        
-                    }
+            if(stmt.keyword == "list") {
+                auto keys = schema_node->keys();
+                if(!keys.empty()) {
+                    validate_missing_keys(entity_path, *schema_node, diagnostic);
                 }
             }
+            ydk::validate_attributes(entity_path, *schema_node, diagnostic);
+            
         }
     }
     
-    for(auto e : entity.get_children()){
-        EntityDiagnostic child_diag = validate(sp, *e, option);
-        diagnostic.children.push_back(child_diag);
+    for(auto child_entity : entity.get_children()){
+        EntityDiagnostic child_diagnostic = validate(sp, *child_entity, &entity, option);
+        diagnostic.children.push_back(child_diagnostic);
     }
-    
     
     return diagnostic;
     
+}
+    
+EntityDiagnostic
+ValidationService::validate(const core::ServiceProvider& sp, Entity& entity,
+                            ValidationService::Option option)
+{
+        
+    return ydk::validate(sp, entity, entity.parent, option);
+        
 }
 
 }
