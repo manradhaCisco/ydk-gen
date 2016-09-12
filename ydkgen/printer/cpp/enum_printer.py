@@ -28,12 +28,39 @@ class EnumPrinter(object):
     def __init__(self, ctx):
         self.ctx = ctx
 
-    def print_enum(self, enum_class):
+    def print_enum_declarations(self, element):
+        self._print_enum_declarations(self._get_enums(element))
+        for child in element.owned_elements:
+            self.print_enum_declarations(child)
+
+    def print_enum_to_string_funcs(self, element):
+        self._print_enums(self._get_enums(element))
+        for child in element.owned_elements:
+            self.print_enum_to_string_funcs(child)
+
+    def _get_enums(self, element):
+        enums = []
+        enum_name_map = {}
+        for child in element.owned_elements:
+            if isinstance(child, Enum) and not child.name in enum_name_map:
+                enums.append(child)
+                enum_name_map[child.name] = child
+        return enums
+
+    def _print_enums(self, enums):
+        for enum in enums:
+            self._print_enum_to_string_func(enum)
+
+    def _print_enum_declarations(self, enums):
+        for enum in enums:
+            self._print_enum_declaration(enum)
+
+    def _print_enum_declaration(self, enum_class):
         assert isinstance(enum_class, Enum)
         self._print_enum_header(enum_class)
         self._print_enum_body(enum_class)
         self._print_enum_trailer(enum_class)
-        self._print_enum_to_string_func(enum_class)
+        self._print_enum_to_string_func_declaration(enum_class)
 
     def _print_enum_header(self, enum_class):
         self.ctx.writeln('class %s : public Enum' % enum_class.qualified_cpp_name())
@@ -56,7 +83,11 @@ class EnumPrinter(object):
         self.ctx.lvl_dec()
         self.ctx.lvl_dec()
         self.ctx.bline()
-        self.ctx.writeln('}; // %s' % enum_class.name)
+        self.ctx.writeln('};')
+        self.ctx.bline()
+
+    def _print_enum_to_string_func_declaration(self, enum_class):
+        self.ctx.writeln('std::string %s_to_string(int val); // %s' % (enum_class.qualified_cpp_name().replace('::', '_'), enum_class.name))
         self.ctx.bline()
 
     def _print_enum_to_string_func(self, enum_class):
@@ -89,5 +120,6 @@ class EnumPrinter(object):
 
     def _print_enum_to_string_func_trailer(self, enum_class):
         self.ctx.lvl_dec()
-        self.ctx.writeln('}// %s' % enum_class.name)
+        self.ctx.writeln('} // %s' % enum_class.name)
         self.ctx.bline()
+

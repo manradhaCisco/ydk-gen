@@ -21,13 +21,13 @@ header_printer.py
 
 """
 
-from ydkgen.api_model import Class, Enum
+from ydkgen.api_model import Class
 
 from ydkgen.common import sort_classes_at_same_level
 from ydkgen.printer.file_printer import FilePrinter
 
-from .header_enum_printer import EnumPrinter
 from .class_members_printer import ClassMembersPrinter
+from .enum_printer import EnumPrinter
 
 
 class HeaderPrinter(FilePrinter):
@@ -51,7 +51,8 @@ class HeaderPrinter(FilePrinter):
 
     def print_body(self, package):
         self._print_classes([clazz for clazz in package.owned_elements if isinstance(clazz, Class)])
-        self._print_enums_for_element(package)
+        self.ctx.bline()
+        self._print_enums(package)
 
     def _print_imports(self, package):
         self._print_common_imports(package)
@@ -79,24 +80,6 @@ class HeaderPrinter(FilePrinter):
         for import_to_print in imports_to_print:
             self.ctx.writeln('%s' % import_to_print)
         self.ctx.bline()
-
-    def _print_enums_for_element(self, element):
-        enums = []
-        enum_name_map = {}
-        for child in element.owned_elements:
-            if isinstance(child, Enum) and not child.name in enum_name_map:
-                enums.append(child)
-                enum_name_map[child.name] = child
-        self._print_enums(enums)
-        for child in element.owned_elements:
-            self._print_enums_for_element(child)
-
-    def _print_enums(self, enums):
-        for enum in enums:
-            self._print_enum(enum)
-
-    def _print_enum(self, enum):
-        EnumPrinter(self.ctx).print_enum(enum)
 
     def _print_classes(self, clazzes):
         sorted_classes = sort_classes_at_same_level(clazzes, self.sort_clazz)
@@ -147,3 +130,6 @@ class HeaderPrinter(FilePrinter):
     def _print_include_guard_trailer(self, package):
         self.ctx.bline()
         self.ctx.writeln('#endif /* _{0}_ */'.format(package.name.upper()))
+
+    def _print_enums(self, package):
+        EnumPrinter(self.ctx).print_enum_declarations(package)
