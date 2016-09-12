@@ -17,9 +17,8 @@
 Generate YDK core library, profile package and bundle packages.
 """
 from __future__ import print_function
-import os
+import os, sys, shutil
 import json
-import shutil
 import logging
 import tempfile
 import fileinput
@@ -146,17 +145,15 @@ class YdkGenerator(object):
         gen_api_root = self._init_dirs(pkg_name='ydk', pkg_type='core')
 
         if self.language == 'cpp':
-            ydkgen_home     = os.getcwd()
-            temp            = '%s/.temp' % ydkgen_home                  # ydkgen_home/.temp
-            cpp_libs        = '%s/gen-api/cpp/ydk/.libs' % ydkgen_home  # ydgen_home/gen-api/cpp/ydk/.libs
+            sys.path.append(gen_api_root)
+            from download_libs import LibDownloader
 
-            self._init_archive_dirs(temp, cpp_libs)
-            self._clone_libs(temp)
-            self._make_archives(temp)
-            self._unpack_archives(temp, cpp_libs)
+            dl = LibDownloader(gen_api_root)
+            dl.download()
 
         return gen_api_root
 
+<<<<<<< 4944abd515875ed9c83363a969bbd68a7302e9f4
     def _init_archive_dirs(self, src_dir, dest_dir):
         if os.path.exists(src_dir):     # ydkgen_home/.temp
             shutil.rmtree(src_dir)
