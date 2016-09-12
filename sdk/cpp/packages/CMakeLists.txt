@@ -26,11 +26,11 @@ endif()
 
 # set default build type if not specified by user
 if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE debug)
+	set(CMAKE_BUILD_TYPE release)
 endif()
 
 set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0")
 
 

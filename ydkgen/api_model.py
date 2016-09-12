@@ -812,7 +812,8 @@ class EnumLiteral(NamedElement):
          or self.name.lower() == 'for' or self.name.lower() == 'and' \
          or self.name.lower() == 'break' or self.name.lower() == 'case' \
          or self.name.lower() == 'catch' or self.name.lower() == 'float' \
-         or self.name.lower() == 'long' or self.name.lower() == 'return':
+         or self.name.lower() == 'long' or self.name.lower() == 'return' \
+         or self.name.lower() == 'explicit':
             self.name = self.name + '_'
 
         if self.name[0] == '_':
