@@ -24,12 +24,13 @@ from ydkgen.api_model import Class, Package
 from ydkgen.common import sort_classes_at_same_level
 from ydkgen.printer.file_printer import FilePrinter
 
-from .get_entity_path_printer import GetEntityPathPrinter, GetSegmentPathPrinter
 from .class_constructor_printer import ClassConstructorPrinter
 from .class_has_data_printer import ClassHasDataPrinter
 from .class_get_children_printer import ClassGetChildrenPrinter
 from .class_set_child_printer import ClassSetChildPrinter
 from .class_set_value_printer import ClassSetValuePrinter
+from .enum_printer import EnumPrinter
+from .get_entity_path_printer import GetEntityPathPrinter, GetSegmentPathPrinter
 
 
 class SourcePrinter(FilePrinter):
@@ -55,6 +56,9 @@ class SourcePrinter(FilePrinter):
 
     def print_body(self, package):
         self._print_classes([clazz for clazz in package.owned_elements if isinstance(clazz, Class)])
+        self.ctx.bline()
+        self._print_enums(package)
+        # self._print_bits(package)
 
     def _print_classes(self, clazzes):
         sorted_classes = sort_classes_at_same_level(clazzes, self.sort_clazz)
@@ -127,6 +131,9 @@ class SourcePrinter(FilePrinter):
 
     def _print_class_set_value(self, clazz, leafs):
         ClassSetValuePrinter(self.ctx, get_path).print_class_set_value(clazz, leafs)
+
+    def _print_enums(self, package):
+        EnumPrinter(self.ctx).print_enum_to_string_funcs(package)
 
 
 def get_path(prop):
