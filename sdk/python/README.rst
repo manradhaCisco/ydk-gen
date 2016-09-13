@@ -46,7 +46,7 @@ Now you can install the ``core`` package::
   (ydk-py)core$ python setup.py sdist
   (ydk-py)core$ pip install dist/ydk*.gz
 
-Once you installed the ``core`` package, you can install one more model bundles.  Note that some bundles have dependencies on other bundles.  Those dependencies are already captured in the bundle package.  To install the IEFT bundle, execute::
+Once you have installed the ``core`` package, you can install one more model bundles.  Note that some bundles have dependencies on other bundles.  Those dependencies are already captured in the bundle package.  To install the IETF bundle, execute::
 
   (ydk-py)core$ cd ../ietf
   (ydk-py)ietf$ python setup.py sdist
