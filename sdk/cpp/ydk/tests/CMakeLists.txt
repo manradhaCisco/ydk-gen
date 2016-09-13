@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 3.6)
 cmake_policy(SET CMP0048 NEW)
 
 set(core_tests bgptest)
-
-#set(netconf_tests bgpnctest;test_entity;test_value;test_netconf_client;test_entity_lookup)
-set(netconf_tests bgpnctest;test_entity;test_value;test_netconf_client;testsanitynctest)
+set(netconf_tests test_entity;test_value)
 
 
 set(entity_tests testsanityvalidationtest)
@@ -12,7 +10,6 @@ set(entity_tests testsanityvalidationtest)
 include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-
 set(BOOST_INCLUDE_DIRS $boost_installation_prefix/include)
 
 set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wall -Wextra")

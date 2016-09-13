@@ -17,13 +17,12 @@
 Generate YDK core library, profile package and bundle packages.
 """
 from __future__ import print_function
-import os
+import os, sys, shutil
 import json
-import shutil
 import logging
 import tempfile
 import fileinput
-
+from subprocess import call
 from .common import YdkGenException
 from ydkgen.builder import (ApiModelBuilder, GroupingClassApiModelBuilder,
                             PyangModelBuilder, SubModuleBuilder)
@@ -144,6 +143,14 @@ class YdkGenerator(object):
             gen_api_root (str): Root directory for generated APIs.
         """
         gen_api_root = self._init_dirs(pkg_name='ydk', pkg_type='core')
+
+        if self.language == 'cpp':
+            sys.path.append(gen_api_root)
+            from download_libs import LibDownloader
+
+            dl = LibDownloader(gen_api_root)
+            dl.download()
+
         return gen_api_root
 
     def _get_api_pkgs(self, resolved_model_dir):

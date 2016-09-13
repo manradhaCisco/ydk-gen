@@ -44,34 +44,36 @@ set(libydk_src src/netconf_provider.cpp src/netconf_client.cpp src/value.cpp src
 set(libydk_headers src/netconf_provider.hpp src/netconf_client.hpp src/core.hpp src/entity_data_node_walker.hpp src/types.hpp src/errors.hpp)
 set(libydk_install_headers src/netconf_provider.hpp src/core.hpp src/crud_service.hpp src/errors.hpp src/types.hpp)
 
+add_library(ydk_core OBJECT ${libydk_src} ${libydk_headers})
+set_property(TARGET ydk_core PROPERTY CXX_STANDARD 14)
+set_property(TARGET ydk_core PROPERTY CXX_STANDARD_REQUIRED ON)
+
+file(GLOB libnetconf RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} .libs/libnetconf/*.o)
+file(GLOB libyang RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} .libs/libyang/*.o)
+
 # Find dependent libraries
-find_library(netconf_location netconf)
 find_library(xml2_location xml2)
 find_library(curl_location curl)
 find_library(ssh_location ssh)
 find_library(ssh_threads_location ssh_threads)
 find_library(xslt_location xslt)
 find_library(pcre_location pcre)
-find_package(LibYANG REQUIRED)
 find_package(BOOST REQUIRED)
 
 include_directories(
 	${Boost_INCLUDE_DIRS}
-        ${LIBYANG_INCLUDE_DIRS}
 )
 
-add_library(ydk STATIC ${libydk_src})
+add_library(ydk STATIC $<TARGET_OBJECTS:ydk_core> ${libnetconf} ${libyang})
 
 target_link_libraries(ydk 
 	${Boost_LIBRARIES}
-	${netconf_location}
 	${xml2_location}
 	${curl_location}
 	${ssh_location}
 	${ssh_threads_location}
+    ${pcre_location}
 	${xslt_location}
-	${pcre_location}
-        ${LIBYANG_LIBRARIES}
 )
 
 
