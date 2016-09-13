@@ -1,6 +1,6 @@
 //
-// @file entity.hpp
-// @brief Header for ydk entity
+// @file service.hpp
+// @brief Service declaration.
 //
 // YANG Development Kit
 // Copyright 2016 Cisco Systems. All rights reserved
@@ -25,21 +25,17 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#ifndef WALKER_HPP
-#define WALKER_HPP
+#ifndef SERVICE_HPP
+#define SERVICE_HPP
 
-#include <vector>
-#include <map>
-#include "core.hpp"
+#include <string>
+#include <memory>
 
 namespace ydk {
-
-
-class Entity;
-
-core::DataNode* get_data_node_from_entity(Entity & entity, const core::RootSchemaNode & root);
-
-void get_entity_from_data_node(core::DataNode * node, Entity* entity);
+class Service
+{
+};
 
 }
-#endif /* WALKER_HPP */
+
+#endif /* SERVICE_HPP */

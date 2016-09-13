@@ -49,7 +49,6 @@ class AnotherOneIdentity : public ydktest_sanity_types::YdktestTypeIdentity, vir
 }; // AnotherOneIdentity
 
 
-
 }
 }
 

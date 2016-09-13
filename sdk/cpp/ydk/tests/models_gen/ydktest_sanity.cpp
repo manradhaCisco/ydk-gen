@@ -77,6 +77,44 @@ EntityPath SubTest::OneAug::get_entity_path(Entity* parent) const
 
 }
 
+std::string YdkEnumTestEnum_to_string(int val)
+{
+    #define TOSTRING(k, v) case YdkEnumTestEnum::k: return v;
+    switch(val)
+    {
+        TOSTRING(not_set, "not-set")
+        TOSTRING(none, "none")
+        TOSTRING(local, "local")
+        TOSTRING(remote, "remote")
+    }
+#undef TOSTRING
+    return "";
+}// YdkEnumTestEnum
+
+std::string YdkEnumIntTestEnum_to_string(int val)
+{
+    #define TOSTRING(k, v) case YdkEnumIntTestEnum::k: return v;
+    switch(val)
+    {
+        TOSTRING(any, "any")
+    }
+#undef TOSTRING
+    return "";
+}// YdkEnumIntTestEnum
+
+std::string Runner_Ytypes_BuiltInT_EmbededEnumEnum_to_string(int val)
+{
+    #define TOSTRING(k, v) case Runner::Ytypes::BuiltInT::EmbededEnumEnum::k: return v;
+    switch(val)
+    {
+        TOSTRING(zero, "zero")
+        TOSTRING(two, "two")
+        TOSTRING(seven, "seven")
+    }
+#undef TOSTRING
+    return "";
+}// EmbededEnumEnum
+    
 Entity* SubTest::OneAug::set_child(std::string child_path)
 {
     return nullptr;
@@ -3269,44 +3307,6 @@ ChildChildIdentityIdentity::~ChildChildIdentityIdentity()
 {
 }
 
-
-std::string YdkEnumIntTestEnum_to_string(int val)
-{
-    #define TOSTRING(k, v) case YdkEnumIntTestEnum::k: return v;
-    switch(val)
-    {
-        TOSTRING(any, "any")
-    }
-    #undef TOSTRING
-    return "";
-} // YdkEnumIntTestEnum
-
-std::string YdkEnumTestEnum_to_string(int val)
-{
-    #define TOSTRING(k, v) case YdkEnumTestEnum::k: return v;
-    switch(val)
-    {
-        TOSTRING(not_set, "not-set")
-        TOSTRING(none, "none")
-        TOSTRING(local, "local")
-        TOSTRING(remote, "remote")
-    }
-    #undef TOSTRING
-    return "";
-} // YdkEnumTestEnum
-
-std::string Runner_Ytypes_BuiltInT_EmbededEnumEnum_to_string(int val)
-{
-    #define TOSTRING(k, v) case Runner::Ytypes::BuiltInT::EmbededEnumEnum::k: return v;
-    switch(val)
-    {
-        TOSTRING(zero, "zero")
-        TOSTRING(two, "two")
-        TOSTRING(seven, "seven")
-    }
-    #undef TOSTRING
-    return "";
-} // EmbededEnumEnum
 
 
 }

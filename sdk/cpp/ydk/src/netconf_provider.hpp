@@ -26,19 +26,21 @@ namespace ydk {
 
 class NetconfClient;
    
-class NetconfServiceProvider : public core::ServiceProvider {
+class NetconfServiceProvider : public core::ServiceProvider, public core::ModelProvider {
 public:
-        NetconfServiceProvider(const core::Repository* repo,
+        NetconfServiceProvider(core::Repository* repo,
                                 std::string address,
-				std::string username,
-				std::string password,
-				int port);
-	~NetconfServiceProvider();
+                               std::string username,
+                               std::string password,
+                               int port);
+        
+        ~NetconfServiceProvider();
 
         virtual core::RootSchemaNode* get_root_schema() const;
         
         virtual core::DataNode* invoke(core::Rpc* rpc) const;
         
+        virtual std::string get_model(const std::string& name, const std::string& version, Format format);
         
         static const char* WRITABLE_RUNNING;
         static const char* CANDIDATE;
@@ -62,17 +64,18 @@ private:
         handle_read(core::Rpc* rpc) const;
         
         
-        const core::Repository* m_repo;
-	std::unique_ptr<NetconfClient> client;
-	std::unique_ptr<ydk::core::RootSchemaNode> root_schema;
-	std::vector<ydk::core::Capability> capabilities;
+        core::Repository* m_repo;
+        std::unique_ptr<NetconfClient> client;
+        std::unique_ptr<ydk::core::RootSchemaNode> root_schema;
+        std::vector<ydk::core::Capability> capabilities;
 
-	std::vector<std::string> client_capabilities;
-	//crud related stuff
-	core::SchemaNode* create_schema;
-	core::SchemaNode* read_schema;
-	core::SchemaNode* update_schema;
-	core::SchemaNode* delete_schema;
+        std::vector<std::string> client_capabilities;
+        //crud related stuff
+        core::SchemaNode* create_schema;
+        core::SchemaNode* read_schema;
+        core::SchemaNode* update_schema;
+        core::SchemaNode* delete_schema;
+        bool ietf_nc_monitoring_available = false;
 
 };
 }

@@ -51,8 +51,7 @@ else (LIBYANG_LIBRARIES AND LIBYANG_INCLUDE_DIRS)
   
   find_library(LIBYANG_LIBRARY
     NAMES
-      yang
-      libyang
+      libyang.a
     PATHS
       /usr/lib
       /usr/lib64
@@ -75,6 +74,33 @@ else (LIBYANG_LIBRARIES AND LIBYANG_INCLUDE_DIRS)
 
   # show the LIBYANG_INCLUDE_DIRS and LIBYANG_LIBRARIES variables only in the advanced view
   mark_as_advanced(LIBYANG_INCLUDE_DIRS LIBYANG_LIBRARIES)
+
+  set(LIBYANG_OBJS common.c.o
+                   context.c.o
+                   dict.c.o
+                   log.c.o
+                   parser.c.o
+                   parser_json.c.o
+                   parser_xml.c.o
+                   parser_yang.c.o
+                   parser_yang_bis.c.o
+                   parser_yang_lex.c.o
+                   parser_yin.c.o
+                   printer.c.o
+                   printer_info.c.o
+                   printer_json.c.o
+                   printer_tree.c.o
+                   printer_xml.c.o
+                   printer_yang.c.o
+                   printer_yin.c.o
+                   resolve.c.o
+                   tree_data.c.o
+                   tree_schema.c.o
+                   validation.c.o
+                   xml.c.o
+                   xpath.c.o
+                   yang_types.c.o)
+
 
 endif (LIBYANG_LIBRARIES AND LIBYANG_INCLUDE_DIRS)
 

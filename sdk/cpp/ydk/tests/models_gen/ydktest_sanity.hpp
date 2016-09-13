@@ -346,8 +346,8 @@ class Runner : public Entity
                 class EmbededEnumEnum;
                 class YdkEnumIntTestEnum;
                 class YdkEnumTestEnum;
-                class YdkEnumTestEnum;
-                class YdkEnumTestEnum;
+                //class YdkEnumTestEnum;
+                //class YdkEnumTestEnum;
 
 
         }; // Runner::Ytypes::BuiltInT
@@ -1024,15 +1024,6 @@ class ChildChildIdentityIdentity : public ydktest_sanity::ChildIdentityIdentity,
 }; // ChildChildIdentityIdentity
 
 
-class YdkEnumIntTestEnum : public Enum
-{
-    public:
-        static const int any = 4096;
-
-};
-
-std::string YdkEnumIntTestEnum_to_string(int val); // YdkEnumIntTestEnum
-
 class YdkEnumTestEnum : public Enum
 {
     public:
@@ -1041,9 +1032,18 @@ class YdkEnumTestEnum : public Enum
         static const int local = 2;
         static const int remote = 3;
 
-};
+}; // YdkEnumTestEnum
 
-std::string YdkEnumTestEnum_to_string(int val); // YdkEnumTestEnum
+std::string YdkEnumTestEnum_to_string(int val);
+
+class YdkEnumIntTestEnum : public Enum
+{
+    public:
+        static const int any = 4096;
+}; 
+
+
+std::string YdkEnumIntTestEnum_to_string(int val);// YdkEnumIntTestEnum
 
 class Runner::Ytypes::BuiltInT::EmbededEnumEnum : public Enum
 {
@@ -1056,9 +1056,7 @@ class Runner::Ytypes::BuiltInT::EmbededEnumEnum : public Enum
 
 std::string Runner_Ytypes_BuiltInT_EmbededEnumEnum_to_string(int val); // EmbededEnumEnum
 
-
 }
 }
-
 #endif /* _YDKTEST_SANITY_ */
 

@@ -47,8 +47,6 @@ public:
 	{
 		auto repo = ydk::core::Repository{m_searchdir};
         
-        
-
 		return repo.create_root_schema(m_capabilities);
 	}
 
@@ -385,7 +383,7 @@ BOOST_AUTO_TEST_CASE( bgp_validation )
     
     ydk::core::ValidationService validation_service{};
     
-    validation_service.validate(bgp, ydk::core::ValidationService::Option::EDIT_CONFIG);
+    //validation_service.validate(bgp, ydk::core::ValidationService::Option::EDIT_CONFIG);
     
     
     
