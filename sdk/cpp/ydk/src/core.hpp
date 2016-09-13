@@ -32,6 +32,8 @@
 #include <vector>
 #include <algorithm>
 #include "errors.hpp"
+#include <cstdlib>
+#include <boost/filesystem.hpp>
 
 namespace ydk {
     namespace core {
@@ -545,6 +547,7 @@ namespace ydk {
             INVALID_LENGTH, // length is invalid
             INVALID_IDENTITY, // invalid identity
             INVALID_ENUM, // invalid enumeration
+            RANGE_VIOLATION, // range violation
             
         };
         
@@ -605,6 +608,35 @@ namespace ydk {
             /// the arg if any
             std::string  arg;
 
+        };
+        
+        
+        template<typename T>
+        struct Range{
+            Range(T m_min, T m_max) : min{m_min}, max{m_max}
+            {
+                
+            }
+            
+            
+            T min;
+            T max;
+            
+        };
+        
+        
+        
+        
+        template<typename T>
+        struct LengthRangeIntervals {
+            LengthRangeIntervals(Range<T> m_default_range): default_range(m_default_range)
+            {
+                
+            }
+            
+            
+            Range<T> default_range;
+            std::vector<Range<T>> intervals;
         };
 
         ///
@@ -696,38 +728,22 @@ namespace ydk {
             
         };
         
-        ///
-        /// @brief YANG validity restriction (must, length, etc)
-        /// structure providing information from the schema
-        ///
-        struct SchemaConstraint {
-            ///
-            /// The restriction expression/value (mandatory)
-            ///
-            std::string expr;
-            
-            ///
-            /// The error-app-tag
-            ///
-            std::string error_app_tag;
-            
-            ///
-            /// error message
-            ///
-            std::string error_message;
-        };
         
         ///
         /// binary type
         ///
         struct SchemaValueBinaryType : public SchemaValueType {
             
+            SchemaValueBinaryType();
+            
             ~SchemaValueBinaryType();
             
              DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
             
+
             
-            SchemaConstraint length;
+            LengthRangeIntervals<uint64_t> length;
+
             
         };
         
@@ -770,8 +786,7 @@ namespace ydk {
         ///
         struct SchemaValueDec64Type : public SchemaValueType {
             
-            /// range restriction
-            SchemaConstraint range;
+
             
             /// fraction digits
             uint8_t fraction_digits;
@@ -788,13 +803,11 @@ namespace ydk {
             
             struct Enum {
                 
-                Enum(std::string m_name, uint8_t m_flags, int32_t m_value);
+                Enum(std::string m_name, int32_t m_value);
                 
                 /// enum's name (mandatory)
                 std::string name;
                 
-                /// enum's flags , whether the value was auto-assigned
-                uint8_t flags;
                 
                 /// enum's value (mandatory)
                 int32_t value;
@@ -826,8 +839,6 @@ namespace ydk {
             /// name of the module
             std::string module_name;
             
-            /// pointer to the base identity
-            SchemaValueIdentityType* base;
             
             /// derived identities
             std::vector<SchemaValueIdentityType*> derived;
@@ -852,34 +863,52 @@ namespace ydk {
         ///
         /// Number types
         ///
-        struct SchemaValueNumType : public SchemaValueType {
+        template<typename T>
+        struct SchemaValueNumberType: public SchemaValueType {
             
-            ~SchemaValueNumType();
+            SchemaValueNumberType(T min, T max) : SchemaValueType{} , range{Range<T>{min, max}}
+            {
+                
+            }
             
-            DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
+            ~SchemaValueNumberType()
+            {
+                
+            }
             
-            /// range constraint
-            SchemaConstraint range;
+            DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const
+            {
+                DiagnosticNode<std::string, ValidationError> diag{};
+                
+                if(value.empty()){
+                    diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
+                    return diag;
+                }
+                
+                T number = static_cast<T>(std::atoll(value.c_str()));
+                if(range.intervals.empty()){
+                    //use the default
+                    if(number < range.default_range.min || number > range.default_range.max) {
+                        diag.errors.push_back(ydk::core::ValidationError::RANGE_VIOLATION);
+                        return diag;
+                    }
+                } else {
+                    for(auto r : range.intervals) {
+                        /* if it complies with any one here then it is ok */
+                        if(number >= r.min && number <= r.max) {
+                            return diag;
+                        }
+                    }
+                    
+                    diag.errors.push_back(ydk::core::ValidationError::RANGE_VIOLATION);
+                }
+                
+                return diag;
+                
+            }
             
+            LengthRangeIntervals<T> range;
             
-        };
-        
-        ///
-        /// leafref type
-        ///
-        struct SchemaValueLeafrefType : public SchemaValueType {
-            
-            
-            ~SchemaValueLeafrefType();
-            
-            
-            DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
-            
-            /// path
-            std::string path;
-            
-            /// target node
-            SchemaNode* target;
         };
         
         ///
@@ -887,15 +916,17 @@ namespace ydk {
         ///
         struct SchemaValueStringType : public SchemaValueType {
             
+            SchemaValueStringType();
+            
             ~SchemaValueStringType();
             
             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
             
             /// length restriction
-            SchemaConstraint length;
+            LengthRangeIntervals<uint64_t> length;
             
             /// pattern restrictions
-            std::vector<SchemaConstraint> patterns;
+            std::vector<std::string> patterns;
         };
         
         ///
@@ -916,11 +947,7 @@ namespace ydk {
         ///
         struct SchemaValueEmptyType : public SchemaValueType {
             
-            SchemaValueEmptyType(const std::string& mleaf_name) : leaf_name{mleaf_name}
-            {
-                
-            }
-            
+            SchemaValueEmptyType(const std::string& mleaf_name);
             ~SchemaValueEmptyType();
             
             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
@@ -1347,6 +1374,34 @@ namespace ydk {
             std::vector<std::string> deviations;
         };
 
+        ///
+        /// @brief interface for module provider.
+        ///
+        /// This is the interface for module provider
+        struct ModelProvider {
+            
+            enum class Format {
+                YANG,
+                YIN
+            };
+            
+            virtual ~ModelProvider() {};
+            
+            
+            
+            ///
+            /// @brief returns the model identified by the name and version
+            ///
+            /// @param[in] name of the model
+            /// @param[in] version of the model
+            /// @param[in] format Format of the model to download
+            /// @return string containing the data of the model downloaded. If empty then the model is
+            /// probably cannot be provided
+            ///
+            virtual std::string get_model(const std::string& name, const std::string& version, Format format) = 0;
+            
+            
+        };
 
         ///
         /// @brief represents the Repository of YANG models.
@@ -1358,6 +1413,15 @@ namespace ydk {
         ///
         class Repository {
         public:
+            
+            ///
+            /// @brief Constructor for the Repositor.
+            ///
+            /// Constructor
+            /// Uses the temp directory to download the yang files
+            /// from the model provider
+            Repository();
+            
             ///
             /// @brief Constructor for the Repository.
             ///
@@ -1378,10 +1442,39 @@ namespace ydk {
             /// @return pointer to the RootSchemaNode or nullptr if one could not be created.
             ///
             RootSchemaNode* create_root_schema(const std::vector<Capability> capabilities) const;
+            
+            ///
+            /// @brief Adds a model provider.
+            ///
+            /// Adds a model provider to this Repository.
+            /// If the repository does not find a model while trying to create
+            /// a SchemaTree it calls on the model_provider to see if the said model
+            /// can be downloaded by one of them. If that fails it tries the next
+            ///
+            /// @param[in] module_provider The Module Provider to add
+            ///
+            void add_model_provider(ModelProvider* model_provider);
+            
+            ///
+            /// @brief Removes a model provider.
+            ///
+            /// Removes the given model provider from this Repository.
+            ///
+            void remove_model_provider(ModelProvider* model_provider);
+            
+            ///
+            /// @brief Get model providers
+            ///
+            /// Gets all model providers registered with this repo.
+            ///
+            /// @return vector of ModelProvider's
+            ///
+            std::vector<ModelProvider*> get_model_providers() const;
 
-
-        private:
-            std::string m_search_dir;
+       
+            boost::filesystem::path path;
+         private:
+            std::vector<ModelProvider*> model_providers;
         };
 
 

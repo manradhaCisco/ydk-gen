@@ -33,9 +33,9 @@
 BOOST_AUTO_TEST_CASE( test_sanity_types_int8 )
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -107,9 +107,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_int8 )
 BOOST_AUTO_TEST_CASE( test_sanity_types_int16 )
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -181,9 +181,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_int16 )
 BOOST_AUTO_TEST_CASE( test_sanity_types_int32 )
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -253,9 +253,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_int32 )
 BOOST_AUTO_TEST_CASE( test_sanity_types_int64 )
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -325,9 +325,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_int64 )
 BOOST_AUTO_TEST_CASE( test_sanity_types_uint8 )
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -397,9 +397,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_uint8 )
 BOOST_AUTO_TEST_CASE( test_sanity_types_uint16 )
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -467,9 +467,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_uint16 )
 BOOST_AUTO_TEST_CASE( test_sanity_types_uint32 )
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -537,9 +537,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_uint32 )
 BOOST_AUTO_TEST_CASE( test_sanity_types_uint64 )
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -609,9 +609,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_uint64 )
 BOOST_AUTO_TEST_CASE( test_sanity_types_bits )
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -679,9 +679,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_bits )
 BOOST_AUTO_TEST_CASE( test_sanity_types_decimal64 )
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -744,7 +744,8 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_decimal64 )
     
     auto deci64_read = deci64_read_vec[0];
     
-    std::cout << deci64_read->get() << std::endl;
+    //TODO log this
+    //std::cout << deci64_read->get() << std::endl;
     
     BOOST_REQUIRE(deci64->get() == deci64_read->get() );
     
@@ -753,9 +754,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_decimal64 )
 BOOST_AUTO_TEST_CASE( test_sanity_types_string)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -818,7 +819,7 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_string)
     
     auto str_read = str_read_vec[0];
     
-    std::cout << str_read->get() << std::endl;
+    //std::cout << str_read->get() << std::endl;
     
     BOOST_REQUIRE(str->get() == str_read->get() );
     
@@ -827,9 +828,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_string)
 BOOST_AUTO_TEST_CASE( test_sanity_types_empty)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -899,9 +900,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_empty)
 BOOST_AUTO_TEST_CASE( test_sanity_types_boolean)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -972,9 +973,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_boolean)
 BOOST_AUTO_TEST_CASE( test_sanity_types_embedded_enum)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -1042,9 +1043,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_embedded_enum)
 BOOST_AUTO_TEST_CASE( test_sanity_types_enum)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -1112,9 +1113,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_enum)
 BOOST_AUTO_TEST_CASE( test_sanity_types_union)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -1185,9 +1186,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_union)
 BOOST_AUTO_TEST_CASE( test_sanity_types_union_enum)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -1257,9 +1258,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_union_enum)
 BOOST_AUTO_TEST_CASE( test_sanity_types_union_int)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -1331,9 +1332,9 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_union_int)
 BOOST_AUTO_TEST_CASE( test_union_leaflist)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -1406,9 +1407,9 @@ BOOST_AUTO_TEST_CASE( test_union_leaflist)
 BOOST_AUTO_TEST_CASE( test_enum_leaflist)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -1481,9 +1482,9 @@ BOOST_AUTO_TEST_CASE( test_enum_leaflist)
 BOOST_AUTO_TEST_CASE( test_identity_leaflist)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -1557,9 +1558,9 @@ BOOST_AUTO_TEST_CASE( test_identity_leaflist)
 BOOST_AUTO_TEST_CASE( test_union_complex_list)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -1624,9 +1625,9 @@ BOOST_AUTO_TEST_CASE( test_union_complex_list)
 BOOST_AUTO_TEST_CASE( test_identityref)
 {
     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
     
     BOOST_REQUIRE(schema != nullptr);
@@ -1687,7 +1688,7 @@ BOOST_AUTO_TEST_CASE( test_identityref)
     BOOST_REQUIRE(!identityref_value_read_vec.empty());
     
     auto val = identityref_value_read_vec[0]->get();
-    std::cout <<  val << std::endl;
+    //std::cout <<  val << std::endl;
     
     BOOST_REQUIRE(val == "child-child-identity");
     

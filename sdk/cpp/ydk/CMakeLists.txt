@@ -40,78 +40,108 @@ else()
 	option(ENABLE_VALGRIND_TESTS "Build tests with valgrind" OFF)
 endif()
 
-set(libydk_src src/netconf_provider.cpp src/netconf_client.cpp src/value.cpp src/crud_service.cpp src/core.cpp src/entity_data_node_walker.cpp )
-set(libydk_headers src/netconf_provider.hpp src/netconf_client.hpp src/core.hpp src/entity_data_node_walker.hpp src/types.hpp src/errors.hpp)
-set(libydk_install_headers src/netconf_provider.hpp src/core.hpp src/crud_service.hpp src/errors.hpp src/types.hpp)
+set(libydk_src src/netconf_provider.cpp 
+               src/netconf_client.cpp 
+               src/value.cpp 
+               src/crud_service.cpp 
+               src/core.cpp 
+               src/entity_data_node_walker.cpp 
+               src/validation_service.cpp)
+
+set(libydk_headers src/netconf_provider.hpp 
+                   src/netconf_client.hpp 
+                   src/core.hpp 
+                   src/entity_data_node_walker.hpp 
+                   src/types.hpp 
+                   src/errors.hpp
+                   src/validation_service.hpp
+                   src/service.hpp)
+
+set(libydk_install_headers src/netconf_provider.hpp 
+                           src/core.hpp 
+                           src/crud_service.hpp 
+                           src/errors.hpp 
+                           src/types.hpp
+                           src/service.hpp
+                           src/validation_service.hpp)
 
 add_library(ydk_core OBJECT ${libydk_src} ${libydk_headers})
 set_property(TARGET ydk_core PROPERTY CXX_STANDARD 14)
 set_property(TARGET ydk_core PROPERTY CXX_STANDARD_REQUIRED ON)
 
-set(libnetconf_objs .libs/libnetconf/callbacks.o .libs/libnetconf/datastore_custom.o
- .libs/libnetconf/edit_config.o .libs/libnetconf/messages.o .libs/libnetconf/session.o
- .libs/libnetconf/transport.o .libs/libnetconf/xmldiff.o .libs/libnetconf/compat.o
- .libs/libnetconf/datastore_empty.o .libs/libnetconf/error.o  .libs/libnetconf/nacm.o
- .libs/libnetconf/ssh.o .libs/libnetconf/url.o  .libs/libnetconf/yinparser.o
- .libs/libnetconf/datastore.o .libs/libnetconf/datastore_file.o .libs/libnetconf/internal.o
- .libs/libnetconf/notifications.o  .libs/libnetconf/transapi.o .libs/libnetconf/with_defaults.o)
-
-set(libyang_objs .libs/libyang/common.c.o
- .libs/libyang/context.c.o
- .libs/libyang/dict.c.o
- .libs/libyang/log.c.o
- .libs/libyang/parser.c.o
- .libs/libyang/parser_json.c.o
- .libs/libyang/parser_xml.c.o
- .libs/libyang/parser_yang.c.o
- .libs/libyang/parser_yang_bis.c.o
- .libs/libyang/parser_yang_lex.c.o
- .libs/libyang/parser_yin.c.o
- .libs/libyang/printer.c.o
- .libs/libyang/printer_info.c.o
- .libs/libyang/printer_json.c.o
- .libs/libyang/printer_tree.c.o
- .libs/libyang/printer_xml.c.o
- .libs/libyang/printer_yang.c.o
- .libs/libyang/printer_yin.c.o
- .libs/libyang/resolve.c.o
- .libs/libyang/tree_data.c.o
- .libs/libyang/tree_schema.c.o
- .libs/libyang/validation.c.o
- .libs/libyang/xml.c.o
- .libs/libyang/xpath.c.o
- .libs/libyang/yang_types.c.o)
-
 # Find dependent libraries
+SET(Boost_USE_STATIC_LIBS ON)
 find_library(xml2_location xml2)
 find_library(curl_location curl)
-find_library(ssh_location ssh)
 find_library(ssh_threads_location ssh_threads)
 find_library(xslt_location xslt)
 find_library(pcre_location pcre)
 find_package(BOOST REQUIRED)
+find_package(Boost COMPONENTS system filesystem log REQUIRED)
+find_package(LibSSH REQUIRED)
+find_package(LibYANG REQUIRED)
+find_package(LibNetconf REQUIRED)
+
+#MESSAGE("netconf library ${LIBNETCONF_LIBRARY}")
+#MESSAGE("yang library ${LIBYANG_LIBRARY}")
 
 include_directories(
 	${Boost_INCLUDE_DIRS}
+        ${LIBYANG_INCLUDE_DIRS}
+        ${LIBNETCONF_INCLUDE_DIRS}
+        ${LIBSSH_INCLUDE_DIRS}
 )
 
-add_library(ydk STATIC $<TARGET_OBJECTS:ydk_core> ${libnetconf_objs} ${libyang_objs})
+add_custom_command(OUTPUT libnetconf_objs
+    COMMAND mkdir libnetconf_objs)
+
+list(APPEND libnetconf_inc_objs "")
+#MESSAGE("LIBNETCONF_OBJS ${LIBNETCONF_OBJS}")
+foreach(netconf_obj IN LISTS LIBNETCONF_OBJS)
+    add_custom_command(OUTPUT libnetconf_objs/${netconf_obj}
+                        COMMAND ar -x ${LIBNETCONF_LIBRARY} ${netconf_obj}
+                        MAIN_DEPENDENCY libnetconf_objs
+                        WORKING_DIRECTORY libnetconf_objs)
+    list(APPEND libnetconf_inc_objs libnetconf_objs/${netconf_obj})
+    #MESSAGE("libnetconf_inc_objs ${libnetconf_inc_objs}")
+endforeach(netconf_obj)
+
+#MESSAGE("libnetconf_inc_objs ${libnetconf_inc_objs}")
+#MESSAGE("libyang_inc_objs ${libyang_inc_objs}")
+
+add_custom_command(OUTPUT libyang_objs
+    COMMAND mkdir libyang_objs)
+
+list(APPEND libyang_inc_objs "")
+foreach(libyang_obj IN LISTS LIBYANG_OBJS)
+    add_custom_command(OUTPUT libyang_objs/${libyang_obj}
+                       COMMAND ar -x ${LIBYANG_LIBRARY} ${libyang_obj}
+                       MAIN_DEPENDENCY libyang_objs
+                       WORKING_DIRECTORY libyang_objs)
+     list(APPEND libyang_inc_objs libyang_objs/${libyang_obj})
+endforeach(libyang_obj)
+
+add_library(ydk STATIC $<TARGET_OBJECTS:ydk_core> ${libnetconf_inc_objs} ${libyang_inc_objs})
 
 target_link_libraries(ydk 
 	${Boost_LIBRARIES}
+        ${Boost_FILESYSTEM_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+        ${Boost_LOG_LIBRARY}
+	${netconf_location}
 	${xml2_location}
 	${curl_location}
-	${ssh_location}
 	${ssh_threads_location}
-    ${pcre_location}
+        ${pcre_location}
 	${xslt_location}
+        ${LIBYANG_LIBRARIES}
+        ${LIBSSH_LIBRARIES}
 )
 
 
 set_property(TARGET ydk PROPERTY CXX_STANDARD 14)
 set_property(TARGET ydk PROPERTY CXX_STANDARD_REQUIRED ON)
 
-# find YANG library
 
 install(TARGETS ydk DESTINATION ${LIB_INSTALL_DIR})
 install(FILES ${libydk_install_headers} DESTINATION ${INCLUDE_INSTALL_DIR})

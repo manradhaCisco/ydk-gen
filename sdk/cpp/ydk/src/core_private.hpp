@@ -42,6 +42,12 @@
 #include <cstring>
 #include <cassert>
 #include <sstream>
+#include <regex>
+#include <boost/filesystem.hpp>
+#include <cstdio>
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
+
 
 namespace ydk {
     namespace core {

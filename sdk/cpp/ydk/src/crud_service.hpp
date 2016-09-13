@@ -30,11 +30,10 @@
 
 #include <string>
 #include <memory>
+#include "service.hpp"
 
-namespace ydk {
-class Service
+namespace ydk
 {
-};
 
 namespace core
 {

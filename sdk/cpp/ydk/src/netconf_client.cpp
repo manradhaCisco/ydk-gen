@@ -27,6 +27,8 @@
 
 #include <libnetconf.h>
 #include <libnetconf_ssh.h>
+#include <boost/log/trivial.hpp>
+
 
 #include "netconf_client.hpp"
 
@@ -105,13 +107,12 @@ nc_rpc* NetconfClient::build_rpc_request(const string & payload)
 {
 	nc_rpc* rpc = nc_rpc_build(payload.c_str(), session);
 
-	if (rpc == NULL)
-	{
-		throw YDKClientException{"Could not build payload"};
-	}
-	else if(NC_RPC_UNKNOWN==nc_rpc_get_type(rpc))
-	{
+	if (rpc == NULL) {
+              BOOST_LOG_TRIVIAL(debug) << "Could not build rpc payload:-" << payload ;       
+	      throw YDKClientException{"Could not build payload"};
+	} else if(NC_RPC_UNKNOWN==nc_rpc_get_type(rpc)) {
 		nc_rpc_free(rpc);
+                BOOST_LOG_TRIVIAL(debug)<< "Rpc type is unknown";
 		throw YDKClientException{"Could not build payload"};
 	}
 	return rpc;
@@ -127,6 +128,7 @@ string NetconfClient::process_rpc_reply(int reply_type, const nc_reply* reply)
 		default:
 		case NC_MSG_NONE:
 		case NC_MSG_UNKNOWN:
+                        BOOST_LOG_TRIVIAL(debug) << "RPC error occurred";
 			throw YDKClientException{"RPC error occured"};
 	}
 }
@@ -141,16 +143,16 @@ void NetconfClient::clb_print(NC_VERB_LEVEL level, const char* msg)
 	switch (level)
 	{
 	case NC_VERB_ERROR:
-		cerr << "libnetconf ERROR: " << msg << endl;
+                BOOST_LOG_TRIVIAL(error) << "libnetconf ERROR: " << msg;
 		break;
 	case NC_VERB_WARNING:
-		cerr << "libnetconf WARNING: " << msg << endl;
+                BOOST_LOG_TRIVIAL(warning) << "libnetconf WARNING: " << msg;
 		break;
 	case NC_VERB_VERBOSE:
-		cerr << "libnetconf VERBOSE: " << msg << endl;
+                BOOST_LOG_TRIVIAL(trace) << "libnetconf VERBOSE: " << msg;
 		break;
 	case NC_VERB_DEBUG:
-		cerr << "libnetconf DEBUG: " << msg << endl;
+		BOOST_LOG_TRIVIAL(debug) << "libnetconf DEBUG: " << msg;
 		break;
 	}
 }
@@ -176,7 +178,8 @@ int NetconfClient::clb_ssh_host_authenticity_check(const char *hostname,
 void NetconfClient::perform_session_check(string message)
 {
 	if (session == NULL)
-	{
+	{      
+                BOOST_LOG_TRIVIAL(debug) << message;
 		throw YDKClientException{message};
 	}
 }

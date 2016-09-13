@@ -30,24 +30,22 @@
 #include "../../src/entity_data_node_walker.hpp"
 #include "../models_gen/ydktest_sanity.hpp"
 #include "../../src/types.hpp"
+#include "../../src/validation_service.hpp"
 
 //test_sanity_types begin
-using namespace ydk::ydktest_sanity;
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_int8 )
 {
-     std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+ 
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
-    builtInT.number8 = (int8_t)0;
-
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    builtInT.number8 = static_cast<int8_t>(0);
+   
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
-
 
     BOOST_REQUIRE( !diagnostic.has_errors() );
 
@@ -56,18 +54,16 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_int8 )
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_int16 )
 {
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+   ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
-    builtInT.number16 = (int16_t)126;
-
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    builtInT.number16 = static_cast<int16_t>(126);
+    
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
-
 
     BOOST_REQUIRE( !diagnostic.has_errors() );
 
@@ -75,18 +71,16 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_int16 )
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_int32 )
 {
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
     builtInT.number32 = 200000;
 
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
-
 
     BOOST_REQUIRE( !diagnostic.has_errors() );
 
@@ -94,19 +88,16 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_int32 )
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_int64 )
 {
-
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
-    builtInT.number64 = (int64_t)-9223372036854775808ll;
-
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    builtInT.number64 = static_cast<int64_t>(-922337203685477580LL);
+    
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
-
 
     BOOST_REQUIRE( !diagnostic.has_errors() );
 
@@ -114,33 +105,32 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_int64 )
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_uint8 )
 {
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
-    builtInT.u_number8 = (uint8_t)0;
-
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    builtInT.u_number8 =  static_cast<uint8_t>(0);
+    
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
 
 
-    BOOST_REQUIRE( !diagnostic.has_errors() );}
+    BOOST_REQUIRE( !diagnostic.has_errors() );
+}
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_uint16 )
 {
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
-    builtInT.u_number16 = (uint16_t)65535;
-
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    builtInT.u_number16 = static_cast<uint16_t>(65535);
+    
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
 
 
@@ -150,18 +140,16 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_uint16 )
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_uint32 )
 {
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
-    builtInT.u_number32 = (uint32_t)5927;
-
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    builtInT.u_number32 = static_cast<uint32_t>(5927);
+    
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
-
 
     BOOST_REQUIRE( !diagnostic.has_errors() );
 }
@@ -169,41 +157,36 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_uint32 )
 BOOST_AUTO_TEST_CASE( test_sanity_types_uint64 )
 {
 
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
-    builtInT.u_number64 = (uint64_t)18446744073709551615ull;
-
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    builtInT.u_number64 = static_cast<uint64_t>(18446744073709551615ULL);
+    
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
 
-
-    BOOST_REQUIRE( !diagnostic.has_errors() );}
+    BOOST_REQUIRE( !diagnostic.has_errors() );
+}
 
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_bits )
 {
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
+    ydk::core::Repository repo{};
 
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
 
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
     builtInT.bits_value["disable-nagle"] = true;
     auto r = builtInT.get_entity_path(nullptr);
     BOOST_TEST_MESSAGE(r.path);
 
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
-
-
     //BOOST_REQUIRE( !diagnostic.has_errors() ); //TODO: possible bug in core not able to validate bits
-
 
 }
 
@@ -215,14 +198,13 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_decimal64 )
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_string)
 {
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
     builtInT.name = "name_str";
 
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
@@ -230,21 +212,19 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_string)
 
     BOOST_REQUIRE( !diagnostic.has_errors() );
 
-
 }
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_empty)
 {
     ydk::Empty empty{};
 
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
     builtInT.emptee = empty;
 
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
@@ -256,57 +236,108 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_empty)
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_boolean)
 {
-	std::string searchdir{TEST_HOME};
-	ydk::core::Repository repo{searchdir};
-
-	ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
-	ydk::ValidationService validation_service{};
-
-	Runner::Ytypes::BuiltInT builtInT{};
-	builtInT.bool_value = true;
-
-	auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
-
-
-	BOOST_REQUIRE( !diagnostic.has_errors() );
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    ydk::ValidationService validation_service{};
+    
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    builtInT.bool_value = true;
+    
+    auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
+    
+    BOOST_REQUIRE( !diagnostic.has_errors() );
 }
 
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_embedded_enum)
 {
-    //TODO currently no way to set this
+    
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
+    ydk::ValidationService validation_service{};
+    
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    
+    builtInT.embeded_enum = ydk::ydktest_sanity::Runner::Ytypes::BuiltInT::EmbededEnumEnum::seven;
+    
+    auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
+    
+    
+    BOOST_REQUIRE( !diagnostic.has_errors() );
+    
+
 }
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_enum)
 {
-    //TODO currently no way to set this
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
+    ydk::ValidationService validation_service{};
+    
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    
+    builtInT.enum_value = ydk::ydktest_sanity::YdkEnumTestEnum::none;
+    
+    auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
+    
+    
+    BOOST_REQUIRE( !diagnostic.has_errors() );
 
 
 }
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_union)
 {
-    //TODO currently no way to set this
-
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
+    ydk::ValidationService validation_service{};
+    
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    
+    builtInT.younion = ydk::ydktest_sanity::YdkEnumTestEnum_to_string(ydk::ydktest_sanity::YdkEnumTestEnum::none);
+    
+    auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
+    
+    
+    BOOST_REQUIRE( !diagnostic.has_errors() );
+    
+    
 }
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_union_enum)
 {
- //TODO currently no way to set this
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
+    ydk::ValidationService validation_service{};
+    
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    
+    builtInT.enum_int_value = ydk::ydktest_sanity::YdkEnumIntTestEnum_to_string(ydk::ydktest_sanity::YdkEnumIntTestEnum::any);
+    
+    auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
+    
+    
+    BOOST_REQUIRE( !diagnostic.has_errors() );
 }
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_union_int)
 {
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
     builtInT.enum_int_value = 2;
 
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
@@ -319,14 +350,13 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_union_int)
 
 BOOST_AUTO_TEST_CASE( test_union_leaflist)
 {
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
     ydk::Value value1{ydk::YType::int16, "llunion"};
     value1 = (ydk::int16)1;
 
@@ -345,19 +375,39 @@ BOOST_AUTO_TEST_CASE( test_union_leaflist)
 
 BOOST_AUTO_TEST_CASE( test_enum_leaflist)
 {
-    //TODO currently no way to set this
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
+    ydk::ValidationService validation_service{};
+    
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    ydk::Value value1{ydk::YType::enumeration, "enum-llist"};
+    value1.enum_to_string_func = ydk::ydktest_sanity::YdkEnumTestEnum_to_string;
+    value1 = ydk::ydktest_sanity::YdkEnumTestEnum::local;
+    builtInT.enum_llist.push_back(value1);
+    
+    
+    ydk::Value value2{ydk::YType::enumeration, "enum-llist"};
+    value2.enum_to_string_func = ydk::ydktest_sanity::YdkEnumTestEnum_to_string;
+    value2 = ydk::ydktest_sanity::YdkEnumTestEnum::remote;
+    builtInT.enum_llist.push_back(value2);
+    
+    auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
+    
+    
+    BOOST_REQUIRE( !diagnostic.has_errors() );
 }
 
 BOOST_AUTO_TEST_CASE( test_identity_leaflist)
 {
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
     ydk::Value value1{ydk::YType::identityref, "identity-llist"};
     value1 = ydk::ydktest_sanity::ChildIdentityIdentity{};
 
@@ -377,14 +427,13 @@ BOOST_AUTO_TEST_CASE( test_identity_leaflist)
 BOOST_AUTO_TEST_CASE( test_union_complex_list)
 {
 
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
     ydk::Value value{ydk::YType::str, "younion-list"};
     value = "123:45";
 
@@ -399,15 +448,13 @@ BOOST_AUTO_TEST_CASE( test_union_complex_list)
 
 BOOST_AUTO_TEST_CASE( test_identityref)
 {
-
-    std::string searchdir{TEST_HOME};
-    ydk::core::Repository repo{searchdir};
-
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
-
+    ydk::core::Repository repo{};
+    
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    
     ydk::ValidationService validation_service{};
 
-    Runner::Ytypes::BuiltInT builtInT{};
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
 
     auto identity = ydk::ydktest_sanity::ChildChildIdentityIdentity{};
     builtInT.identity_ref_value = identity;
@@ -415,7 +462,6 @@ BOOST_AUTO_TEST_CASE( test_identityref)
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
 
     BOOST_REQUIRE( !diagnostic.has_errors() );
-
 
 }
 

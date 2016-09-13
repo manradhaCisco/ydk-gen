@@ -11,76 +11,8 @@
 #include <iostream>
 #include <memory>
 #include "../src/core.hpp"
+#include "../src/netconf_provider.hpp"
 
-const char* TEST_HOME = "/Users/manradha/Development/github/manradha/ydk-gen/sdk/cpp/ydk/tests/models";
-
-
-namespace mock {
-class MockServiceProvider : public ydk::core::ServiceProvider
-{
-public:
-    MockServiceProvider(const std::string searchdir, const std::vector<ydk::core::Capability> capabilities) : m_searchdir{searchdir}, m_capabilities{capabilities}
-    {
-        
-    }
-    
-	virtual ~MockServiceProvider()
-	{
-
-	}
-
-    
-	ydk::core::RootSchemaNode* get_root_schema() const
-	{
-		auto repo = ydk::core::Repository{m_searchdir};
-        
-        
-
-		return repo.create_root_schema(m_capabilities);
-	}
-
-	ydk::core::DataNode* invoke(ydk::core::Rpc* rpc) const
-	{
-        auto s = ydk::core::CodecService{};
-        
-        std::cout << s.encode(rpc->input(), ydk::core::CodecService::Format::XML, true) << std::endl;
-
-		return nullptr;
-	}
-private:
-    std::string m_searchdir;
-    std::vector<ydk::core::Capability> m_capabilities;
-    
-};
-}
-
-
-
-std::vector<ydk::core::Capability> test_capabilities{
-    {"inherit", "2015-11-17"},
-    {"main-aug1", "2015-11-17"},
-    {"main-aug2", "2015-11-17"},
-    {"main", "2015-11-17"},
-    {"oc-pattern", "2015-11-17"},
-    {"ydktest-filterread", "2015-11-17"},
-    //{"ydktest-sanity-augm", "2015-11-17"},
-    //{"ydktest-sanity-submodule","2016-04-25"},
-    //{"ydktest-sanity-types", "2016-04-11"},
-    {"ydktest-sanity", "2015-11-17"},
-    {"ydktest-types", "2016-05-23"}
-};
-
-std::vector<ydk::core::Capability> test_openconfig {
-    {"openconfig-bgp-types", "" },
-    {"openconfig-bgp", ""},
-    {"openconfig-extensions", ""},
-    {"openconfig-interfaces", ""},
-    {"openconfig-policy-types", ""},
-    {"openconfig-routing-policy", ""},
-    {"openconfig-types", ""},
-    {"ietf-interfaces", ""}
-    
-};
 
 void print_paths(ydk::core::SchemaNode* sn)
 {
@@ -91,13 +23,12 @@ void print_paths(ydk::core::SchemaNode* sn)
 
 void test_bgp_create()
 {
-    std::string searchdir{TEST_HOME};
-    searchdir+="/openconfig";
-    mock::MockServiceProvider sp{searchdir, test_openconfig};
+    ydk::core::Repository repo{};
     
-    std::unique_ptr<ydk::core::RootSchemaNode> schema{sp.get_root_schema()};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
     
-    print_paths(schema.get());
+    ydk::core::RootSchemaNode* schema = sp.get_root_schema();
+    print_paths(schema);
         
     auto bgp = schema->create("openconfig-bgp:bgp", "");
 
@@ -145,7 +76,7 @@ void test_bgp_create()
     //todo enable after fixing bugs
     
     //codec service bugs
-    auto new_bgp = s.decode(schema.get(), xml, ydk::core::CodecService::Format::XML);
+    auto new_bgp = s.decode(schema, xml, ydk::core::CodecService::Format::XML);
     if (new_bgp) {
         std::cout << "deserialized successfully" << std::endl;
     }
@@ -160,7 +91,7 @@ void test_bgp_create()
 
     //TODO fix rpc
     std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("ydk:create") };
-    create_rpc->input()->create("config", xml);
+    create_rpc->input()->create("entity", xml);
 
     //call create
     (*create_rpc)(sp);
