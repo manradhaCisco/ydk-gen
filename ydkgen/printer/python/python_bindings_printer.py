@@ -27,13 +27,13 @@ from ydkgen.api_model import Class, Enum
 from ydkgen.common import get_rst_file_name
 
 from .deviation_printer import DeviationPrinter
-from .doc_printer import DocPrinter
 from .import_test_printer import ImportTestPrinter
 from .module_printer import ModulePrinter
 from .module_meta_printer import ModuleMetaPrinter
 from .test_case_printer import TestCasePrinter
 from .namespace_printer import NamespacePrinter
 from .init_file_printer import InitPrinter
+from ..doc import DocPrinter
 from ydkgen.printer.language_bindings_printer import LanguageBindingsPrinter, _EmitArgs
 
 
@@ -221,11 +221,11 @@ def emit_importests(ctx, packages):
 
 
 def emit_module_documentation(ctx, named_element, identity_subclasses):
-    DocPrinter(ctx).print_module_documentation(named_element, identity_subclasses)
+    DocPrinter(ctx, 'py').print_module_documentation(named_element, identity_subclasses)
 
 
 def emit_table_of_contents(ctx, packages, bundle_name):
-    DocPrinter(ctx).print_table_of_contents(packages, bundle_name)
+    DocPrinter(ctx, 'py').print_table_of_contents(packages, bundle_name)
 
 
 def emit_module(ctx, package, extra_args):

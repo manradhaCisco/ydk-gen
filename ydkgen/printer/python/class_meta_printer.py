@@ -92,7 +92,7 @@ class ClassMetaPrinter(object):
 
         for prop in prop_list:
             meta_info_data = get_meta_info_data(
-                prop, prop.property_type, prop.stmt.search_one('type'))
+                prop, prop.property_type, prop.stmt.search_one('type'), 'py')
             self.print_meta_class_member(meta_info_data, self.ctx)
 
         '''

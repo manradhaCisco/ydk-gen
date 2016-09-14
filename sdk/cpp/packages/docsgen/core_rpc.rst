@@ -1,0 +1,1 @@
+../../../cpp/ydk/docsgen/core_rpc.rst

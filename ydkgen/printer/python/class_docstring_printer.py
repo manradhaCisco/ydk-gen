@@ -49,7 +49,7 @@ class ClassDocstringPrinter(object):
         self.ctx.bline()
 
     def _print_class_docstring_text(self, clazz):
-        class_docstring = get_class_docstring(clazz)
+        class_docstring = get_class_docstring(clazz, 'py')
         if len(class_docstring) > 0:
             for line in class_docstring.split('\n'):
                 self.ctx.writeln('%s' % line)
