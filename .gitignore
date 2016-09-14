@@ -41,3 +41,5 @@ sdk/cpp/netconf_client.o
 sdk/cpp/tests/ydk_test
 sdk/cpp/ydk_client.so
 
+*.sublime-project
+*.sublime-workspace

@@ -1,0 +1,1 @@
+../../../cpp/ydk/docsgen/ydk.models.rst

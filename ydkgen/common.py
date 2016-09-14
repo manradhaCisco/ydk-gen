@@ -294,5 +294,5 @@ def get_rst_file_name(named_element):
         package = named_element
     filename = package.bundle_name + named_element.fqn()
     filename = filename.encode('utf-8')
-    hex_name = hashlib.sha1(filename).hexdigest()
+    hex_name = 'gen_doc_%s' % hashlib.sha1(filename).hexdigest()
     return hex_name

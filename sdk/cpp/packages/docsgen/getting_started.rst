@@ -1,0 +1,1 @@
+../../../cpp/ydk/docsgen/getting_started.rst

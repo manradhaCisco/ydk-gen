@@ -57,7 +57,7 @@ class MetaInfoData:
         self.mandatory = False
 
 
-def get_class_docstring(clazz, identity_subclasses=None):
+def get_class_docstring(clazz, language, identity_subclasses=None):
     class_description = ''
     if clazz.comment is not None:
         class_description = clazz.comment
@@ -76,7 +76,8 @@ def get_class_docstring(clazz, identity_subclasses=None):
             id_subclasses = identity_subclasses
 
         meta_info_data = get_meta_info_data(
-            prop, prop.property_type, prop.stmt.search_one('type'), id_subclasses)
+            prop, prop.property_type, prop.stmt.search_one('type'), language,
+            identity_subclasses=id_subclasses)
 
         if meta_info_data is None:
             continue
@@ -179,7 +180,7 @@ def format_range_string(ranges):
     return range_string
 
 
-def get_meta_info_data(prop, property_type, type_stmt, identity_subclasses=None):
+def get_meta_info_data(prop, property_type, type_stmt, language, identity_subclasses=None):
     """ Gets an instance of MetaInfoData that has the useful information about the property.
 
         Args:
@@ -204,7 +205,7 @@ def get_meta_info_data(prop, property_type, type_stmt, identity_subclasses=None)
         meta_info_data.pmodule_name = "'%s'" % property_type.get_py_mod_name()
         meta_info_data.clazz_name = "'%s'" % property_type.qn()
 
-        doc_link_template = ':py:class:`%s <%s.%s>`'
+        doc_link_template = ':' + language + ':class:`%s <%s.%s>`'
 
         if identity_subclasses is None:
             meta_info_data.doc_link = doc_link_template % (
@@ -235,7 +236,8 @@ def get_meta_info_data(prop, property_type, type_stmt, identity_subclasses=None)
     elif isinstance(property_type, Enum):
         meta_info_data.pmodule_name = "'%s'" % property_type.get_py_mod_name()
         meta_info_data.clazz_name = "'%s'" % property_type.qn()
-        meta_info_data.doc_link = ':py:class:`%s <%s.%s>`' % (
+
+        meta_info_data.doc_link = ':' + language + ':class:`%s <%s.%s>`' % (
             property_type.name, property_type.get_py_mod_name(), property_type.qn())
 
         meta_info_data.mtype = 'REFERENCE_ENUM_CLASS'
@@ -251,7 +253,7 @@ def get_meta_info_data(prop, property_type, type_stmt, identity_subclasses=None)
     elif isinstance(property_type, Bits):
         meta_info_data.pmodule_name = "'%s'" % property_type.get_py_mod_name()
         meta_info_data.clazz_name = "'%s'" % property_type.qn()
-        meta_info_data.doc_link = ':py:class:`%s <%s.%s>`' % (
+        meta_info_data.doc_link = ':' + language + ':class:`%s <%s.%s>`' % (
             property_type.name, property_type.get_py_mod_name(), property_type.qn())
 
         meta_info_data.mtype = 'REFERENCE_BITS'
@@ -283,7 +285,7 @@ def get_meta_info_data(prop, property_type, type_stmt, identity_subclasses=None)
             if prop.stmt.i_leafref_ptr is not None:
                 reference_class = prop.stmt.i_leafref_ptr[0].parent.i_class
                 reference_prop = prop.stmt.i_leafref_ptr[0].i_property
-                meta_info_data.target_of_leafref = ':py:class:`%s <%s.%s>`' % (reference_prop.name, reference_class.get_py_mod_name(), reference_class.qn())
+                meta_info_data.target_of_leafref = ':' + language + ':class:`%s <%s.%s>`' % (reference_prop.name, reference_class.get_py_mod_name(), reference_class.qn())
 
         while isinstance(type_spec, PathTypeSpec):
             if not hasattr(type_spec, 'i_target_node'):
@@ -305,11 +307,11 @@ def get_meta_info_data(prop, property_type, type_stmt, identity_subclasses=None)
             meta_info_data.prange.append(
                 ('%s' % str(type_spec.min.s), '%s' % str(type_spec.max.s)))
             # ' :ref:`Decimal64 <ydk_models_types_Decimal64>`'
-            meta_info_data.doc_link += ':py:class:`Decimal64 <ydk.types.Decimal64>`'
+            meta_info_data.doc_link += ':' + language + ':class:`Decimal64 <ydk.types.Decimal64>`'
         elif isinstance(type_spec, EmptyTypeSpec):
             meta_info_data.ptype = 'Empty'
             # ' :ref:`Empty <ydk_models_types_Empty>`'
-            meta_info_data.doc_link += ':py:class:`Empty <ydk.types.Empty>`'
+            meta_info_data.doc_link += ':' + language + ':class:`Empty <ydk.types.Empty>`'
         elif isinstance(prop.property_type, Enum):
             raise EmitError('Illegal Code path')
         elif isinstance(type_spec, IdentityrefTypeSpec):
@@ -352,7 +354,8 @@ def get_meta_info_data(prop, property_type, type_stmt, identity_subclasses=None)
             for contained_type_stmt in type_spec.types:
                 contained_property_type = types_extractor.get_property_type(contained_type_stmt)
                 child_meta_info_data = get_meta_info_data(
-                    prop, contained_property_type, contained_type_stmt, identity_subclasses)
+                    prop, contained_property_type, contained_type_stmt, language,
+                    identity_subclasses=identity_subclasses)
                 meta_info_data.children.append(child_meta_info_data)
 
         elif isinstance(type_spec, TypeSpec) and type_spec.name == 'instance-identifier':

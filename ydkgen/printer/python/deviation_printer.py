@@ -110,7 +110,7 @@ from ydk.providers._importer import _yang_ns
                 self.ctx.write("(%s, " %self.convert_key_val(key))
                 if key == 'type':
                     prop = target.i_property
-                    meta = get_meta_info_data(prop, prop.property_type, prop.stmt.search_one('type'))
+                    meta = get_meta_info_data(prop, prop.property_type, prop.stmt.search_one('type'), 'py')
                     self.ctx.bline()
                     self.ctx.lvl_inc()
                     ClassMetaPrinter(self.ctx, self.sort_clazz).print_meta_class_member(meta, self.ctx)

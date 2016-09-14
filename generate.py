@@ -25,6 +25,7 @@ import shutil
 import subprocess
 import sys
 import time
+import re
 
 from git import Repo
 from ydkgen import YdkGenerator
@@ -53,18 +54,23 @@ def print_about_page(ydk_root, py_api_doc_gen, release, is_bundle):
     # modify about_ydk.rst page
     for line in fileinput.input(os.path.join(py_api_doc_gen, 'about_ydk.rst'), 'r+w'):
         if 'git clone repo-url' in line:
-            print(line.replace('repo-url', 'https://{0}.git'.format(url)), end=' ')
+            print(line.replace('repo-url', 'https://{0}.git'.format(url)), end='')
         elif 'git checkout commit-id' in line:
-            print(line.replace('commit-id', '{}'.format(commit_id)))
+            print(line.replace('commit-id', '{}'.format(commit_id)), end='')
         elif 'version-id' in line:
-            print(line.replace('version-id', '{}'.format(release.replace('release=', ''))))
+            print(line.replace('version-id', '{}'.format(release.replace('release=', ''))), end='')
         else:
-            print(line, end=' ')
+            print(line, end='')
 
 
-def get_release_version(output_directory):
-    version = ''
-    release = ''
+def get_release_version(output_directory, language):
+    if language == 'python':
+        return get_py_release_version(output_directory)
+    elif language == 'cpp':
+        return get_cpp_release_version(output_directory)
+
+
+def get_py_release_version(output_directory):
     setup_file = os.path.join(output_directory, 'setup.py')
     with open(setup_file, 'r') as f:
         for line in f:
@@ -75,7 +81,30 @@ def get_release_version(output_directory):
                 release = "release=" + rv
                 version = "version=" + rv
                 break
-    return release, version
+    return (release, version)
+
+
+def get_cpp_release_version(output_directory):
+    MAJOR_VERSION = re.compile(r"set\(YDK_[A-Z]*[_]*MAJOR_VERSION (?P<num>\d+)\)")
+    MINOR_VERSION = re.compile(r"set\(YDK_[A-Z]*[_]*MINOR_VERSION (?P<num>\d+)\)")
+    SERVICE_VERSION = re.compile(r"set\(YDK_[A-Z]*[_]*SERVICE_VERSION (?P<num>\d+)\)")
+    major_version, minor_version, service_version = 0, 0, 0
+    cmake_file = os.path.join(output_directory, 'CMakeLists.txt')
+    with open(cmake_file) as f:
+        for line in f:
+            major_match = MAJOR_VERSION.match(line)
+            minor_match = MINOR_VERSION.match(line)
+            service_match = SERVICE_VERSION.match(line)
+            if major_match:
+                major_version = major_match.group('num')
+            if minor_match:
+                minor_version = minor_match.group('num')
+            if service_match:
+                service_version = service_match.group('num')
+    version = "%s.%s.%s" % (major_version, minor_version, service_version)
+    release = "release=%s" % version
+    version = "version=%s" % version
+    return (release, version)
 
 
 def copy_docs_from_bundles(ydk_root, language, destination_dir):
@@ -107,7 +136,7 @@ def generate_documentations(output_directory, ydk_root, language, is_bundle, is_
     py_api_doc_gen = os.path.join(output_directory, 'docsgen')
     py_api_doc = os.path.join(output_directory, 'docs_expanded')
     # if it is package type
-    release, version = get_release_version(output_directory)
+    release, version = get_release_version(output_directory, language)
     os.mkdir(py_api_doc)
     # print about YDK page
     print_about_page(ydk_root, py_api_doc_gen, release, is_bundle)
@@ -311,7 +340,8 @@ if __name__ == '__main__':
     print('\nPerforming compilation and/or installation...\n')
 
     if options.cpp:
-        create_shared_libraries(output_directory)
+        pass
+        #create_shared_libraries(output_directory)
     else:
         create_pip_packages(output_directory)
 
