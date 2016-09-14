@@ -1,4 +1,4 @@
-from __future__ import print_function
+#!/usr/bin/env python
 #  ----------------------------------------------------------------
 # Copyright 2016 Cisco Systems
 #
@@ -24,11 +24,12 @@ from __future__ import print_function
 
 
 
+from __future__ import print_function
 from ydk.types import Empty, DELETE, Decimal64
 from ydk.services import CRUDService
 import logging
 
-from samples.session_mgr import establish_session, init_logging
+from session_mgr import establish_session, init_logging
 from ydk.models.openconfig.openconfig_interfaces import Interfaces
 from ydk.errors import YPYError
 
@@ -53,16 +54,16 @@ def print_interface(interface):
         print('     enabled:-%s'%interface.state.enabled)
         if interface.state.admin_status is not None:
             enum_str = 'DOWN'
-            if interface.state.admin_status == interface.state.AdminStatus_Enum.UP:
+            if interface.state.admin_status == interface.state.AdminStatusEnum.UP:
                 enum_str = 'UP'
             print('     admin_status:-%s'%enum_str)
         if interface.state.oper_status is not None:
-            oper_status_map = { interface.state.OperStatus_Enum.UP : 'UP',
-                                interface.state.OperStatus_Enum.DOWN : 'DOWN',
-                                interface.state.OperStatus_Enum.TESTING : 'TESTING',
-                                interface.state.OperStatus_Enum.UNKNOWN: 'UNKNOWN',
-                                interface.state.OperStatus_Enum.DORMANT : 'DORMANT',
-                                interface.state.OperStatus_Enum.NOT_PRESENT : 'NOT_PRESENT',
+            oper_status_map = { interface.state.OperStatusEnum.UP : 'UP',
+                                interface.state.OperStatusEnum.DOWN : 'DOWN',
+                                interface.state.OperStatusEnum.TESTING : 'TESTING',
+                                interface.state.OperStatusEnum.UNKNOWN: 'UNKNOWN',
+                                interface.state.OperStatusEnum.DORMANT : 'DORMANT',
+                                interface.state.OperStatusEnum.NOT_PRESENT : 'NOT_PRESENT',
                                 }
             print('     oper_status:-%s'%oper_status_map[interface.state.oper_status])
 
