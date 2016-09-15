@@ -299,4 +299,4 @@ texinfo_documents = [
 
 # edit on GitHub
 edit_on_github_project = 'manradhaCisco/ydk-gen'
-edit_on_github_branch = 'core_doc/sdk/cpp/ydk/docsgen'
+edit_on_github_branch = 'ydk_core/sdk/cpp/ydk/docsgen'

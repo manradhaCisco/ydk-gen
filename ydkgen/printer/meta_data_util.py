@@ -72,7 +72,7 @@ def get_class_docstring(clazz, language, identity_subclasses=None):
                 prop_comment = prop_comment[:-1]
 
         id_subclasses = None
-        if (hasattr(prop.property_type, 'is_identity') and 
+        if (hasattr(prop.property_type, 'is_identity') and
             prop.property_type.is_identity() and identity_subclasses is not None):
             id_subclasses = identity_subclasses
 
@@ -114,7 +114,7 @@ def get_type_doc(meta_info_data, type_depth):
         if isinstance(meta_info_data.doc_link, list):
             doc_link = map(lambda l: '\n\n\t\t%s' % l, meta_info_data.doc_link)
             target = ''.join(doc_link)
-        properties_description.append('\t**type**\: %s %s\n\n' % 
+        properties_description.append('\t**type**\: %s %s\n\n' %
             (meta_info_data.doc_link_description, target))
 
         prop_restriction = get_property_restriction(meta_info_data)
@@ -187,13 +187,13 @@ def get_meta_info_data(prop, property_type, type_stmt, language, identity_subcla
         Args:
             prop: The property
             property_type : The type under consideration
-            type_stmt : The type stmt currently under consideration 
+            type_stmt : The type stmt currently under consideration
     """
     clazz = prop.owner
     meta_info_data = MetaInfoData(prop)
     types_extractor = TypesExtractor()
     target_type_stmt = type_stmt
-    
+
     mandatory = prop.stmt.search_one('mandatory')
     if mandatory is not None and mandatory.arg == 'true':
         meta_info_data.mandatory = True
@@ -206,24 +206,22 @@ def get_meta_info_data(prop, property_type, type_stmt, language, identity_subcla
         meta_info_data.pmodule_name = "'%s'" % property_type.get_py_mod_name()
         meta_info_data.clazz_name = "'%s'" % property_type.qn()
 
-        doc_link_template = ':' + language + ':class:`%s <%s.%s>`'
-
         if identity_subclasses is None:
-            meta_info_data.doc_link = doc_link_template % (
-                property_type.name, 
-                property_type.get_py_mod_name(), 
-                property_type.qn()
-            )
+            meta_info_data.doc_link = get_class_crossref_tag(
+                property_type.name, property_type, language)
         else:
-            meta_info_data.doc_link = _get_identity_docstring(identity_subclasses, doc_link_template, property_type)
+            meta_info_data.doc_link = _get_identity_docstring(
+                identity_subclasses, property_type, language)
             meta_info_data.doc_link_description = 'one of the below types:'
 
         if prop.stmt.keyword == 'leaf-list':
             meta_info_data.mtype = 'REFERENCE_LEAFLIST'
-            meta_info_data.doc_link = 'list of %s' % meta_info_data.doc_link
+            meta_info_data.doc_link = _get_list_doc_link_tag(
+                meta_info_data, 'doc_link', language)
         elif prop.stmt.keyword == 'list':
             meta_info_data.mtype = 'REFERENCE_LIST'
-            meta_info_data.doc_link_description = 'list of %s' % meta_info_data.doc_link_description
+            meta_info_data.doc_link_description = _get_list_doc_link_tag(
+                meta_info_data, 'doc_link_description', language)
         elif property_type.is_identity():
             meta_info_data.mtype = 'REFERENCE_IDENTITY_CLASS'
         else:
@@ -238,13 +236,14 @@ def get_meta_info_data(prop, property_type, type_stmt, language, identity_subcla
         meta_info_data.pmodule_name = "'%s'" % property_type.get_py_mod_name()
         meta_info_data.clazz_name = "'%s'" % property_type.qn()
 
-        meta_info_data.doc_link = ':' + language + ':class:`%s <%s.%s>`' % (
-            property_type.name, property_type.get_py_mod_name(), property_type.qn())
-
+        meta_info_data.doc_link = get_class_crossref_tag(property_type.name,
+                                                         property_type,
+                                                         language)
         meta_info_data.mtype = 'REFERENCE_ENUM_CLASS'
         if prop.is_many:
             meta_info_data.mtype = 'REFERENCE_LEAFLIST'
-            meta_info_data.doc_link = 'list of %s' % meta_info_data.doc_link
+            meta_info_data.doc_link = _get_list_doc_link_tag(
+                meta_info_data, 'doc_link', language)
 
         if prop.property_type in clazz.owned_elements:
             meta_info_data.ptype = property_type.name
@@ -254,13 +253,14 @@ def get_meta_info_data(prop, property_type, type_stmt, language, identity_subcla
     elif isinstance(property_type, Bits):
         meta_info_data.pmodule_name = "'%s'" % property_type.get_py_mod_name()
         meta_info_data.clazz_name = "'%s'" % property_type.qn()
-        meta_info_data.doc_link = ':' + language + ':class:`%s <%s.%s>`' % (
-            property_type.name, property_type.get_py_mod_name(), property_type.qn())
-
+        meta_info_data.doc_link = get_class_crossref_tag(property_type.name,
+                                                         property_type,
+                                                         language)
         meta_info_data.mtype = 'REFERENCE_BITS'
         if prop.is_many:
             meta_info_data.mtype = 'REFERENCE_LEAFLIST'
-            meta_info_data.doc_link = 'list of %s' % meta_info_data.doc_link
+            meta_info_data.doc_link = _get_list_doc_link_tag(
+                meta_info_data, 'doc_link', language)
 
         if prop.property_type in clazz.owned_elements:
             meta_info_data.ptype = property_type.name
@@ -270,7 +270,7 @@ def get_meta_info_data(prop, property_type, type_stmt, language, identity_subcla
     else:
         if prop.stmt.keyword == 'leaf-list':
             meta_info_data.mtype = 'REFERENCE_LEAFLIST'
-            meta_info_data.doc_link = 'list of '
+            meta_info_data.doc_link = _get_list_tag(language)
         elif prop.stmt.keyword == 'anyxml':
             meta_info_data.mtype = 'ANYXML_CLASS'
             meta_info_data.doc_link = 'anyxml'
@@ -286,8 +286,9 @@ def get_meta_info_data(prop, property_type, type_stmt, language, identity_subcla
             if prop.stmt.i_leafref_ptr is not None:
                 reference_class = prop.stmt.i_leafref_ptr[0].parent.i_class
                 reference_prop = prop.stmt.i_leafref_ptr[0].i_property
-                meta_info_data.target_of_leafref = ':' + language + ':class:`%s <%s.%s>`' % (reference_prop.name, reference_class.get_py_mod_name(), reference_class.qn())
-
+                tag = get_class_crossref_tag(reference_prop.name,
+                                             reference_class, language)
+                meta_info_data.target_of_leafref = tag
         while isinstance(type_spec, PathTypeSpec):
             if not hasattr(type_spec, 'i_target_node'):
                 return None
@@ -296,23 +297,21 @@ def get_meta_info_data(prop, property_type, type_stmt, language, identity_subcla
 
         if isinstance(type_spec, BinaryTypeSpec):
             meta_info_data.ptype = 'str'
-            meta_info_data.doc_link += meta_info_data.ptype
+            meta_info_data.doc_link += get_primitive_type_tag('str', language)
         elif isinstance(type_spec, BitsTypeSpec):
             # This can happen in a Union
             raise EmitError('Illegal Code path')
         elif isinstance(type_spec, BooleanTypeSpec):
             meta_info_data.ptype = 'bool'
-            meta_info_data.doc_link += meta_info_data.ptype
+            meta_info_data.doc_link += get_primitive_type_tag('str', language)
         elif isinstance(type_spec, Decimal64TypeSpec):
             meta_info_data.ptype = 'Decimal64'
             meta_info_data.prange.append(
                 ('%s' % str(type_spec.min.s), '%s' % str(type_spec.max.s)))
-            # ' :ref:`Decimal64 <ydk_models_types_Decimal64>`'
-            meta_info_data.doc_link += ':' + language + ':class:`Decimal64 <ydk.types.Decimal64>`'
+            meta_info_data.doc_link += get_primitive_type_tag('str', language)
         elif isinstance(type_spec, EmptyTypeSpec):
             meta_info_data.ptype = 'Empty'
-            # ' :ref:`Empty <ydk_models_types_Empty>`'
-            meta_info_data.doc_link += ':' + language + ':class:`Empty <ydk.types.Empty>`'
+            meta_info_data.doc_link += get_primitive_type_tag('str', language)
         elif isinstance(prop.property_type, Enum):
             raise EmitError('Illegal Code path')
         elif isinstance(type_spec, IdentityrefTypeSpec):
@@ -325,17 +324,16 @@ def get_meta_info_data(prop, property_type, type_stmt, language, identity_subcla
             meta_info_data.prange.append((lower, upper))
         elif isinstance(type_spec, LengthTypeSpec):
             meta_info_data.ptype = 'str'
-            meta_info_data.doc_link += meta_info_data.ptype
+            meta_info_data.doc_link += get_primitive_type_tag('str', language)
             meta_info_data.prange = get_length_limits(type_spec)
 
         elif isinstance(type_spec, PathTypeSpec):
             raise EmitError('Illegal Code path')
         elif isinstance(type_spec, PatternTypeSpec):
             meta_info_data.ptype = 'str'
-            meta_info_data.doc_link += meta_info_data.ptype
+            meta_info_data.doc_link += get_primitive_type_tag('str', language)
             while hasattr(target_type_stmt, 'i_typedef') and target_type_stmt.i_typedef is not None:
-                target_type_stmt = target_type_stmt.i_typedef.search_one(
-                    'type')
+                target_type_stmt = target_type_stmt.i_typedef.search_one('type')
             pattern = target_type_stmt.search_one('pattern')
             if pattern is not None:
                 meta_info_data.pattern.append(pattern.arg.encode('ascii'))
@@ -346,7 +344,7 @@ def get_meta_info_data(prop, property_type, type_stmt, language, identity_subcla
 
         elif isinstance(type_spec, StringTypeSpec):
             meta_info_data.ptype = 'str'
-            meta_info_data.doc_link += meta_info_data.ptype
+            meta_info_data.doc_link += get_primitive_type_tag('str', language)
         elif isinstance(type_spec, UnionTypeSpec):
             # validate against all the data types
             meta_info_data.mtype = 'REFERENCE_UNION'
@@ -362,29 +360,25 @@ def get_meta_info_data(prop, property_type, type_stmt, language, identity_subcla
         elif isinstance(type_spec, TypeSpec) and type_spec.name == 'instance-identifier':
             # Treat as string
             meta_info_data.ptype = 'str'
-            meta_info_data.doc_link += meta_info_data.ptype
+            meta_info_data.doc_link += get_primitive_type_tag('str', language)
         else:
             raise EmitError('Illegal path')
     return meta_info_data
 
 
-def _get_identity_docstring(identity_subclasses, doc_link_template, property_type):
+def _get_identity_docstring(identity_subclasses, property_type, language):
     doc_link = []
     if id(property_type) in identity_subclasses:
         for subclass in identity_subclasses[id(property_type)]:
-            doc_link.append(doc_link_template % (
-                subclass.name,
-                subclass.get_py_mod_name(),
-                subclass.qn()
-            ))
+            doc_link.append(
+                get_class_crossref_tag(subclass.name, subclass, language)
+            )
             if id(subclass) in identity_subclasses:
-                doc_link.extend(x for x in _get_identity_docstring(identity_subclasses, doc_link_template, subclass) if x not in doc_link)
+                doc_link.extend(x for x in _get_identity_docstring(identity_subclasses, subclass, language) if x not in doc_link)
     else:
-        doc_link.append(doc_link_template % (
-                property_type.name,
-                property_type.get_py_mod_name(),
-                property_type.qn()
-            ))
+        doc_link.append(
+            get_class_crossref_tag(property_type.name, property_type, language)
+            )
     return doc_link
 
 
@@ -460,3 +454,91 @@ def get_range_base_type_spec(range_type):
     if isinstance(range_type.base, RangeTypeSpec):
         return get_range_base_type_spec(range_type.base)
     return range_type.base
+
+
+def get_primitive_type_tag(typ, language):
+    TYPE_TAG_MAP = {
+        ('py', 'int'): 'int',
+        ('py', 'str'): 'str',
+        ('py', 'bool'): 'bool',
+        ('py', 'Decimal64'): ':py:class:`Decimal64<ydk.types.Decimal64>`',
+        ('py', 'Empty'): ':py:class:`Empty<ydk.types.Empty>`',
+        ('py', 'Enum'): ':py:class:`enum.Enum`',
+        ('py', 'Identity'): ':py:class:`object`',
+
+        ('cpp', 'int'): 'int',
+        ('cpp', 'str'): '``std::string``',
+        ('cpp', 'bool'): 'bool',
+        ('cpp', 'Decimal64'): '``ydk::Decimal64``',
+        ('cpp', 'Empty'): '``ydk::Empty``',
+        ('cpp', 'Enum'): '``ydk::Enum``',
+        ('cpp', 'Identity'): '``ydk::Identity``',
+    }
+    try:
+        return TYPE_TAG_MAP[(language, typ)]
+    except KeyError:
+        raise EmitError("Invalid language, type combination for rst documentation\n"
+                        "language = %s, type = %s" % (language, typ))
+
+
+def get_tag_template(language, domain, crossref):
+    TEMPLATES = {
+        ('py', 'class', False): '.. py:class:: %s\n',
+        ('py', 'module', False): '.. py:module:: %s.%s\n',
+        ('py', 'currentmodule', False): '.. py:currentmodule:: %s\n',
+        ('cpp', 'class', False): '.. cpp:class:: %s\n',
+
+        ('py', 'class', True): ' :py:class:`%s <%s.%s>`',
+        ('cpp', 'class', True): ' :cpp:class:`%s <%s>`',
+    }
+    try:
+        return TEMPLATES[(language, domain, crossref)]
+    except KeyError:
+        raise EmitError("Invalid language, domain, croessref combination for"
+                        "rst documentation\n"
+                        "language = %s, type = %s" % (language, domain, crossref))
+
+
+def _get_list_tag(language):
+    if language == 'py':
+        return 'list of '
+    elif language == 'cpp':
+        return 'vector of '
+
+
+def _get_list_doc_link_tag(meta_info_data, attribute, language):
+    template = '%s %%s' % _get_list_tag(language)
+    return template % (getattr(meta_info_data, attribute))
+
+
+def get_py_module_tag(named_element):
+    template = get_tag_template('py', 'module', False)
+    return template % (named_element.get_py_mod_name(),
+                       named_element.name)
+
+
+def get_py_currentmodule_tag(named_element):
+    template = get_tag_template('py', 'currentmodule', False)
+    return template % (named_element.get_py_mod_name())
+
+
+def get_class_tag(named_element, language):
+    if language == 'py':
+        template = get_tag_template('py', 'class', False)
+        return template % named_element.qn()
+    elif language == 'cpp':
+        template = get_tag_template('cpp', 'class', False)
+        return template % named_element.qualified_cpp_name()
+
+
+def get_class_crossref_tag(name, named_element, language):
+    if language == 'py':
+        template = get_tag_template('py', 'class', True)
+        return template % (name,
+                           named_element.get_py_mod_name(),
+                           named_element.qn())
+    else:
+        template = get_tag_template('cpp', 'class', True)
+        return template % (name,
+                           named_element.qualified_cpp_name())
+
