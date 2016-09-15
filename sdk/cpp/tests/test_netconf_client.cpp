@@ -17,7 +17,7 @@
 #include <boost/test/unit_test.hpp>
 #include <string.h>
 #include "../ydk/src/netconf_client.hpp"
-#include "../ydk/src/exception.hpp"
+#include "../ydk/src/errors.hpp"
 #include <iostream>
 using namespace ydk;
 using namespace std;

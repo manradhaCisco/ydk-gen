@@ -340,8 +340,7 @@ if __name__ == '__main__':
     print('\nPerforming compilation and/or installation...\n')
 
     if options.cpp:
-        pass
-        #create_shared_libraries(output_directory)
+        create_shared_libraries(output_directory)
     else:
         create_pip_packages(output_directory)
 

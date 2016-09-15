@@ -50,4 +50,4 @@ foreach(test_name IN LISTS netconf_tests)
 endforeach(test_name)
 
 
-configure_file("${PROJECT_SOURCE_DIR}/../ydk/tests/config.hpp.in" "${PROJECT_SOURCE_DIR}/../ydk/tests/config.hpp" ESCAPE_QUOTES @ONLY)
+configure_file("${PROJECT_SOURCE_DIR}/config.hpp.in" "${PROJECT_SOURCE_DIR}/config.hpp" ESCAPE_QUOTES @ONLY)
