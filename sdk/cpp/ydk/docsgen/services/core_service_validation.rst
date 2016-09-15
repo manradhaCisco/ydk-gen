@@ -17,7 +17,7 @@ Instances of this class can validate the :cpp:class:`DataNode<DataNode>` tree ba
 
         :param dn: The root of :cpp:class:`DataNode<DataNode>` tree to validate.
         :param option: The context for validation.
-        :raises: :cpp:class:`YDKValidationException<YDKValidationException>` if validation errors were detected.
+        :raises: :cpp:class:`YDKDataValidationException<YDKDataValidationException>` if validation errors were detected.
         :raises: :cpp:class:`YDKInvalidArgumentException<YDKInvalidArgumentException>` if the arguments are invalid.
 
     .. cpp:enum:: Option

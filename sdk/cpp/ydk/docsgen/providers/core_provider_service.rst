@@ -19,6 +19,7 @@ Concretes instances of ServiceProviders are expected to extend this interface.
     .. cpp:function:: virtual RootSchemaNode* get_root_schema()
 
         Returns The :cpp:class:`SchemaNode<SchemaNode>` tree supported by this instance of the :cpp:class:`ServiceProvider<ServiceProvider>`.
+
         :return: Pointer to the :cpp:class:`RootSchemaNode<RootSchemaNode>` or ``nullptr`` if one could not be created.
 
     .. cpp:function:: virtual ~ServiceProvider()

@@ -23,7 +23,14 @@ Print rst documents for the generated Python api
 
 from ydkgen.api_model import Class, Enum, Package
 from ydkgen.common import get_rst_file_name
-from ydkgen.printer.meta_data_util import get_class_docstring, get_enum_class_docstring
+from ydkgen.printer.meta_data_util import (get_class_crossref_tag,
+                                           get_class_docstring,
+                                           get_class_tag,
+                                           get_enum_class_docstring,
+                                           get_primitive_type_tag,
+                                           get_py_module_tag,
+                                           get_py_currentmodule_tag,
+                                           )
 
 
 class DocPrinter(object):
@@ -70,7 +77,7 @@ class DocPrinter(object):
         self._print_header(clazz)
         # Body
         self.ctx.lvl_inc()
-        self._print_bases(clazz=clazz)
+        self._print_bases(clazz)
         self._print_class_hierarchy(clazz)
         if clazz.stmt.search_one('presence') is not None:
             self._append('This class is a :ref:`presence class<presence-class>`\n')
@@ -84,7 +91,7 @@ class DocPrinter(object):
         self._print_header(enumz)
         # Body
         self.ctx.lvl_inc()
-        self._print_bases(clazz=enumz)
+        self._print_bases(enumz)
         self._print_docstring(enumz, get_enum_class_docstring(enumz))
         self.ctx.lvl_dec()
 
@@ -111,11 +118,11 @@ class DocPrinter(object):
         tags = []
         if isinstance(named_element, Package):
             if self.lang == 'py':
-                tags.append(_get_py_module_tag(named_element))
+                tags.append(get_py_module_tag(named_element))
         else:
             if self.lang == 'py':
-                tags.append(_get_py_curr_module_tag(named_element))
-            tags.append(_get_class_tag(named_element, self.lang))
+                tags.append(get_py_currentmodule_tag(named_element))
+            tags.append(get_class_tag(named_element, self.lang))
         self._extend(tags)
 
     def _print_title(self, title):
@@ -140,7 +147,7 @@ class DocPrinter(object):
         self._append('')
         self.ctx.lvl_dec()
 
-    def _print_bases(self, clazz=None):
+    def _print_bases(self, clazz):
         bases = _get_class_bases(clazz, self.lang)
         if bases:
             self._append('Bases: %s\n' % (', '.join(bases)))
@@ -165,7 +172,7 @@ class DocPrinter(object):
                 if not clazz_hierarchy[0][-1:] == ':':
                     clazz_hierarchy.append(' \>')
 
-                tag = _get_hierarchy_class_tag(parent, self.lang)
+                tag = get_class_crossref_tag(parent.name, parent, self.lang)
                 clazz_hierarchy.append(tag)
 
             return ''.join(clazz_hierarchy)
@@ -188,71 +195,18 @@ class DocPrinter(object):
         self._append('\n')
 
 
-def _get_py_module_tag(named_element):
-    return '.. py:module:: %s.%s\n' % (named_element.get_py_mod_name(),
-                                       named_element.name)
-
-
-def _get_py_curr_module_tag(named_element):
-    return '.. py:currentmodule:: %s\n' % (named_element.get_py_mod_name())
-
-
-def _get_class_tag(named_element, language):
-    if language == 'py':
-        return '.. py:class:: %s\n' % (named_element.qn())
-    elif language == 'cpp':
-        return '.. cpp:class:: %s\n' % (named_element.qualified_cpp_name())
-
-
-def _get_hierarchy_class_tag(named_element, language):
-    if language == 'py':
-        return ' :py:class:`%s <%s.%s>`' % (named_element.name,
-                                             named_element.get_py_mod_name(),
-                                             named_element.qn())
-    elif language == 'cpp':
-        return ' :cpp:class:`%s <%s>`' % (named_element.name,
-                                           named_element.qualified_cpp_name())
-
-
 def _get_class_bases(clazz, language):
     # check is clazz is enum class or identity class
     bases = []
     if isinstance(clazz, Enum):
-        bases.append(_get_enum_base_tag(clazz, language))
-        return bases
-
-    if clazz.is_identity():
-        bases.append(_get_identity_base_tag(clazz, language))
+        base_tag = get_primitive_type_tag('Enum', language)
+    elif clazz.is_identity():
+        base_tag = get_primitive_type_tag('Identity', language)
     else:
-        base_tag = _get_class_base_tag(clazz, language, is_base=True)
-        if base_tag:
-            bases.append(base_tag)
-    for item in clazz.extends:
-        base_tag = _get_class_base_tag(item, language)
-        if base_tag:
-            bases.append(base_tag)
+        base_tag = get_class_crossref_tag(clazz.name, clazz, language)
+    bases.append(base_tag)
+    if hasattr(clazz, 'extends'):
+        for item in clazz.extends:
+            base_tag = get_class_crossref_tag(item.name, item, language)
     return bases
 
-
-def _get_enum_base_tag(clazz, language):
-    if language == 'py':
-        return ':class:`%s`' % 'enum.Enum'
-    elif language == 'cpp':
-        return ':class:`%s`' % 'ydk::Enum'
-
-
-def _get_identity_base_tag(clazz, language):
-    if language == 'py':
-        return ':class:`%s`' % 'object'
-    elif language == 'cpp':
-        return ':class:`%s`' % 'ydk::Identity'
-
-
-def _get_class_base_tag(clazz, language, is_base=False):
-    base_tag = None
-    if language == 'py':
-        if is_base:
-            ':class:`%s`' % (clazz.name)
-        else:
-            ':class:`%s`' % 'object'
-    return base_tag
