@@ -28,7 +28,7 @@ add_executable(bgp_delete bgp_delete.cpp args_parser.cpp)
 
 target_link_libraries(bgp_create 
 	${ydk_location} 
-	${ydk_openconfig_location} 
+	${ydk_ydktest_location} 
 	${xml2_location}
 	${curl_location}
 	${ssh_location}
@@ -38,7 +38,7 @@ target_link_libraries(bgp_create
 
 target_link_libraries(bgp_read
 	${ydk_location} 
-	${ydk_openconfig_location} 
+	${ydk_ydktest_location} 
 	${xml2_location}
 	${curl_location}
 	${ssh_location}
@@ -48,7 +48,7 @@ target_link_libraries(bgp_read
 
 target_link_libraries(bgp_update
 	${ydk_location} 
-	${ydk_openconfig_location} 
+	${ydk_ydktest_location} 
 	${xml2_location}
 	${curl_location}
 	${ssh_location}
@@ -58,7 +58,7 @@ target_link_libraries(bgp_update
 
 target_link_libraries(bgp_delete
 	${ydk_location} 
-	${ydk_openconfig_location} 
+	${ydk_ydktest_location} 
 	${xml2_location}
 	${curl_location}
 	${ssh_location}

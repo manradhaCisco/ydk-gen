@@ -17,7 +17,7 @@
 
 #include "ydk/netconf_provider.hpp"
 #include "ydk/crud_service.hpp"
-#include "ydk_openconfig/openconfig_bgp.h"
+#include "ydk_ydktest/openconfig_bgp.h"
 
 #include "args_parser.h"
 
