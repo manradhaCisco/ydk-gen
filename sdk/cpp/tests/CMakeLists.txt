@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.6)
 cmake_policy(SET CMP0048 NEW)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules/")
-set(netconf_tests bgpnctest;test_netconf_client;testsanitynctest)
+set(netconf_tests bgpnctest;test_netconf_client;testsanitynctest;test_crud)
 
 include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 
@@ -12,6 +12,7 @@ find_library(ssh_location ssh)
 find_library(ssh_threads_location ssh_threads)
 find_library(pcre_location pcre)
 find_library(xslt_location xslt)
+find_library(ydk_openconfig_location ydk_openconfig)
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 find_package(LibYDK REQUIRED)
 
@@ -42,7 +43,8 @@ foreach(test_name IN LISTS netconf_tests)
         ${ssh_threads_location}
         ${pcre_location}
         ${xslt_location}
-        ${LIBYDK_LIBRARIES} 
+        ${LIBYDK_LIBRARIES}
+        ${ydk_openconfig_location}
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
     )
 

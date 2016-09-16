@@ -20,10 +20,10 @@
 #include <string.h>
 #include <iostream>
 
-#include "../../src/netconf_provider.hpp"
-#include "../../src/crud_service.hpp"
-#include "../../models/openconfig_bgp.h"
-#include "../config.hpp"
+#include "../ydk/src/netconf_provider.hpp"
+#include "../ydk/src/crud_service.hpp"
+#include "ydk_ydktest/openconfig_bgp.h"
+#include "../tests/config.hpp"
 
 using namespace ydk;
 using namespace std;
@@ -36,7 +36,7 @@ void config_bgp(openconfig_bgp::Bgp* bgp)
 	bgp->global_->config->as_ = 65001;
 	bgp->global_->config->router_id = "1.2.3.4";
 
-	auto afi_safi = make_unique<openconfig_bgp::Bgp::Global::AfiSafis::AfiSafi>();
+	auto afi_safi = make_unique<openconfig_bgp::Bgp::Global_::AfiSafis::AfiSafi>();
 	afi_safi->afi_safi_name = "openconfig-bgp-types:L3VPN_IPV4_UNICAST";
 	afi_safi->config->afi_safi_name = "openconfig-bgp-types:L3VPN_IPV4_UNICAST";
 	afi_safi->config->enabled = true;
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(bgp_create_delete)
 	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
 	CrudService crud{};
 	auto bgp = make_unique<openconfig_bgp::Bgp>();
-	bool reply = crud.del(provider, *bgp);
+	bool reply = crud.delete_(provider, *bgp);
 	BOOST_REQUIRE(reply);
 
 	config_bgp(bgp.get());
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(bgp_read_delete)
 	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
 	CrudService crud{};
 	auto bgp_set = make_unique<openconfig_bgp::Bgp>();
-	bool reply = crud.del(provider, *bgp_set);
+	bool reply = crud.delete_(provider, *bgp_set);
 	BOOST_REQUIRE(reply);
 
 	config_bgp(bgp_set.get());
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(bgp_update_delete)
 	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
 	CrudService crud{};
 	auto bgp = make_unique<openconfig_bgp::Bgp>();
-	bool reply = crud.del(provider, *bgp);
+	bool reply = crud.delete_(provider, *bgp);
 	BOOST_REQUIRE(reply);
 
 	config_bgp(bgp.get());
