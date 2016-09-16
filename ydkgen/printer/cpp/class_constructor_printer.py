@@ -20,7 +20,7 @@ source_printer.py
  prints C++ classes
 
 """
-from ydkgen.api_model import Class, DataType, Enum
+from ydkgen.api_model import Bits, Class, DataType, Enum
 
 
 class ClassConstructorPrinter(object):
@@ -68,15 +68,15 @@ class ClassConstructorPrinter(object):
     def _print_class_inits(self, clazz, ls, children):
         leafs = [prop for prop in ls if not prop.is_many]
         if len(leafs) > 0:
-            self.ctx.writeln(': %s' % ', '.join('%s{YType::%s, "%s"}' % (prop.name, get_type_name(prop.property_type), prop.stmt.arg) for prop in leafs))
+            self.ctx.writeln(': \n\t%s' % ',\n\t '.join('%s{YType::%s, "%s"}' % (prop.name, get_type_name(prop.property_type), prop.stmt.arg) for prop in leafs))
         children_init = ''
         parent_init = ''
         if len(leafs) > 0:
             children_init = ', '
         else:
-            children_init = ': '
+            children_init = ':\n\t '
         chs = [prop for prop in children if not prop.is_many]
-        children_init += '%s' % (', '.join('%s(std::make_unique<%s>())' % (prop.name, prop.property_type.qualified_cpp_name()) for prop in chs))
+        children_init += '\t%s' % (',\n '.join('\t%s(std::make_unique<%s>())' % (prop.name, prop.property_type.qualified_cpp_name()) for prop in chs))
         if len(chs) > 0:
             self.ctx.writeln('%s' % (children_init))
         if len(chs) > 0 or len(leafs) > 0:
@@ -98,6 +98,8 @@ def get_type_name(prop_type):
         return 'str'
     elif prop_type.name == 'binary':
         return 'str'
+    elif isinstance(prop_type, Bits):
+        return 'bits'
     elif isinstance(prop_type, Class) and prop_type.is_identity():
         return 'identityref'
     elif isinstance(prop_type, Enum):

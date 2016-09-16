@@ -22,7 +22,7 @@
 """
 from __future__ import absolute_import
 
-from .common import camel_case, iskeyword, iscppkeyword
+from .common import camel_case
 from .common import snake_case, escape_name
 
 from pyang.types import UnionTypeSpec
@@ -52,11 +52,12 @@ class Element(object):
 
 
 class Deviation(Element):
-    def __init__(self):
+    def __init__(self, iskeyword):
         Element.__init__(self)
         self._stmt = None
         self.d_type = None
         self.d_target = None
+        self.iskeyword = iskeyword
 
     @property
     def stmt(self):
@@ -80,7 +81,7 @@ class Deviation(Element):
 
     def convert_prop_name(self, stmt):
         name = snake_case(stmt.arg)
-        if iskeyword(name):
+        if self.iskeyword(name):
             name = '%s_' % name
 
         if name.startswith('_'):
@@ -97,7 +98,7 @@ class Deviation(Element):
             name = camel_case(name) + 'Rpc'
         else:
             name = camel_case(name)
-        if iskeyword(name):
+        if self.iskeyword(name):
             name = '%s_' % name
 
         if name.startswith('_'):
@@ -153,9 +154,9 @@ class NamedElement(Element):
         """
         pkg = get_top_pkg(self)
         if not pkg.bundle_name:
-            cpp_header_name = '%s.h' % pkg.name
+            cpp_header_name = '%s.hpp' % pkg.name
         else:
-            cpp_header_name = '%s.h' % (pkg.name)
+            cpp_header_name = '%s.hpp' % (pkg.name)
         return cpp_header_name
 
     def get_meta_py_mod_name(self):
@@ -226,13 +227,14 @@ class Package(NamedElement):
         Represents a Package in the API
     """
 
-    def __init__(self):
+    def __init__(self, iskeyword):
         super(Package, self).__init__()
         self._stmt = None
         self._sub_name = ''
         self._bundle_name = ''
         self._augments_other = False
         self.identity_subclasses = {}
+        self.iskeyword = iskeyword
 
     def qn(self):
         """ Return the qualified name """
@@ -281,7 +283,7 @@ class Package(NamedElement):
     @stmt.setter
     def stmt(self, stmt):
         name = stmt.arg.replace('-', '_')
-        if iskeyword(name):
+        if self.iskeyword(name):
             name = '%s_' % name
         if name[0] == '_':
             name = 'y%s' % name
@@ -327,24 +329,12 @@ class Class(NamedElement):
        Represents a Class in the api.
     """
 
-    def __init__(self):
+    def __init__(self, iskeyword):
         super(Class, self).__init__()
         self._stmt = None
         self._extends = []
         self._module = None
-
-    def is_grouping_contribution(self):
-        ''' Returns true if this Class is either a grouping class or is defined
-        within a grouping class '''
-        if self.is_grouping():
-            return True
-
-        owner = self.owner
-        while owner is not None and isinstance(owner, Class):
-            if owner.is_grouping():
-                return True
-            owner = owner.owner
-        return False
+        self.iskeyword = iskeyword
 
     @property
     def extends(self):
@@ -499,7 +489,7 @@ class Class(NamedElement):
             name = camel_case(name) + 'Rpc'
         else:
             name = camel_case(name)
-        if iskeyword(name):
+        if self.iskeyword(name.lower()):
             name = '%s_' % name
         self.name = name
 
@@ -572,11 +562,12 @@ class Bits(DataType):
         A DataType representing the bits type in YANG.
     """
 
-    def __init__(self):
+    def __init__(self, iskeyword):
         super(DataType, self).__init__()
         self._stmt = None
         self._dictionary = None
         self._pos_map = None
+        self.iskeyword = iskeyword
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -609,7 +600,7 @@ class Bits(DataType):
             leaf_or_typedef = leaf_or_typedef.parent
 
         name = '%s_Bits' % camel_case(leaf_or_typedef.arg)
-        if iskeyword(name):
+        if self.iskeyword(name):
             name = '%s_' % name
         self.name = name
 
@@ -634,7 +625,7 @@ class Property(NamedElement):
     """ Represents an attribute or reference of a Class.
     """
 
-    def __init__(self):
+    def __init__(self, iskeyword):
         super(Property, self).__init__()
         self._stmt = None
         self.is_static = False
@@ -650,6 +641,7 @@ class Property(NamedElement):
         self._property_type = None
         self.max_elements = None
         self.min_elements = None
+        self.iskeyword = iskeyword
 
     def is_key(self):
         """ Returns True if this property represents a key of a YANG list."""
@@ -665,7 +657,7 @@ class Property(NamedElement):
     def stmt(self, stmt):
         self._stmt = stmt
         name = snake_case(stmt.arg)
-        if iskeyword(name):
+        if self.iskeyword(name):
             name = '%s_' % name
         self.name = name
 
@@ -708,10 +700,11 @@ class Enum(DataType):
 
     """ Represents an enumeration. """
 
-    def __init__(self):
+    def __init__(self, iskeyword):
         super(Enum, self).__init__()
         self._stmt = None
         self.literals = []
+        self.iskeyword = iskeyword
 
     def get_package(self):
         """ Returns the Package that this enum is found in. """
@@ -736,7 +729,7 @@ class Enum(DataType):
             leaf_or_typedef = leaf_or_typedef.parent
 
         name = '%sEnum' % camel_case(escape_name(leaf_or_typedef.arg))
-        if iskeyword(name):
+        if self.iskeyword(name):
             name = '%s_' % name
 
         if name[0] == '_':
@@ -752,7 +745,7 @@ class Enum(DataType):
             if desc is not None:
                 self.comment = desc.arg
         for enum_stmt in stmt.search('enum'):
-            literal = EnumLiteral()
+            literal = EnumLiteral(self.iskeyword)
             literal.stmt = enum_stmt
             self.literals.append(literal)
 
@@ -761,10 +754,11 @@ class EnumLiteral(NamedElement):
 
     """ Represents an enumeration literal. """
 
-    def __init__(self):
+    def __init__(self, iskeyword):
         super(EnumLiteral, self).__init__()
         self._stmt = None
         self.value = None
+        self.iskeyword = iskeyword
 
     @property
     def stmt(self):
@@ -802,18 +796,7 @@ class EnumLiteral(NamedElement):
         if self.name[0:1].isdigit():
             self.name = 'Y_%s' % self.name
 
-        if self.name.lower() == 'true' or self.name.lower() == 'false' \
-         or self.name.lower() == 'default' or self.name.lower() == 'auto' \
-         or self.name.lower() == 'static' or self.name.lower() == 'or' \
-         or self.name.lower() == 'do' or self.name.lower() == 'new' \
-         or self.name.lower() == 'delete' or self.name.lower() == 'protected' \
-         or self.name.lower() == 'private' or self.name.lower() == 'public' \
-         or self.name.lower() == 'export' or self.name.lower() == 'virtual' \
-         or self.name.lower() == 'for' or self.name.lower() == 'and' \
-         or self.name.lower() == 'break' or self.name.lower() == 'case' \
-         or self.name.lower() == 'catch' or self.name.lower() == 'float' \
-         or self.name.lower() == 'long' or self.name.lower() == 'return' \
-         or self.name.lower() == 'explicit':
+        if self.iskeyword(self.name.lower()):
             self.name = self.name + '_'
 
         if self.name[0] == '_':

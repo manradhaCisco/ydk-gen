@@ -42,7 +42,7 @@ class SourcePrinter(FilePrinter):
         self.ctx.bline()
         self.ctx.writeln('#include <sstream>')
         self.ctx.writeln('#include <iostream>')
-        self.ctx.writeln('#include "{0}.h"'.format(package.name))
+        self.ctx.writeln('#include "{0}.hpp"'.format(package.name))
         self.ctx.bline()
         self.ctx.writeln('namespace ydk {')
         self.ctx.writeln('namespace %s {' % package.name)

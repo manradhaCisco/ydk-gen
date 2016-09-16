@@ -146,3 +146,25 @@ BOOST_AUTO_TEST_CASE(test_bool)
 	BOOST_REQUIRE(test_value.get()=="false");
 }
 
+BOOST_AUTO_TEST_CASE(test_bits)
+{
+	Value test_value{YType::bits, "bits-field"};
+	test_value["bit1"] = true;
+	test_value["bit2"] = true;
+	test_value["bit3"] = true;
+	test_value["bit4"] = true;
+//	BOOST_REQUIRE(test_value.get()=="bit1 bit2 bit3 bit4"); //TODO
+
+	test_value["bit3"] = false;
+//	BOOST_REQUIRE(test_value.get()=="bit1 bit2 bit4");
+}
+
+BOOST_AUTO_TEST_CASE(test_deci64)
+{
+	Value test_value{YType::decimal64, "value"};
+	test_value = "3.2";
+	BOOST_REQUIRE(test_value.get()=="3.2");
+
+	test_value = "1.2";
+	BOOST_REQUIRE(test_value.get()=="1.2");
+}

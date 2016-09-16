@@ -17,7 +17,7 @@
 
 #include "ydk/netconf_provider.hpp"
 #include "ydk/crud_service.hpp"
-#include "ydk_ydktest/openconfig_bgp.h"
+#include "ydk_openconfig/openconfig_bgp.hpp"
 
 #include "args_parser.h"
 
@@ -41,8 +41,8 @@ int main(int argc, char* argv[])
 	CrudService crud{};
 
 	auto bgp = make_unique<openconfig_bgp::Bgp>();
-	bgp->global_->config->as_ = 65021;
-	bgp->global_->config->router_id = "1.2.1.4";
+	bgp->global->config->as = 65021;
+	bgp->global->config->router_id = "1.2.1.4";
 
 	bool reply = crud.update(provider, *bgp);
 

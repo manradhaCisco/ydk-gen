@@ -92,7 +92,7 @@ def get_source_file_name(path, package):
 
 
 def get_header_file_name(path, package):
-    return '%s/%s.h' % (path, package.name)
+    return '%s/%s.hpp' % (path, package.name)
 
 
 def get_table_of_contents_file_name(path):

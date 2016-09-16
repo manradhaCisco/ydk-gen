@@ -22,7 +22,7 @@
 
 #include "../ydk/src/netconf_provider.hpp"
 #include "../ydk/src/crud_service.hpp"
-#include "ydk_ydktest/openconfig_bgp.h"
+#include "ydk_openconfig/openconfig_bgp.hpp"
 #include "../tests/config.hpp"
 
 using namespace ydk;
@@ -33,15 +33,15 @@ using namespace std;
 void config_bgp(openconfig_bgp::Bgp* bgp)
 {
 	// Set the Global AS
-	bgp->global_->config->as_ = 65001;
-	bgp->global_->config->router_id = "1.2.3.4";
+	bgp->global->config->as = 65001;
+	bgp->global->config->router_id = "1.2.3.4";
 
-	auto afi_safi = make_unique<openconfig_bgp::Bgp::Global_::AfiSafis::AfiSafi>();
+	auto afi_safi = make_unique<openconfig_bgp::Bgp::Global::AfiSafis::AfiSafi>();
 	afi_safi->afi_safi_name = "openconfig-bgp-types:L3VPN_IPV4_UNICAST";
 	afi_safi->config->afi_safi_name = "openconfig-bgp-types:L3VPN_IPV4_UNICAST";
 	afi_safi->config->enabled = true;
-	afi_safi->parent = bgp->global_->afi_safis.get();
-	bgp->global_->afi_safis->afi_safi.push_back(move(afi_safi));
+	afi_safi->parent = bgp->global->afi_safis.get();
+	bgp->global->afi_safis->afi_safi.push_back(move(afi_safi));
 
 	auto neighbor = make_unique<openconfig_bgp::Bgp::Neighbors::Neighbor>();
 	neighbor->neighbor_address = "6.7.8.9";
@@ -99,14 +99,14 @@ BOOST_AUTO_TEST_CASE(bgp_read_delete)
 	openconfig_bgp::Bgp * bgp_read_ptr = dynamic_cast<openconfig_bgp::Bgp*>(bgp_read.get());
 	BOOST_REQUIRE(bgp_read_ptr!=nullptr);
 
-	BOOST_CHECK_EQUAL(bgp_set->global_->config->as_, bgp_read_ptr->global_->config->as_);
+	BOOST_CHECK_EQUAL(bgp_set->global->config->as, bgp_read_ptr->global->config->as);
 	BOOST_CHECK_EQUAL(bgp_set->neighbors->neighbor[0]->neighbor_address, bgp_read_ptr->neighbors->neighbor[0]->neighbor_address);
 	BOOST_CHECK_EQUAL(bgp_set->neighbors->neighbor[0]->config->local_as, bgp_read_ptr->neighbors->neighbor[0]->config->local_as);
-	BOOST_CHECK_EQUAL(bgp_set->global_->afi_safis->afi_safi[0]->afi_safi_name, bgp_read_ptr->global_->afi_safis->afi_safi[0]->afi_safi_name);
-	BOOST_CHECK_EQUAL(bgp_set->global_->afi_safis->afi_safi[0]->config->afi_safi_name, bgp_read_ptr->global_->afi_safis->afi_safi[0]->config->afi_safi_name);
+	BOOST_CHECK_EQUAL(bgp_set->global->afi_safis->afi_safi[0]->afi_safi_name, bgp_read_ptr->global->afi_safis->afi_safi[0]->afi_safi_name);
+	BOOST_CHECK_EQUAL(bgp_set->global->afi_safis->afi_safi[0]->config->afi_safi_name, bgp_read_ptr->global->afi_safis->afi_safi[0]->config->afi_safi_name);
 
-//	cerr<<bgp_set->global_->afi_safis->afi_safi[0]->config->enabled<<","<<bgp_read_ptr->global_->afi_safis->afi_safi[0]->config->enabled<<endl;
-//	res &= string(bgp_set->global_->afi_safis->afi_safi[0]->config->enabled)  == string(bgp_read_ptr->global_->afi_safis->afi_safi[0]->config->enabled);
+//	cerr<<bgp_set->global->afi_safis->afi_safi[0]->config->enabled<<","<<bgp_read_ptr->global->afi_safis->afi_safi[0]->config->enabled<<endl;
+//	res &= string(bgp_set->global->afi_safis->afi_safi[0]->config->enabled)  == string(bgp_read_ptr->global->afi_safis->afi_safi[0]->config->enabled);
 //	BOOST_REQUIRE(res==1);
 }
 
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(bgp_update_delete)
 	BOOST_REQUIRE(reply);
 
 	config_bgp(bgp.get());
-	bgp->global_->config->as_ = 65210;
+	bgp->global->config->as = 65210;
 	reply = crud.update(provider, *bgp);
 	BOOST_REQUIRE(reply);
 }

@@ -119,14 +119,19 @@ def merge_file_path_segments(segs):
     return return_seg
 
 
-def iskeyword(word):
-    return keyword.iskeyword(word) or word in ('None', 'parent', 'operator',
-            'inline', 'default', 'virtual', 'children', 'value', 'auto', 'entity',
-            'int', 'static', 'final', 'template', 'index', 'protected')
+def ispythonkeyword(word):
+    return keyword.iskeyword(word) or word in ('None', 'parent')
 
 
 def iscppkeyword(word):
-    return word in ('operator', 'inline', 'default', 'virtual')
+    return word in ('parent', 'operator', 'inline', 'default', 'virtual',
+                    'children', 'value', 'auto', 'entity', 'int', 'static',
+                    'final', 'template', 'index', 'protected', 'true', 'false',
+                    'default' , 'auto', 'static', 'or', 'do', 'new', 'delete',
+                    'private', 'public', 'export' , 'virtual', 'for', 'and',
+                    'break', 'case', 'catch', 'float', 'long', 'return',
+                    'explicit', 'class', 'if', 'try', 'while', 'and', 'or',
+                    'const', 'continue', 'double', 'else', 'value')
 
 
 def get_sphinx_ref_label(named_element):

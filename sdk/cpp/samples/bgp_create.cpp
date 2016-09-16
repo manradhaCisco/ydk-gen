@@ -17,8 +17,8 @@
 
 #include "ydk/netconf_provider.hpp"
 #include "ydk/crud_service.hpp"
-#include "ydk_ydktest/openconfig_bgp.h"
-#include "ydk_ydktest/openconfig_bgp_types.h"
+#include "ydk_openconfig/openconfig_bgp.hpp"
+#include "ydk_openconfig/openconfig_bgp_types.hpp"
 
 #include "args_parser.h"
 
@@ -30,15 +30,16 @@ using namespace std;
 void config_bgp(openconfig_bgp::Bgp* bgp)
 {
 	// Set the Global AS
-	bgp->global_->config->as_ = 65001;
-	bgp->global_->config->router_id = "1.2.3.4";
+	bgp->global->config->as = 65001;
+	bgp->global->config->router_id = "1.2.3.4";
 
-	auto afi_safi = make_unique<openconfig_bgp::Bgp::Global_::AfiSafis::AfiSafi>();
+        /*auto afi_safi = 
+         * make_unique<openconfig_bgp::Bgp::Global::AfiSafis::AfiSafi>();
 	afi_safi->afi_safi_name = openconfig_bgp_types::L3Vpn_Ipv4_UnicastIdentity();
 	afi_safi->config->afi_safi_name = openconfig_bgp_types::L3Vpn_Ipv4_UnicastIdentity();
 	afi_safi->config->enabled = false;
-	afi_safi->parent = bgp->global_->afi_safis.get();
-	bgp->global_->afi_safis->afi_safi.push_back(move(afi_safi));
+	afi_safi->parent = bgp->global->afi_safis.get();
+	bgp->global->afi_safis->afi_safi.push_back(move(afi_safi));*/
 
 	auto neighbor = make_unique<openconfig_bgp::Bgp::Neighbors::Neighbor>();
 	neighbor->neighbor_address = "6.7.8.9";

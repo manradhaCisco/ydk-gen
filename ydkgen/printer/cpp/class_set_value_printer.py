@@ -20,6 +20,7 @@ source_printer.py
  prints C++ classes
 
 """
+from ydkgen.api_model import Bits
 
 
 class ClassSetValuePrinter(object):
@@ -46,7 +47,9 @@ class ClassSetValuePrinter(object):
         self.ctx.writeln('if(value_path == "%s")' % (child_path))
         self.ctx.writeln('{')
         self.ctx.lvl_inc()
-        if(leaf.is_many):
+        if(isinstance(leaf.property_type, Bits)):
+            self.ctx.writeln('%s[value] = true;' % leaf.name)
+        elif(leaf.is_many):
             self.ctx.writeln('//%s.push_back(value);' % leaf.name)
         else:
             self.ctx.writeln('%s = value;' % leaf.name)

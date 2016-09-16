@@ -30,7 +30,7 @@ class SubTest : public Entity
         ~SubTest();
 
         bool has_data() const;
-        EntityPath get_entity_path(ydk::Entity* parent) const;
+        EntityPath get_entity_path(Entity* parent) const;
         std::string get_segment_path() const;
         Entity* set_child(std::string path);
         void set_value(std::string value_path, std::string value);
@@ -49,7 +49,7 @@ class SubTest : public Entity
             ~OneAug();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -81,7 +81,7 @@ class Runner : public Entity
         ~Runner();
 
         bool has_data() const;
-        EntityPath get_entity_path(ydk::Entity* parent) const;
+        EntityPath get_entity_path(Entity* parent) const;
         std::string get_segment_path() const;
         Entity* set_child(std::string path);
         void set_value(std::string value_path, std::string value);
@@ -101,7 +101,7 @@ class Runner : public Entity
             ~One();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -121,7 +121,7 @@ class Runner : public Entity
                 ~OneAug();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -155,7 +155,7 @@ class Runner : public Entity
             ~Two();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -175,7 +175,7 @@ class Runner : public Entity
                 ~Sub1();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -208,7 +208,7 @@ class Runner : public Entity
             ~Three();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -228,7 +228,7 @@ class Runner : public Entity
                 ~Sub1();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -247,7 +247,7 @@ class Runner : public Entity
                     ~Sub2();
 
                     bool has_data() const;
-                    EntityPath get_entity_path(ydk::Entity* parent) const;
+                    EntityPath get_entity_path(Entity* parent) const;
                     std::string get_segment_path() const;
                     Entity* set_child(std::string path);
                     void set_value(std::string value_path, std::string value);
@@ -288,7 +288,7 @@ class Runner : public Entity
             ~Ytypes();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -306,7 +306,7 @@ class Runner : public Entity
                 ~BuiltInT();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -346,8 +346,8 @@ class Runner : public Entity
                 class EmbededEnumEnum;
                 class YdkEnumIntTestEnum;
                 class YdkEnumTestEnum;
-                //class YdkEnumTestEnum;
-                //class YdkEnumTestEnum;
+                class YdkEnumTestEnum;
+                class YdkEnumTestEnum;
 
 
         }; // Runner::Ytypes::BuiltInT
@@ -361,7 +361,7 @@ class Runner : public Entity
                 ~DerivedT();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -394,7 +394,7 @@ class Runner : public Entity
             ~OneList();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -413,7 +413,7 @@ class Runner : public Entity
                 ~Ldata();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -439,7 +439,7 @@ class Runner : public Entity
                 ~OneAugList();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -459,7 +459,7 @@ class Runner : public Entity
                     ~Ldata();
 
                     bool has_data() const;
-                    EntityPath get_entity_path(ydk::Entity* parent) const;
+                    EntityPath get_entity_path(Entity* parent) const;
                     std::string get_segment_path() const;
                     Entity* set_child(std::string path);
                     void set_value(std::string value_path, std::string value);
@@ -502,7 +502,7 @@ class Runner : public Entity
             ~TwoList();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -521,7 +521,7 @@ class Runner : public Entity
                 ~Ldata();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -542,7 +542,7 @@ class Runner : public Entity
                     ~Subl1();
 
                     bool has_data() const;
-                    EntityPath get_entity_path(ydk::Entity* parent) const;
+                    EntityPath get_entity_path(Entity* parent) const;
                     std::string get_segment_path() const;
                     Entity* set_child(std::string path);
                     void set_value(std::string value_path, std::string value);
@@ -584,7 +584,7 @@ class Runner : public Entity
             ~ThreeList();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -603,7 +603,7 @@ class Runner : public Entity
                 ~Ldata();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -624,7 +624,7 @@ class Runner : public Entity
                     ~Subl1();
 
                     bool has_data() const;
-                    EntityPath get_entity_path(ydk::Entity* parent) const;
+                    EntityPath get_entity_path(Entity* parent) const;
                     std::string get_segment_path() const;
                     Entity* set_child(std::string path);
                     void set_value(std::string value_path, std::string value);
@@ -645,7 +645,7 @@ class Runner : public Entity
                         ~SubSubl1();
 
                         bool has_data() const;
-                        EntityPath get_entity_path(ydk::Entity* parent) const;
+                        EntityPath get_entity_path(Entity* parent) const;
                         std::string get_segment_path() const;
                         Entity* set_child(std::string path);
                         void set_value(std::string value_path, std::string value);
@@ -695,7 +695,7 @@ class Runner : public Entity
             ~InbtwList();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -714,7 +714,7 @@ class Runner : public Entity
                 ~Ldata();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -734,7 +734,7 @@ class Runner : public Entity
                     ~Subc();
 
                     bool has_data() const;
-                    EntityPath get_entity_path(ydk::Entity* parent) const;
+                    EntityPath get_entity_path(Entity* parent) const;
                     std::string get_segment_path() const;
                     Entity* set_child(std::string path);
                     void set_value(std::string value_path, std::string value);
@@ -755,7 +755,7 @@ class Runner : public Entity
                         ~SubcSubl1();
 
                         bool has_data() const;
-                        EntityPath get_entity_path(ydk::Entity* parent) const;
+                        EntityPath get_entity_path(Entity* parent) const;
                         std::string get_segment_path() const;
                         Entity* set_child(std::string path);
                         void set_value(std::string value_path, std::string value);
@@ -805,7 +805,7 @@ class Runner : public Entity
             ~LeafRef();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -827,7 +827,7 @@ class Runner : public Entity
                 ~One();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -846,7 +846,7 @@ class Runner : public Entity
                     ~Two();
 
                     bool has_data() const;
-                    EntityPath get_entity_path(ydk::Entity* parent) const;
+                    EntityPath get_entity_path(Entity* parent) const;
                     std::string get_segment_path() const;
                     Entity* set_child(std::string path);
                     void set_value(std::string value_path, std::string value);
@@ -887,7 +887,7 @@ class Runner : public Entity
             ~NotSupported1();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -906,7 +906,7 @@ class Runner : public Entity
                 ~NotSupported12();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -939,7 +939,7 @@ class Runner : public Entity
             ~NotSupported2();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -964,7 +964,7 @@ class Runner : public Entity
             ~Runner2();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -1023,6 +1023,16 @@ class ChildChildIdentityIdentity : public ydktest_sanity::ChildIdentityIdentity,
 
 }; // ChildChildIdentityIdentity
 
+
+class YdkEnumIntTestEnum : public Enum
+{
+    public:
+        static const int any = 4096;
+
+};
+
+std::string YdkEnumIntTestEnum_to_string(int val); // YdkEnumIntTestEnum
+
 class YdkEnumTestEnum : public Enum
 {
     public:
@@ -1031,19 +1041,10 @@ class YdkEnumTestEnum : public Enum
         static const int local = 2;
         static const int remote = 3;
 
-}; // YdkEnumTestEnum
+};
 
-std::string YdkEnumTestEnum_to_string(int val);
-    
-class YdkEnumIntTestEnum : public Enum
-{
-    public:
-        static const int any = 4096;
+std::string YdkEnumTestEnum_to_string(int val); // YdkEnumTestEnum
 
-}; // YdkEnumIntTestEnum
-
-std::string YdkEnumIntTestEnum_to_string(int val);
-    
 class Runner::Ytypes::BuiltInT::EmbededEnumEnum : public Enum
 {
     public:
@@ -1051,9 +1052,11 @@ class Runner::Ytypes::BuiltInT::EmbededEnumEnum : public Enum
         static const int two = 1;
         static const int seven = 7;
 
-}; // EmbededEnumEnum
+};
 
-std::string Runner_Ytypes_BuiltInT_EmbededEnumEnum_to_string(int val);
+std::string Runner_Ytypes_BuiltInT_EmbededEnumEnum_to_string(int val); // EmbededEnumEnum
+
+
 }
 }
 

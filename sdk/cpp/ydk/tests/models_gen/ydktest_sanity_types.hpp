@@ -7,7 +7,7 @@
 #include "ydk/types.hpp"
 #include "ydk/errors.hpp"
 
-#include "ydktest_sanity.h"
+#include "ydktest_sanity.hpp"
 
 namespace ydk {
 namespace ydktest_sanity_types {
@@ -24,6 +24,18 @@ class YdktestTypeIdentity : public ydktest_sanity::BaseIdentityIdentity, virtual
 
 }; // YdktestTypeIdentity
 
+class OtherIdentity : public ydktest_sanity_types::YdktestTypeIdentity, virtual Identity
+{
+    public:
+        OtherIdentity();
+        ~OtherIdentity();
+
+
+    public:
+
+
+}; // OtherIdentity
+
 class AnotherOneIdentity : public ydktest_sanity_types::YdktestTypeIdentity, virtual Identity
 {
     public:
@@ -36,17 +48,6 @@ class AnotherOneIdentity : public ydktest_sanity_types::YdktestTypeIdentity, vir
 
 }; // AnotherOneIdentity
 
-class OtherIdentity : public ydktest_sanity_types::YdktestTypeIdentity, virtual Identity
-{
-    public:
-        OtherIdentity();
-        ~OtherIdentity();
-
-
-    public:
-
-
-}; // OtherIdentity
 
 
 }

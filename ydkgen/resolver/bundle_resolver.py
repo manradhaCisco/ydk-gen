@@ -26,7 +26,7 @@ from git import Repo
 from shutil import rmtree, copy
 from collections import namedtuple, defaultdict
 from .bundle_translator import translate
-from ..common import iskeyword, YdkGenException
+from ..common import YdkGenException
 
 
 logger = logging.getLogger('ydkgen')
@@ -140,9 +140,9 @@ class Model(object):
         Raises:
             KeyError if data if malformed.
     """
-    __slots__ = ['_name', '_revision', '_kind', '_uri']
+    __slots__ = ['_name', '_revision', '_kind', '_uri', 'iskeyword']
 
-    def __init__(self, data):
+    def __init__(self, data, iskeyword):
         self._name = data['name']
         if 'revision' in data:
             self._revision = data['revision']
@@ -150,12 +150,13 @@ class Model(object):
             self._revision = ''
         self._kind = data['kind']
         self._uri = parse_uri(data['uri'])
+        self.iskeyword = iskeyword
 
     @property
     def pkg_name(self):
         name = self._name
         name = name.replace('-', '_')
-        if iskeyword(name):
+        if self.iskeyword(name):
             name = '%s_' % name
         if name[0] == '_':
             name = 'y%s' % name
@@ -186,11 +187,12 @@ class Bundle(BundleDefinition):
             KeyError if data is malformed.
     """
 
-    def __init__(self, uri, resolved_models_root):
+    def __init__(self, uri, resolved_models_root, iskeyword):
         self.models = []
         self.dependencies = []
         self._uri = uri
         self._resolved_models_root = resolved_models_root
+        self.iskeyword = iskeyword
 
         try:
             with open(uri) as json_file:
@@ -202,7 +204,7 @@ class Bundle(BundleDefinition):
             super(Bundle, self).__init__(data['bundle'])
             if 'modules' in data:
                 for m in data['modules']:
-                    self.models.append(Model(m))
+                    self.models.append(Model(m, self.iskeyword))
             if 'dependencies' in data['bundle']:
                 for d in data['bundle']['dependencies']:
                     self.dependencies.append(BundleDependency(d))
@@ -236,7 +238,7 @@ class Resolver(object):
 
     """
 
-    def __init__(self, output_dir, root_dir, reuse_model=False, reuse_bundle=False):
+    def __init__(self, output_dir, root_dir, iskeyword, reuse_model=False, reuse_bundle=False):
         """ Initialize cached file directories.
         """
         self.root_dir = root_dir
@@ -244,6 +246,7 @@ class Resolver(object):
         self.cached_bundles_dir = ''
         self.bundles = {}
         self.repos = nested_defaultdict()
+        self.iskeyword = iskeyword
         self._init_cached_directories(output_dir, reuse_model, reuse_bundle)
 
     def _init_cached_directories(self, output_dir, reuse_model, reuse_bundle):
@@ -268,7 +271,7 @@ class Resolver(object):
         """
         uri = 'file://' + bundle_file
         bundle_file = self._resolve_bundle_file(parse_uri(uri))
-        root = Bundle(bundle_file, self.cached_models_dir)
+        root = Bundle(bundle_file, self.cached_models_dir, self.iskeyword)
         self.bundles[root.fqn] = root
         self._resolve_bundles(root)
 
@@ -290,7 +293,7 @@ class Resolver(object):
         for d in root.dependencies:
             if d.fqn not in self.bundles:
                 node = Bundle(self._resolve_bundle_file(d.uri),
-                              self.cached_models_dir)
+                              self.cached_models_dir, self.iskeyword)
                 self.bundles[d.fqn] = node
                 self._add_symlink(root, node)
                 self._resolve_bundles(node)

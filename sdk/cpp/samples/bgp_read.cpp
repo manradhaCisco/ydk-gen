@@ -17,7 +17,7 @@
 
 #include "ydk/netconf_provider.hpp"
 #include "ydk/crud_service.hpp"
-#include "ydk_ydktest/openconfig_bgp.h"
+#include "ydk_openconfig/openconfig_bgp.hpp"
 
 #include "args_parser.h"
 
@@ -52,8 +52,8 @@ int main(int argc, char* argv[])
 
 	cout << "=================================================="<<endl;
 	cout << "BGP configuration: " << endl<<endl;
-	cout << "AS: " << bgp_read_ptr->global_->config->as_ << endl;
-	cout << "Router ID: " << bgp_read_ptr->global_->config->router_id << endl<<endl;
+	cout << "AS: " << bgp_read_ptr->global->config->as << endl;
+	cout << "Router ID: " << bgp_read_ptr->global->config->router_id << endl<<endl;
 
 	for(size_t index=0; index < bgp_read_ptr->neighbors->neighbor.size(); index++)
 	{
@@ -65,9 +65,9 @@ int main(int argc, char* argv[])
 		cout << "Neighbor peer type: " <<  neighbor.config->peer_type << endl<<endl;
 	}
 
-	for(size_t index=0; index < bgp_read_ptr->global_->afi_safis->afi_safi.size(); index++)
+	for(size_t index=0; index < bgp_read_ptr->global->afi_safis->afi_safi.size(); index++)
 	{
-		openconfig_bgp::Bgp::Global_::AfiSafis::AfiSafi & afi_safi = *(bgp_read_ptr->global_->afi_safis->afi_safi[index]);
+		openconfig_bgp::Bgp::Global::AfiSafis::AfiSafi & afi_safi = *(bgp_read_ptr->global->afi_safis->afi_safi[index]);
 
 		cout << "AFI-SAFI name: " << afi_safi.afi_safi_name <<endl;
 		cout << "AFI-SAFI config name: " <<  afi_safi.config->afi_safi_name <<endl;

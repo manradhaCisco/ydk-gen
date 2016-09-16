@@ -1,7 +1,7 @@
 
 #include <sstream>
 #include <iostream>
-#include "ydktest_sanity.h"
+#include "ydktest_sanity.hpp"
 
 namespace ydk {
 namespace ydktest_sanity {
@@ -16,7 +16,9 @@ BaseIdentityIdentity::~BaseIdentityIdentity()
 }
 
 SubTest::OneAug::OneAug()
-    : name{YType::str, "name"}, number{YType::int32, "number"}
+    : 
+	name{YType::str, "name"},
+	 number{YType::int32, "number"}
     , parent(nullptr)
 {
 }
@@ -54,7 +56,7 @@ EntityPath SubTest::OneAug::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -93,7 +95,7 @@ void SubTest::OneAug::set_value(std::string value_path, std::string value)
 }
 
 SubTest::SubTest()
-    : one_aug(std::make_unique<SubTest::OneAug>())
+    : 		one_aug(std::make_unique<SubTest::OneAug>())
     , parent(nullptr)
 {
     one_aug->parent = this;
@@ -123,7 +125,7 @@ EntityPath SubTest::get_entity_path(Entity* parent) const
 {
     std::ostringstream path_buffer;
     if (parent != nullptr) {
-        throw ydk::YDKInvalidArgumentException{"parent has to be nullptr"};
+        throw YDKInvalidArgumentException{"parent has to be nullptr"};
     }
 
     path_buffer << get_segment_path();
@@ -154,7 +156,9 @@ std::unique_ptr<Entity> SubTest::clone_ptr()
     return std::make_unique<SubTest>();
 }
 Runner::One::OneAug::OneAug()
-    : name{YType::str, "name"}, number{YType::int32, "number"}
+    : 
+	name{YType::str, "name"},
+	 number{YType::int32, "number"}
     , parent(nullptr)
 {
 }
@@ -192,7 +196,7 @@ EntityPath Runner::One::OneAug::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -231,8 +235,10 @@ void Runner::One::OneAug::set_value(std::string value_path, std::string value)
 }
 
 Runner::One::One()
-    : name{YType::str, "name"}, number{YType::int32, "number"}
-    , one_aug(std::make_unique<Runner::One::OneAug>())
+    : 
+	name{YType::str, "name"},
+	 number{YType::int32, "number"}
+    , 		one_aug(std::make_unique<Runner::One::OneAug>())
     , parent(nullptr)
 {
     one_aug->parent = this;
@@ -273,7 +279,7 @@ EntityPath Runner::One::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -319,7 +325,8 @@ void Runner::One::set_value(std::string value_path, std::string value)
 }
 
 Runner::Two::Sub1::Sub1()
-    : number{YType::int32, "number"}
+    : 
+	number{YType::int32, "number"}
     , parent(nullptr)
 {
 }
@@ -357,7 +364,7 @@ EntityPath Runner::Two::Sub1::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -392,8 +399,10 @@ void Runner::Two::Sub1::set_value(std::string value_path, std::string value)
 }
 
 Runner::Two::Two()
-    : name{YType::str, "name"}, number{YType::int32, "number"}
-    , sub1(std::make_unique<Runner::Two::Sub1>())
+    : 
+	name{YType::str, "name"},
+	 number{YType::int32, "number"}
+    , 		sub1(std::make_unique<Runner::Two::Sub1>())
     , parent(nullptr)
 {
     sub1->parent = this;
@@ -434,7 +443,7 @@ EntityPath Runner::Two::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -480,7 +489,8 @@ void Runner::Two::set_value(std::string value_path, std::string value)
 }
 
 Runner::Three::Sub1::Sub2::Sub2()
-    : number{YType::int32, "number"}
+    : 
+	number{YType::int32, "number"}
     , parent(nullptr)
 {
 }
@@ -518,7 +528,7 @@ EntityPath Runner::Three::Sub1::Sub2::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -553,8 +563,9 @@ void Runner::Three::Sub1::Sub2::set_value(std::string value_path, std::string va
 }
 
 Runner::Three::Sub1::Sub1()
-    : number{YType::int32, "number"}
-    , sub2(std::make_unique<Runner::Three::Sub1::Sub2>())
+    : 
+	number{YType::int32, "number"}
+    , 		sub2(std::make_unique<Runner::Three::Sub1::Sub2>())
     , parent(nullptr)
 {
     sub2->parent = this;
@@ -595,7 +606,7 @@ EntityPath Runner::Three::Sub1::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -637,8 +648,10 @@ void Runner::Three::Sub1::set_value(std::string value_path, std::string value)
 }
 
 Runner::Three::Three()
-    : name{YType::str, "name"}, number{YType::int32, "number"}
-    , sub1(std::make_unique<Runner::Three::Sub1>())
+    : 
+	name{YType::str, "name"},
+	 number{YType::int32, "number"}
+    , 		sub1(std::make_unique<Runner::Three::Sub1>())
     , parent(nullptr)
 {
     sub1->parent = this;
@@ -679,7 +692,7 @@ EntityPath Runner::Three::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -723,51 +736,30 @@ void Runner::Three::set_value(std::string value_path, std::string value)
         number = value;
     }
 }
-    
-    
-std::string
-ydktest_sanity::YdkEnumTestEnum_to_string(int val)
-{
-#define TOSTRING(k, v) case YdkEnumTestEnum::k: return v;
-        switch(val)
-        {
-                TOSTRING(not_set, "not-set")
-                TOSTRING(none, "none")
-                TOSTRING(local, "local")
-                TOSTRING(remote, "remote")
-        }
-#undef TOSTRING
-        return "";
-}// YdkEnumTestEnum
-    
-std::string
-ydktest_sanity::Runner_Ytypes_BuiltInT_EmbededEnumEnum_to_string(int val)
-    {
-#define TOSTRING(k, v) case Runner::Ytypes::BuiltInT::EmbededEnumEnum::k: return v;
-        switch(val)
-        {
-                TOSTRING(zero, "zero")
-                TOSTRING(two, "two")
-                TOSTRING(seven, "seven")
-        }
-#undef TOSTRING
-        return "";
-    }// EmbededEnumEnum
-    
-std::string
-ydktest_sanity::YdkEnumIntTestEnum_to_string(int val)
-    {
-#define TOSTRING(k, v) case YdkEnumIntTestEnum::k: return v;
-        switch(val)
-        {
-                TOSTRING(any, "any")
-        }
-#undef TOSTRING
-        return "";
-    }// YdkEnumIntTestEnum
-    
+
 Runner::Ytypes::BuiltInT::BuiltInT()
-    : bincoded{YType::str, "bincoded"}, bits_value{YType::str, "bits-value"}, bool_value{YType::boolean, "bool-value"}, deci64{YType::str, "deci64"}, embeded_enum{YType::enumeration, "embeded-enum"}, emptee{YType::empty, "emptee"}, enum_int_value{YType::str, "enum-int-value"}, enum_value{YType::enumeration, "enum-value"}, identity_ref_value{YType::identityref, "identity-ref-value"}, leaf_ref{YType::str, "leaf-ref"}, name{YType::str, "name"}, number16{YType::int16, "number16"}, number32{YType::int32, "number32"}, number64{YType::int64, "number64"}, number8{YType::int8, "number8"}, u_number16{YType::uint16, "u_number16"}, u_number32{YType::uint32, "u_number32"}, u_number64{YType::uint64, "u_number64"}, u_number8{YType::uint8, "u_number8"}, younion{YType::str, "younion"}, younion_recursive{YType::str, "younion-recursive"}
+    : 
+	bincoded{YType::str, "bincoded"},
+	 bits_value{YType::bits, "bits-value"},
+	 bool_value{YType::boolean, "bool-value"},
+	 deci64{YType::str, "deci64"},
+	 embeded_enum{YType::enumeration, "embeded-enum"},
+	 emptee{YType::empty, "emptee"},
+	 enum_int_value{YType::str, "enum-int-value"},
+	 enum_value{YType::enumeration, "enum-value"},
+	 identity_ref_value{YType::identityref, "identity-ref-value"},
+	 leaf_ref{YType::str, "leaf-ref"},
+	 name{YType::str, "name"},
+	 number16{YType::int16, "number16"},
+	 number32{YType::int32, "number32"},
+	 number64{YType::int64, "number64"},
+	 number8{YType::int8, "number8"},
+	 u_number16{YType::uint16, "u_number16"},
+	 u_number32{YType::uint32, "u_number32"},
+	 u_number64{YType::uint64, "u_number64"},
+	 u_number8{YType::uint8, "u_number8"},
+	 younion{YType::str, "younion"},
+	 younion_recursive{YType::str, "younion-recursive"}
     , parent(nullptr)
 {
     embeded_enum.enum_to_string_func = ydktest_sanity::Runner_Ytypes_BuiltInT_EmbededEnumEnum_to_string;
@@ -832,7 +824,7 @@ EntityPath Runner::Ytypes::BuiltInT::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -886,7 +878,7 @@ void Runner::Ytypes::BuiltInT::set_value(std::string value_path, std::string val
     }
     if(value_path == "/ydktest-sanity:runner/ytypes/built-in-t/bits-value")
     {
-        bits_value = value;
+        bits_value[value] = true;
     }
     if(value_path == "/ydktest-sanity:runner/ytypes/built-in-t/bool-value")
     {
@@ -1024,7 +1016,7 @@ EntityPath Runner::Ytypes::DerivedT::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -1055,7 +1047,8 @@ void Runner::Ytypes::DerivedT::set_value(std::string value_path, std::string val
 }
 
 Runner::Ytypes::Ytypes()
-    : built_in_t(std::make_unique<Runner::Ytypes::BuiltInT>()), derived_t(std::make_unique<Runner::Ytypes::DerivedT>())
+    : 		built_in_t(std::make_unique<Runner::Ytypes::BuiltInT>()),
+ 	derived_t(std::make_unique<Runner::Ytypes::DerivedT>())
     , parent(nullptr)
 {
     built_in_t->parent = this;
@@ -1099,7 +1092,7 @@ EntityPath Runner::Ytypes::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -1144,7 +1137,9 @@ void Runner::Ytypes::set_value(std::string value_path, std::string value)
 }
 
 Runner::OneList::Ldata::Ldata()
-    : number{YType::int32, "number"}, name{YType::str, "name"}
+    : 
+	number{YType::int32, "number"},
+	 name{YType::str, "name"}
     , parent(nullptr)
 {
 }
@@ -1182,7 +1177,7 @@ EntityPath Runner::OneList::Ldata::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -1221,7 +1216,9 @@ void Runner::OneList::Ldata::set_value(std::string value_path, std::string value
 }
 
 Runner::OneList::OneAugList::Ldata::Ldata()
-    : number{YType::int32, "number"}, name{YType::str, "name"}
+    : 
+	number{YType::int32, "number"},
+	 name{YType::str, "name"}
     , parent(nullptr)
 {
 }
@@ -1259,7 +1256,7 @@ EntityPath Runner::OneList::OneAugList::Ldata::get_entity_path(Entity* parent) c
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -1298,7 +1295,8 @@ void Runner::OneList::OneAugList::Ldata::set_value(std::string value_path, std::
 }
 
 Runner::OneList::OneAugList::OneAugList()
-    : enabled{YType::boolean, "enabled"}
+    : 
+	enabled{YType::boolean, "enabled"}
     , parent(nullptr)
 {
 }
@@ -1341,7 +1339,7 @@ EntityPath Runner::OneList::OneAugList::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -1393,7 +1391,7 @@ void Runner::OneList::OneAugList::set_value(std::string value_path, std::string 
 }
 
 Runner::OneList::OneList()
-    : one_aug_list(std::make_unique<Runner::OneList::OneAugList>())
+    : 		one_aug_list(std::make_unique<Runner::OneList::OneAugList>())
     , parent(nullptr)
 {
     one_aug_list->parent = this;
@@ -1439,7 +1437,7 @@ EntityPath Runner::OneList::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -1494,7 +1492,9 @@ void Runner::OneList::set_value(std::string value_path, std::string value)
 }
 
 Runner::TwoList::Ldata::Subl1::Subl1()
-    : number{YType::int32, "number"}, name{YType::str, "name"}
+    : 
+	number{YType::int32, "number"},
+	 name{YType::str, "name"}
     , parent(nullptr)
 {
 }
@@ -1521,7 +1521,7 @@ EntityPath Runner::TwoList::Ldata::Subl1::get_entity_path(Entity* parent) const
 {
     std::ostringstream path_buffer;
     if (parent == nullptr) {
-        throw ydk::YDKInvalidArgumentException{"parent cannot be nullptr"};
+        throw YDKInvalidArgumentException{"parent cannot be nullptr"};
     } else { 
         // check if the parent is a parent
         auto p = this->parent;
@@ -1532,7 +1532,7 @@ EntityPath Runner::TwoList::Ldata::Subl1::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -1571,7 +1571,9 @@ void Runner::TwoList::Ldata::Subl1::set_value(std::string value_path, std::strin
 }
 
 Runner::TwoList::Ldata::Ldata()
-    : number{YType::int32, "number"}, name{YType::str, "name"}
+    : 
+	number{YType::int32, "number"},
+	 name{YType::str, "name"}
     , parent(nullptr)
 {
 }
@@ -1614,7 +1616,7 @@ EntityPath Runner::TwoList::Ldata::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -1712,7 +1714,7 @@ EntityPath Runner::TwoList::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -1760,7 +1762,9 @@ void Runner::TwoList::set_value(std::string value_path, std::string value)
 }
 
 Runner::ThreeList::Ldata::Subl1::SubSubl1::SubSubl1()
-    : number{YType::int32, "number"}, name{YType::str, "name"}
+    : 
+	number{YType::int32, "number"},
+	 name{YType::str, "name"}
     , parent(nullptr)
 {
 }
@@ -1787,7 +1791,7 @@ EntityPath Runner::ThreeList::Ldata::Subl1::SubSubl1::get_entity_path(Entity* pa
 {
     std::ostringstream path_buffer;
     if (parent == nullptr) {
-        throw ydk::YDKInvalidArgumentException{"parent cannot be nullptr"};
+        throw YDKInvalidArgumentException{"parent cannot be nullptr"};
     } else { 
         // check if the parent is a parent
         auto p = this->parent;
@@ -1798,7 +1802,7 @@ EntityPath Runner::ThreeList::Ldata::Subl1::SubSubl1::get_entity_path(Entity* pa
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -1837,7 +1841,9 @@ void Runner::ThreeList::Ldata::Subl1::SubSubl1::set_value(std::string value_path
 }
 
 Runner::ThreeList::Ldata::Subl1::Subl1()
-    : number{YType::int32, "number"}, name{YType::str, "name"}
+    : 
+	number{YType::int32, "number"},
+	 name{YType::str, "name"}
     , parent(nullptr)
 {
 }
@@ -1869,7 +1875,7 @@ EntityPath Runner::ThreeList::Ldata::Subl1::get_entity_path(Entity* parent) cons
 {
     std::ostringstream path_buffer;
     if (parent == nullptr) {
-        throw ydk::YDKInvalidArgumentException{"parent cannot be nullptr"};
+        throw YDKInvalidArgumentException{"parent cannot be nullptr"};
     } else { 
         // check if the parent is a parent
         auto p = this->parent;
@@ -1880,7 +1886,7 @@ EntityPath Runner::ThreeList::Ldata::Subl1::get_entity_path(Entity* parent) cons
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -1936,7 +1942,9 @@ void Runner::ThreeList::Ldata::Subl1::set_value(std::string value_path, std::str
 }
 
 Runner::ThreeList::Ldata::Ldata()
-    : number{YType::int32, "number"}, name{YType::str, "name"}
+    : 
+	number{YType::int32, "number"},
+	 name{YType::str, "name"}
     , parent(nullptr)
 {
 }
@@ -1979,7 +1987,7 @@ EntityPath Runner::ThreeList::Ldata::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2077,7 +2085,7 @@ EntityPath Runner::ThreeList::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2125,7 +2133,9 @@ void Runner::ThreeList::set_value(std::string value_path, std::string value)
 }
 
 Runner::InbtwList::Ldata::Subc::SubcSubl1::SubcSubl1()
-    : number{YType::int32, "number"}, name{YType::str, "name"}
+    : 
+	number{YType::int32, "number"},
+	 name{YType::str, "name"}
     , parent(nullptr)
 {
 }
@@ -2152,7 +2162,7 @@ EntityPath Runner::InbtwList::Ldata::Subc::SubcSubl1::get_entity_path(Entity* pa
 {
     std::ostringstream path_buffer;
     if (parent == nullptr) {
-        throw ydk::YDKInvalidArgumentException{"parent cannot be nullptr"};
+        throw YDKInvalidArgumentException{"parent cannot be nullptr"};
     } else { 
         // check if the parent is a parent
         auto p = this->parent;
@@ -2163,7 +2173,7 @@ EntityPath Runner::InbtwList::Ldata::Subc::SubcSubl1::get_entity_path(Entity* pa
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2202,7 +2212,9 @@ void Runner::InbtwList::Ldata::Subc::SubcSubl1::set_value(std::string value_path
 }
 
 Runner::InbtwList::Ldata::Subc::Subc()
-    : name{YType::str, "name"}, number{YType::int32, "number"}
+    : 
+	name{YType::str, "name"},
+	 number{YType::int32, "number"}
     , parent(nullptr)
 {
 }
@@ -2234,7 +2246,7 @@ EntityPath Runner::InbtwList::Ldata::Subc::get_entity_path(Entity* parent) const
 {
     std::ostringstream path_buffer;
     if (parent == nullptr) {
-        throw ydk::YDKInvalidArgumentException{"parent cannot be nullptr"};
+        throw YDKInvalidArgumentException{"parent cannot be nullptr"};
     } else { 
         // check if the parent is a parent
         auto p = this->parent;
@@ -2245,7 +2257,7 @@ EntityPath Runner::InbtwList::Ldata::Subc::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2301,8 +2313,10 @@ void Runner::InbtwList::Ldata::Subc::set_value(std::string value_path, std::stri
 }
 
 Runner::InbtwList::Ldata::Ldata()
-    : number{YType::int32, "number"}, name{YType::str, "name"}
-    , subc(std::make_unique<Runner::InbtwList::Ldata::Subc>())
+    : 
+	number{YType::int32, "number"},
+	 name{YType::str, "name"}
+    , 		subc(std::make_unique<Runner::InbtwList::Ldata::Subc>())
     , parent(nullptr)
 {
     subc->parent = this;
@@ -2343,7 +2357,7 @@ EntityPath Runner::InbtwList::Ldata::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2431,7 +2445,7 @@ EntityPath Runner::InbtwList::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2479,7 +2493,8 @@ void Runner::InbtwList::set_value(std::string value_path, std::string value)
 }
 
 Runner::LeafRef::One::Two::Two()
-    : self_ref_one_name{YType::str, "self-ref-one-name"}
+    : 
+	self_ref_one_name{YType::str, "self-ref-one-name"}
     , parent(nullptr)
 {
 }
@@ -2517,7 +2532,7 @@ EntityPath Runner::LeafRef::One::Two::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2552,8 +2567,9 @@ void Runner::LeafRef::One::Two::set_value(std::string value_path, std::string va
 }
 
 Runner::LeafRef::One::One()
-    : name_of_one{YType::str, "name-of-one"}
-    , two(std::make_unique<Runner::LeafRef::One::Two>())
+    : 
+	name_of_one{YType::str, "name-of-one"}
+    , 		two(std::make_unique<Runner::LeafRef::One::Two>())
     , parent(nullptr)
 {
     two->parent = this;
@@ -2594,7 +2610,7 @@ EntityPath Runner::LeafRef::One::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2636,8 +2652,12 @@ void Runner::LeafRef::One::set_value(std::string value_path, std::string value)
 }
 
 Runner::LeafRef::LeafRef()
-    : ref_inbtw{YType::str, "ref-inbtw"}, ref_one_name{YType::str, "ref-one-name"}, ref_three_sub1_sub2_number{YType::str, "ref-three-sub1-sub2-number"}, ref_two_sub1_number{YType::str, "ref-two-sub1-number"}
-    , one(std::make_unique<Runner::LeafRef::One>())
+    : 
+	ref_inbtw{YType::str, "ref-inbtw"},
+	 ref_one_name{YType::str, "ref-one-name"},
+	 ref_three_sub1_sub2_number{YType::str, "ref-three-sub1-sub2-number"},
+	 ref_two_sub1_number{YType::str, "ref-two-sub1-number"}
+    , 		one(std::make_unique<Runner::LeafRef::One>())
     , parent(nullptr)
 {
     one->parent = this;
@@ -2678,7 +2698,7 @@ EntityPath Runner::LeafRef::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2732,7 +2752,8 @@ void Runner::LeafRef::set_value(std::string value_path, std::string value)
 }
 
 Runner::NotSupported1::NotSupported12::NotSupported12()
-    : some_leaf{YType::str, "some-leaf"}
+    : 
+	some_leaf{YType::str, "some-leaf"}
     , parent(nullptr)
 {
 }
@@ -2770,7 +2791,7 @@ EntityPath Runner::NotSupported1::NotSupported12::get_entity_path(Entity* parent
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2805,8 +2826,9 @@ void Runner::NotSupported1::NotSupported12::set_value(std::string value_path, st
 }
 
 Runner::NotSupported1::NotSupported1()
-    : not_supported_leaf{YType::str, "not-supported-leaf"}
-    , not_supported_1_2(std::make_unique<Runner::NotSupported1::NotSupported12>())
+    : 
+	not_supported_leaf{YType::str, "not-supported-leaf"}
+    , 		not_supported_1_2(std::make_unique<Runner::NotSupported1::NotSupported12>())
     , parent(nullptr)
 {
     not_supported_1_2->parent = this;
@@ -2847,7 +2869,7 @@ EntityPath Runner::NotSupported1::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2889,7 +2911,8 @@ void Runner::NotSupported1::set_value(std::string value_path, std::string value)
 }
 
 Runner::NotSupported2::NotSupported2()
-    : number{YType::int32, "number"}
+    : 
+	number{YType::int32, "number"}
     , parent(nullptr)
 {
 }
@@ -2927,7 +2950,7 @@ EntityPath Runner::NotSupported2::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -2962,7 +2985,8 @@ void Runner::NotSupported2::set_value(std::string value_path, std::string value)
 }
 
 Runner::Runner2::Runner2()
-    : some_leaf{YType::str, "some-leaf"}
+    : 
+	some_leaf{YType::str, "some-leaf"}
     , parent(nullptr)
 {
 }
@@ -3000,7 +3024,7 @@ EntityPath Runner::Runner2::get_entity_path(Entity* parent) const
         }
 
         if (p == nullptr) {
-            throw ydk::YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
+            throw YDKInvalidArgumentException{"parent is not in the ancestor hierarchy."};
         }
 
         std::reverse(parents.begin(), parents.end());
@@ -3035,7 +3059,17 @@ void Runner::Runner2::set_value(std::string value_path, std::string value)
 }
 
 Runner::Runner()
-    : inbtw_list(std::make_unique<Runner::InbtwList>()), leaf_ref(std::make_unique<Runner::LeafRef>()), not_supported_1(std::make_unique<Runner::NotSupported1>()), one(std::make_unique<Runner::One>()), one_list(std::make_unique<Runner::OneList>()), runner_2(std::make_unique<Runner::Runner2>()), three(std::make_unique<Runner::Three>()), three_list(std::make_unique<Runner::ThreeList>()), two(std::make_unique<Runner::Two>()), two_list(std::make_unique<Runner::TwoList>()), ytypes(std::make_unique<Runner::Ytypes>())
+    : 		inbtw_list(std::make_unique<Runner::InbtwList>()),
+ 	leaf_ref(std::make_unique<Runner::LeafRef>()),
+ 	not_supported_1(std::make_unique<Runner::NotSupported1>()),
+ 	one(std::make_unique<Runner::One>()),
+ 	one_list(std::make_unique<Runner::OneList>()),
+ 	runner_2(std::make_unique<Runner::Runner2>()),
+ 	three(std::make_unique<Runner::Three>()),
+ 	three_list(std::make_unique<Runner::ThreeList>()),
+ 	two(std::make_unique<Runner::Two>()),
+ 	two_list(std::make_unique<Runner::TwoList>()),
+ 	ytypes(std::make_unique<Runner::Ytypes>())
     , parent(nullptr)
 {
     inbtw_list->parent = this;
@@ -3100,7 +3134,7 @@ EntityPath Runner::get_entity_path(Entity* parent) const
 {
     std::ostringstream path_buffer;
     if (parent != nullptr) {
-        throw ydk::YDKInvalidArgumentException{"parent has to be nullptr"};
+        throw YDKInvalidArgumentException{"parent has to be nullptr"};
     }
 
     path_buffer << get_segment_path();
@@ -3234,6 +3268,45 @@ ChildChildIdentityIdentity::ChildChildIdentityIdentity()
 ChildChildIdentityIdentity::~ChildChildIdentityIdentity()
 {
 }
+
+
+std::string YdkEnumIntTestEnum_to_string(int val)
+{
+    #define TOSTRING(k, v) case YdkEnumIntTestEnum::k: return v;
+    switch(val)
+    {
+        TOSTRING(any, "any")
+    }
+    #undef TOSTRING
+    return "";
+} // YdkEnumIntTestEnum
+
+std::string YdkEnumTestEnum_to_string(int val)
+{
+    #define TOSTRING(k, v) case YdkEnumTestEnum::k: return v;
+    switch(val)
+    {
+        TOSTRING(not_set, "not-set")
+        TOSTRING(none, "none")
+        TOSTRING(local, "local")
+        TOSTRING(remote, "remote")
+    }
+    #undef TOSTRING
+    return "";
+} // YdkEnumTestEnum
+
+std::string Runner_Ytypes_BuiltInT_EmbededEnumEnum_to_string(int val)
+{
+    #define TOSTRING(k, v) case Runner::Ytypes::BuiltInT::EmbededEnumEnum::k: return v;
+    switch(val)
+    {
+        TOSTRING(zero, "zero")
+        TOSTRING(two, "two")
+        TOSTRING(seven, "seven")
+    }
+    #undef TOSTRING
+    return "";
+} // EmbededEnumEnum
 
 
 }

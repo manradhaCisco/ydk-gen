@@ -23,7 +23,8 @@ import logging
 import tempfile
 import fileinput
 from subprocess import call
-from .common import YdkGenException
+
+from .common import YdkGenException, iscppkeyword, ispythonkeyword
 from ydkgen.builder import (ApiModelBuilder, GroupingClassApiModelBuilder,
                             PyangModelBuilder, SubModuleBuilder)
 from .resolver import resolve_profile, bundle_resolver, bundle_translator
@@ -66,6 +67,10 @@ class YdkGenerator(object):
         self.pkg_type = pkg_type
         self.generate_tests = generate_tests
         self.sort_clazz = sort_clazz
+        if self.language == 'cpp':
+            self.iskeyword = iscppkeyword
+        else:
+            self.iskeyword = ispythonkeyword
 
     def generate(self, description_file=None):
         """ Generate ydk profile package, bundle packages or ydk core library.
@@ -122,7 +127,7 @@ class YdkGenerator(object):
         tmp_file = tempfile.mkstemp(suffix='.bundle')[-1]
         bundle_translator.translate(profile_file, tmp_file, self.ydk_root)
 
-        resolver = bundle_resolver.Resolver(self.output_dir, self.ydk_root)
+        resolver = bundle_resolver.Resolver(self.output_dir, self.ydk_root, self.iskeyword)
         curr_bundle, all_bundles = resolver.resolve(tmp_file)
 
         api_pkgs = self._get_api_pkgs(curr_bundle.resolved_models_dir)
@@ -169,11 +174,11 @@ class YdkGenerator(object):
 
         # build api model packages
         if not self.groupings_as_class:
-            api_pkgs = ApiModelBuilder().generate(modules)
+            api_pkgs = ApiModelBuilder(self.iskeyword).generate(modules)
         else:
-            api_pkgs = GroupingClassApiModelBuilder().generate(modules)
+            api_pkgs = GroupingClassApiModelBuilder(self.iskeyword).generate(modules)
         api_pkgs.extend(
-            SubModuleBuilder().generate(pyang_builder.get_submodules()))
+            SubModuleBuilder().generate(pyang_builder.get_submodules(), self.iskeyword))
 
         return api_pkgs
 
@@ -367,7 +372,7 @@ def _modify_cpp_cmake(gen_api_root, pkg_name, models, version, descriptions=""):
     """
     cmake_file = os.path.join(gen_api_root, 'CMakeLists.txt')
 
-    header_files = _get_cpp_files(models, 'h')
+    header_files = _get_cpp_files(models, 'hpp')
     source_files = _get_cpp_files(models, 'cpp')
     for line in fileinput.input(cmake_file, inplace=True):
         if "@DESCRIPTIONS@" in line:
