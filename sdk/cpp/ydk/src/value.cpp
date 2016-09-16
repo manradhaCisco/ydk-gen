@@ -1,3 +1,30 @@
+//
+// @file value.hpp
+// @brief The main ydk public header.
+//
+// YANG Development Kit
+// Copyright 2016 Cisco Systems. All rights reserved
+//
+////////////////////////////////////////////////////////////////
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
+//////////////////////////////////////////////////////////////////
+
 #include <iostream>
 
 #include "core.hpp"
@@ -5,6 +32,10 @@
 #include "types.hpp"
 
 namespace ydk {
+
+static std::string get_bits_string(const std::map<std::string, bool> & bitmap);
+static std::string get_bool_string(const std::string & value);
+static std::string trim_last_character(std::string value);
 
 std::string to_str(YType t)
 {
@@ -24,6 +55,8 @@ std::string to_str(YType t)
     	TOSTRING(str);
     	TOSTRING(boolean);
     	TOSTRING(enumeration);
+    	TOSTRING(bits);
+    	TOSTRING(decimal64);
     }
     return "";
 }
@@ -36,17 +69,18 @@ Value::Value(YType type, std::string name):
 		type(type)
 {
 }
-    
+
 Value::Value(const Value& val):
     is_set{val.is_set},
+	enum_to_string_func(nullptr),
     name{val.name},
     value{val.value},
     type{val.type}
 {
-   
+
 }
-    
-   
+
+
 Value::Value(Value&& val):
     is_set{val.is_set},
     name{std::move(val.name)},
@@ -63,7 +97,7 @@ Value::operator=(const Value& val)
     name = val.name;
     value = val.value;
     type = val.type;
-    
+
     return *this;
 }
 
@@ -74,23 +108,27 @@ Value::operator=(Value&& val)
     name = std::move(val.name);
     value = std::move(val.value);
     type = val.type;
-    
+
     return *this;
 }
 
-    
+
 Value::~Value()
 {
 }
 
-const std::string & Value::get() const
+const std::string  Value::get() const
 {
+	if(type == YType::bits)
+	{
+		return get_bits_string(bitmap);
+	}
 	return value;
 }
 
 std::pair<std::string, std::string> Value::get_name_value() const
 {
-	return {name, value};
+	return {name, get()};
 }
 
 void Value::operator = (uint8 val)
@@ -196,14 +234,7 @@ void Value::store_value()
 	is_set=true;
 	if(type == YType::boolean)
 	{
-		if(value_buffer.str()=="1")
-		{
-			value = "true";
-		}
-		else
-		{
-			value = "false";
-		}
+		value = get_bool_string(value_buffer.str());
 	}
 	else
 	{
@@ -228,9 +259,50 @@ bool Value::operator == (const Value & other) const
 	return get() == other.get();
 }
 
+bool & Value::operator [] (std::string key)
+{
+	is_set = true;
+	return bitmap[key];
+}
+
 std::ostream& operator<< (std::ostream& stream, const Value& value)
 {
 	stream << value.get();
 	return stream;
+}
+
+std::string get_bool_string(const std::string & value)
+{
+	if(value == "1")
+	{
+		return "true";
+	}
+	else
+	{
+		return "false";
+	}
+}
+
+std::string get_bits_string(const std::map<std::string, bool> & bitmap)
+{
+	std::string value;
+	for(auto const & entry : bitmap)
+	{
+		if(entry.second)
+		{
+			value += entry.first + " ";
+		}
+	}
+
+	return (value);
+}
+
+static std::string trim_last_character(std::string value)
+{
+	if(value.size() > 0)
+	{
+		value.erase(value.size() - 1);
+	}
+	return value;
 }
 }

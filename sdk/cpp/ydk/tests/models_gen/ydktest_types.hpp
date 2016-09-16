@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include "../../src/types.hpp"
-#include "../../src/errors.hpp"
+#include "ydk/types.hpp"
+#include "ydk/errors.hpp"
 
 namespace ydk {
 namespace ydktest_types {
@@ -22,6 +22,7 @@ class Ydk_IdentityIdentity : public virtual Identity
 
 
 }; // Ydk_IdentityIdentity
+
 
 
 }

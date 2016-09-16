@@ -1,7 +1,7 @@
 
 #include <sstream>
 #include <iostream>
-#include "ydktest_sanity_types.h"
+#include "ydktest_sanity_types.hpp"
 
 namespace ydk {
 namespace ydktest_sanity_types {
@@ -15,6 +15,15 @@ YdktestTypeIdentity::~YdktestTypeIdentity()
 {
 }
 
+OtherIdentity::OtherIdentity()
+     : Identity("ydktest-sanity-types:other")
+{
+}
+
+OtherIdentity::~OtherIdentity()
+{
+}
+
 AnotherOneIdentity::AnotherOneIdentity()
      : Identity("ydktest-sanity-types:another-one")
 {
@@ -24,14 +33,6 @@ AnotherOneIdentity::~AnotherOneIdentity()
 {
 }
 
-OtherIdentity::OtherIdentity()
-     : Identity("ydktest-sanity-types:other")
-{
-}
-
-OtherIdentity::~OtherIdentity()
-{
-}
 
 
 }

@@ -28,10 +28,11 @@
 #ifndef _TYPES_HPP_
 #define _TYPES_HPP_
 
-#include <string>
-#include <vector>
+#include <map>
 #include <memory>
 #include <sstream>
+#include <string>
+#include <vector>
 
 namespace ydk {
 
@@ -87,7 +88,7 @@ class Entity {
 
   public:
 	virtual bool has_data() const = 0;
-    
+
     //
     // @brief Get the EntityPath relative to the parent passed in
     //
@@ -101,7 +102,7 @@ class Entity {
     virtual EntityPath get_entity_path(Entity* parent) const = 0;
 
     virtual std::string get_segment_path() const = 0;
-    
+
     virtual Entity* set_child(std::string path) = 0;
 
     virtual void set_value(std::string value_path, std::string value) = 0;
@@ -168,7 +169,9 @@ enum class YType {
 	identityref,
 	str,
 	boolean,
-	enumeration
+	enumeration,
+	bits,
+	decimal64
 };
 
 class Value {
@@ -178,12 +181,12 @@ class Value {
 
     Value(const Value& val);
     Value(Value&& val);
-    
-    
+
+
     Value& operator=(const Value& val);
     Value& operator=(Value&& val);
-    
-	const std::string & get() const;
+
+	const std::string get() const;
 	std::pair<std::string, std::string> get_name_value() const;
 
 	void operator = (uint8 val);
@@ -200,6 +203,8 @@ class Value {
 	bool operator == (Value & other) const;
 	bool operator == (const Value & other) const;
 
+	bool & operator [] (std::string key);
+
 	bool is_set;
 	std::string (*enum_to_string_func)(int);
 
@@ -212,6 +217,8 @@ class Value {
 	std::ostringstream value_buffer;
 	std::string value;
 	YType type;
+
+	std::map<std::string, bool> bitmap;
 };
 
 std::ostream& operator<< (std::ostream& stream, const Value& value);

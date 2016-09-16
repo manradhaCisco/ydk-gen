@@ -48,8 +48,39 @@ add_library(ydk_core OBJECT ${libydk_src} ${libydk_headers})
 set_property(TARGET ydk_core PROPERTY CXX_STANDARD 14)
 set_property(TARGET ydk_core PROPERTY CXX_STANDARD_REQUIRED ON)
 
-file(GLOB libnetconf RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} .libs/libnetconf/*.o)
-file(GLOB libyang RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} .libs/libyang/*.o)
+set(libnetconf_objs .libs/libnetconf/callbacks.o .libs/libnetconf/datastore_custom.o
+ .libs/libnetconf/edit_config.o .libs/libnetconf/messages.o .libs/libnetconf/session.o
+ .libs/libnetconf/transport.o .libs/libnetconf/xmldiff.o .libs/libnetconf/compat.o
+ .libs/libnetconf/datastore_empty.o .libs/libnetconf/error.o  .libs/libnetconf/nacm.o
+ .libs/libnetconf/ssh.o .libs/libnetconf/url.o  .libs/libnetconf/yinparser.o
+ .libs/libnetconf/datastore.o .libs/libnetconf/datastore_file.o .libs/libnetconf/internal.o
+ .libs/libnetconf/notifications.o  .libs/libnetconf/transapi.o .libs/libnetconf/with_defaults.o)
+
+set(libyang_objs .libs/libyang/common.c.o
+ .libs/libyang/context.c.o
+ .libs/libyang/dict.c.o
+ .libs/libyang/log.c.o
+ .libs/libyang/parser.c.o
+ .libs/libyang/parser_json.c.o
+ .libs/libyang/parser_xml.c.o
+ .libs/libyang/parser_yang.c.o
+ .libs/libyang/parser_yang_bis.c.o
+ .libs/libyang/parser_yang_lex.c.o
+ .libs/libyang/parser_yin.c.o
+ .libs/libyang/printer.c.o
+ .libs/libyang/printer_info.c.o
+ .libs/libyang/printer_json.c.o
+ .libs/libyang/printer_tree.c.o
+ .libs/libyang/printer_xml.c.o
+ .libs/libyang/printer_yang.c.o
+ .libs/libyang/printer_yin.c.o
+ .libs/libyang/resolve.c.o
+ .libs/libyang/tree_data.c.o
+ .libs/libyang/tree_schema.c.o
+ .libs/libyang/validation.c.o
+ .libs/libyang/xml.c.o
+ .libs/libyang/xpath.c.o
+ .libs/libyang/yang_types.c.o)
 
 # Find dependent libraries
 find_library(xml2_location xml2)
@@ -64,7 +95,7 @@ include_directories(
 	${Boost_INCLUDE_DIRS}
 )
 
-add_library(ydk STATIC $<TARGET_OBJECTS:ydk_core> ${libnetconf} ${libyang})
+add_library(ydk STATIC $<TARGET_OBJECTS:ydk_core> ${libnetconf_objs} ${libyang_objs})
 
 target_link_libraries(ydk 
 	${Boost_LIBRARIES}

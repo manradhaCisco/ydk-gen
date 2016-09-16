@@ -23,13 +23,14 @@
 from pyang import statements
 
 from ._types_extractor import TypesExtractor
-from ydkgen.common import YdkGenException, iskeyword
+from ydkgen.common import YdkGenException
 from ydkgen.api_model import Enum, Class, Bits, Package, Property, Deviation
 
 
 class ApiModelBuilder(object):
-    def __init__(self):
+    def __init__(self, iskeyword):
         self.types_extractor = TypesExtractor()
+        self.iskeyword = iskeyword
 
     def generate(self, modules):
         """
@@ -50,13 +51,13 @@ class ApiModelBuilder(object):
         deviation_packages = []
 
         for module in d_modules:
-            package = Package()
+            package = Package(self.iskeyword)
             module.i_package = package
             package.stmt = module
             deviation_packages.append(package)
 
         for module in only_modules:
-            package = Package()
+            package = Package(self.iskeyword)
             module.i_package = package
             package.stmt = module
             self._create_expanded_api_model(module, package, deviation_packages)
@@ -74,7 +75,7 @@ class ApiModelBuilder(object):
         union_type_stmt = self.types_extractor.get_union_type_stmt(s)
 
         if enum_type_stmt is not None:
-            enum_class = Enum()
+            enum_class = Enum(self.iskeyword)
             enum_class.stmt = enum_type_stmt
             enum_type_stmt.parent.i_enum = enum_class
             enum_type_stmt.i_enum = enum_class
@@ -82,7 +83,7 @@ class ApiModelBuilder(object):
             enum_class.owner = pe
 
         if bits_type_stmt is not None:
-            bits_class = Bits()
+            bits_class = Bits(self.iskeyword)
             bits_class.stmt = bits_type_stmt
             bits_type_stmt.parent.i_bits = bits_class
             bits_type_stmt.i_bits = bits_class
@@ -93,7 +94,6 @@ class ApiModelBuilder(object):
             # need to process the type stmts under the union
             for contained_type in union_type_stmt.i_type_spec.types:
                 self._add_enums_and_bits(contained_type, pe)
-
 
     def _resolve_expanded_cross_references(self, element):
         """ Resolves cross references in the api_model Elements.
@@ -146,7 +146,7 @@ class ApiModelBuilder(object):
     def _add_to_deviation_package(self, target, parent_element, deviation_packages):
         i_deviation = target.i_deviation
         for d_type in i_deviation:
-            d_obj = Deviation()
+            d_obj = Deviation(self.iskeyword)
             d_obj.d_type = d_type
             d_obj.d_target = target
             d_obj.owner = parent_element
@@ -165,7 +165,7 @@ class ApiModelBuilder(object):
                     target_package.owned_elements.append(d_obj)
 
     def _add_leaf_leaflist_prop(self, stmt, parent_element):
-        prop = Property()
+        prop = Property(self.iskeyword)
         stmt.i_property = prop
         prop.stmt = stmt
         parent_element.owned_elements.append(prop)
@@ -178,14 +178,14 @@ class ApiModelBuilder(object):
         # then we need to extract this type
         if enum_type is not None and enum_type == stmt.search_one('type'):
                 # we have to create the enum
-                enum_class = Enum()
+                enum_class = Enum(self.iskeyword)
                 enum_class.stmt = enum_type
                 parent_element.owned_elements.append(enum_class)
                 enum_class.owner = parent_element
                 prop.property_type = enum_class
         elif bits_type is not None and bits_type == stmt.search_one('type'):
                 # we have to create the specific subclass of FixedBitsDict
-                bits_class = Bits()
+                bits_class = Bits(self.iskeyword)
                 bits_class.stmt = bits_type
                 parent_element.owned_elements.append(bits_class)
                 bits_class.owner = parent_element
@@ -198,14 +198,14 @@ class ApiModelBuilder(object):
                     contained_union_type = self.types_extractor.get_union_type_stmt(contained_type)
 
                     if contained_enum_type is not None and contained_enum_type == contained_type:
-                        enum_class = Enum()
+                        enum_class = Enum(self.iskeyword)
                         enum_class.stmt = contained_enum_type
                         parent_element.owned_elements.append(enum_class)
                         enum_class.owner = parent_element
                         contained_enum_type.i_enum = enum_class
 
                     if contained_bits_type is not None and contained_bits_type == contained_type:
-                        bits_class = Bits()
+                        bits_class = Bits(self.iskeyword)
                         bits_class.stmt = contained_bits_type
                         parent_element.owned_elements.append(bits_class)
                         bits_class.owner = parent_element
@@ -248,7 +248,7 @@ class ApiModelBuilder(object):
         # identities
         if hasattr(stmt, 'i_identities'):
             for identity_stmt in stmt.i_identities.values():
-                identity_class = Class()
+                identity_class = Class(self.iskeyword)
                 identity_class.stmt = identity_stmt
                 identity_class.owner = parent_element
                 parent_element.owned_elements.append(identity_class)
@@ -266,12 +266,10 @@ class ApiModelBuilder(object):
             if (stmt.keyword == 'input' or stmt.keyword == 'output') and len(stmt.substmts) == 0:
                 pass
             else:
-                clazz = Class()
+                clazz = Class(self.iskeyword)
                 stmt.i_class = clazz
                 clazz.stmt = stmt
 
-                if(iskeyword(stmt.arg)):
-                    clazz.name = clazz.name + '_'
                 parent_element.owned_elements.append(clazz)
                 clazz.owner = parent_element
 
@@ -282,7 +280,7 @@ class ApiModelBuilder(object):
 
                 if not isinstance(parent_element, Package):
                     # create a property along with the class
-                    prop = Property()
+                    prop = Property(self.iskeyword)
                     stmt.i_property = prop
                     prop.stmt = stmt
                     prop.property_type = clazz
@@ -365,7 +363,7 @@ class GroupingClassApiModelBuilder(ApiModelBuilder):
         only_modules = [m for m in modules if m.keyword == 'module']
         packages = []
         for m in only_modules:
-            p = Package()
+            p = Package(self.iskeyword)
             m.i_package = p
             p.stmt = m
             self._create_grouping_class_api_model(m, p)
@@ -467,7 +465,7 @@ class GroupingClassApiModelBuilder(ApiModelBuilder):
         # identities
         if hasattr(stmt, 'i_identities'):
             for identity_stmt in stmt.i_identities.values():
-                identity_class = Class()
+                identity_class = Class(self.iskeyword)
                 identity_class.stmt = identity_stmt
                 identity_class.owner = parent_element
                 parent_element.owned_elements.append(identity_class)
@@ -485,7 +483,7 @@ class GroupingClassApiModelBuilder(ApiModelBuilder):
                     stmt.i_groupings[grouping_name], element)
 
         if stmt.keyword == 'grouping':
-            clazz = Class()
+            clazz = Class(self.iskeyword)
             stmt.i_class = clazz
             clazz.stmt = stmt
             parent_element.owned_elements.append(clazz)
@@ -493,7 +491,7 @@ class GroupingClassApiModelBuilder(ApiModelBuilder):
             element = clazz
 
         elif stmt.keyword == 'container' or stmt.keyword == 'list':
-            clazz = Class()
+            clazz = Class(self.iskeyword)
             stmt.i_class = clazz
             clazz.stmt = stmt
             parent_element.owned_elements.append(clazz)
@@ -502,7 +500,7 @@ class GroupingClassApiModelBuilder(ApiModelBuilder):
 
             if not isinstance(parent_element, Package):
                 # create a property along with the class
-                prop = Property()
+                prop = Property(self.iskeyword)
                 stmt.i_property = prop
                 prop.stmt = stmt
                 prop.property_type = clazz
@@ -510,7 +508,7 @@ class GroupingClassApiModelBuilder(ApiModelBuilder):
                 prop.owner = parent_element
 
         elif stmt.keyword == 'leaf' or stmt.keyword == 'leaf-list':
-            prop = Property()
+            prop = Property(self.iskeyword)
             stmt.i_property = prop
             prop.stmt = stmt
             parent_element.owned_elements.append(prop)
@@ -521,7 +519,7 @@ class GroupingClassApiModelBuilder(ApiModelBuilder):
             if enum_type is not None:
                 if enum_type == stmt.search_one('type'):
                     # we have to create the enum
-                    enum_class = Enum()
+                    enum_class = Enum(self.iskeyword)
                     enum_class.stmt = enum_type
                     parent_element.owned_elements.append(enum_class)
                     enum_class.owner = parent_element
@@ -530,7 +528,7 @@ class GroupingClassApiModelBuilder(ApiModelBuilder):
             elif bits_type is not None:
                 if bits_type == stmt.search_one('type'):
                     # we have to create the specific subclass of FixedBitsDict
-                    bits_class = Bits()
+                    bits_class = Bits(self.iskeyword)
                     bits_class.stmt = bits_type
                     parent_element.owned_elements.append(bits_class)
                     bits_class.owner = parent_element
@@ -557,10 +555,10 @@ class GroupingClassApiModelBuilder(ApiModelBuilder):
 
 
 class SubModuleBuilder(object):
-    def generate(self, submodules):
+    def generate(self, submodules, iskeyword):
         packages = []
         for sub in submodules:
-            package = Package()
+            package = Package(iskeyword)
             sub.i_package = package
             package.stmt = sub
             packages.append(package)

@@ -17,7 +17,7 @@ class A : public Entity
         ~A();
 
         bool has_data() const;
-        EntityPath get_entity_path(ydk::Entity* parent) const;
+        EntityPath get_entity_path(Entity* parent) const;
         std::string get_segment_path() const;
         Entity* set_child(std::string path);
         void set_value(std::string value_path, std::string value);
@@ -40,7 +40,7 @@ class A : public Entity
             ~B();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -61,7 +61,7 @@ class A : public Entity
                 ~C();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -85,7 +85,7 @@ class A : public Entity
                 ~D();
 
                 bool has_data() const;
-                EntityPath get_entity_path(ydk::Entity* parent) const;
+                EntityPath get_entity_path(Entity* parent) const;
                 std::string get_segment_path() const;
                 Entity* set_child(std::string path);
                 void set_value(std::string value_path, std::string value);
@@ -106,7 +106,7 @@ class A : public Entity
                     ~E();
 
                     bool has_data() const;
-                    EntityPath get_entity_path(ydk::Entity* parent) const;
+                    EntityPath get_entity_path(Entity* parent) const;
                     std::string get_segment_path() const;
                     Entity* set_child(std::string path);
                     void set_value(std::string value_path, std::string value);
@@ -149,7 +149,7 @@ class A : public Entity
             ~Lst();
 
             bool has_data() const;
-            EntityPath get_entity_path(ydk::Entity* parent) const;
+            EntityPath get_entity_path(Entity* parent) const;
             std::string get_segment_path() const;
             Entity* set_child(std::string path);
             void set_value(std::string value_path, std::string value);
@@ -174,6 +174,7 @@ class A : public Entity
 
 
 }; // A
+
 
 
 }

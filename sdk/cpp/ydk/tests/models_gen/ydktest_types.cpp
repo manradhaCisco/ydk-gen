@@ -1,7 +1,7 @@
 
 #include <sstream>
 #include <iostream>
-#include "ydktest_types.h"
+#include "ydktest_types.hpp"
 
 namespace ydk {
 namespace ydktest_types {
@@ -14,6 +14,7 @@ Ydk_IdentityIdentity::Ydk_IdentityIdentity()
 Ydk_IdentityIdentity::~Ydk_IdentityIdentity()
 {
 }
+
 
 
 }

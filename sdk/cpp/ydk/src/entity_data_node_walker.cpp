@@ -28,8 +28,6 @@ core::DataNode* get_data_node_from_entity(Entity & entity, const ydk::core::Root
 
 void get_entity_from_data_node(core::DataNode * node, Entity* entity)
 {
-//	cerr<<endl;
-//	cerr<<"Looking at "<<node->path()<<endl;
 	if (entity == nullptr || node == nullptr)
 		return;
 
@@ -38,16 +36,13 @@ void get_entity_from_data_node(core::DataNode * node, Entity* entity)
 		std::string path = strip_keys(child_data_node->path());
 		if(data_node_is_leaf(child_data_node))
 		{
-//			cerr<<"Setting value: "<<child_data_node->get()<<" to: "<<path<<endl;
 			entity->set_value(path, child_data_node->get());
 		}
 		else
 		{
-//			cerr<<"Setting child: "<<path<<endl;
 			Entity * child_entity = entity->set_child(path);
 			if(child_entity == nullptr)
 			    cerr << "Couln't find child entity!"<<endl;
-//			cerr<<endl;
 			get_entity_from_data_node(child_data_node, child_entity);
 		}
 	}
@@ -121,7 +116,7 @@ validate_missing_keys(const EntityPath& entity_path,
     for(auto value_path : entity_path.value_paths) {
         name_value_map.insert(value_path);
     }
-        
+
     //we need a key
     for(auto key : keys) {
         //check if the value list has the value's
@@ -132,7 +127,7 @@ validate_missing_keys(const EntityPath& entity_path,
             diagnostic.attrs.push_back(std::move(attr));
         }
     }
-    
+
 }
 
 static void
@@ -154,7 +149,7 @@ validate_attributes(const EntityPath& entity_path, const ydk::core::SchemaNode& 
             ydk::core::SchemaNode* leaf_schema_node = leaf_schema_node_list[0];
             //now test to see if the value is correct
             ydk::core::SchemaValueType* type = leaf_schema_node->type();
-            
+
             if(type == nullptr) {
                 //TODO log this
                 throw YDKIllegalStateException{"Cannot derive type for "};
@@ -164,12 +159,9 @@ validate_attributes(const EntityPath& entity_path, const ydk::core::SchemaNode& 
                     attr.source = value_path.first;
                     diagnostic.attrs.push_back(std::move(attr));
                 }
-                
             }
-            
         }
     }
-    
 }
 
 static bool
@@ -177,46 +169,46 @@ keyword_is_leaf(std::string & keyword)
 {
     if(keyword == "leaf" || keyword == "leaf-list" || keyword == "anyxml")
         return true;
-        
+
     return false;
 }
-    
+
 static EntityDiagnostic
 validate(const ydk::core::ServiceProvider& sp, ydk::Entity& entity, ydk::Entity* parent,
              ydk::ValidationService::Option option)
 {
-   
+
     EntityPath entity_path = entity.get_entity_path(parent);
-    
+
     //validation checking
     //first check if the schema node that represents this path
     //actually exists and then throw an error
-    
+
     auto root_schema_node = sp.get_root_schema();
     auto schema_node_list = root_schema_node->find(entity_path.path);
-    
+
     EntityDiagnostic diagnostic{};
     diagnostic.source = &entity;
-    
+
     if(schema_node_list.empty()) {
         diagnostic.errors.push_back(ydk::core::ValidationError::SCHEMA_NOT_FOUND);
         //no point processing children
         return diagnostic;
-        
+
     }
-        
+
     //schema node cannot be leaf, leaf-list or anyxml
     ydk::core::SchemaNode* schema_node = schema_node_list[0];
     auto stmt = schema_node->statement();
     if(keyword_is_leaf(stmt.keyword)) {
         diagnostic.errors.push_back(ydk::core::ValidationError::INVALID_USE_OF_SCHEMA);
-            
+
     } else {
         // there is no error with the schema for this node
         // first check if is a list
-            
+
         if(option == ValidationService::Option::EDIT_CONFIG || option == ValidationService::Option::DATASTORE) {
-            
+
             if(stmt.keyword == "list") {
                 auto keys = schema_node->keys();
                 if(!keys.empty()) {
@@ -224,26 +216,51 @@ validate(const ydk::core::ServiceProvider& sp, ydk::Entity& entity, ydk::Entity*
                 }
             }
             ydk::validate_attributes(entity_path, *schema_node, diagnostic);
-            
+
         }
     }
-    
+
     for(auto child_entity : entity.get_children()){
         EntityDiagnostic child_diagnostic = validate(sp, *child_entity, &entity, option);
         diagnostic.children.push_back(child_diagnostic);
     }
-    
+
     return diagnostic;
-    
+
 }
-    
+
+ValidationService::ValidationService()
+{
+
+}
+
+ValidationService::~ValidationService()
+{
+
+}
+
 EntityDiagnostic
 ValidationService::validate(const core::ServiceProvider& sp, Entity& entity,
                             ValidationService::Option option)
 {
-        
+
     return ydk::validate(sp, entity, entity.parent, option);
-        
+
 }
+
+bool EntityDiagnostic::has_errors()
+{
+	if(!errors.empty() || !attrs.empty()){
+		return true;
+	}
+
+	for(auto c : children) {
+		if(c.has_errors()){
+			return true;
+		}
+	}
+	return false;
+}
+
 
 }

@@ -22,7 +22,7 @@
 
 from ydkgen.api_model import Class, Enum, Package, Bits
 from ydkgen.builder import TypesExtractor
-from ydkgen.common import iskeyword, snake_case
+from ydkgen.common import ispythonkeyword, snake_case
 from ydkgen.printer import meta_data_util
 from pyang.types import IntTypeSpec, StringTypeSpec, UnionTypeSpec, PathTypeSpec, \
         RangeTypeSpec, BooleanTypeSpec, BinaryTypeSpec, EmptyTypeSpec, \
@@ -484,7 +484,7 @@ class TestCasePrinter(object):
 
 def get_obj_name(clazz):
     obj_name = snake_case(clazz.qn())
-    if iskeyword(obj_name):
+    if ispythonkeyword(obj_name):
         obj_name = '%s_' % obj_name
     return obj_name
 
