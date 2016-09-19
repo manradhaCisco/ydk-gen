@@ -15,12 +15,12 @@
 # ------------------------------------------------------------------
 
 """
-  meta_data_util.py 
-  
+  meta_data_util.py
+
   YANG model driven API, python emitter.
 """
 
-from ydkgen.api_model import Class, Enum, Bits
+from ydkgen.api_model import Bits, Class, Enum, Package
 from ydkgen.builder import TypesExtractor
 from ydkgen.common import convert_to_reStructuredText, get_module_name
 from pyang import types
@@ -253,9 +253,7 @@ def get_meta_info_data(prop, property_type, type_stmt, language, identity_subcla
     elif isinstance(property_type, Bits):
         meta_info_data.pmodule_name = "'%s'" % property_type.get_py_mod_name()
         meta_info_data.clazz_name = "'%s'" % property_type.qn()
-        meta_info_data.doc_link = get_class_crossref_tag(property_type.name,
-                                                         property_type,
-                                                         language)
+        meta_info_data.doc_link = get_bits_doc_link(property_type, language)
         meta_info_data.mtype = 'REFERENCE_BITS'
         if prop.is_many:
             meta_info_data.mtype = 'REFERENCE_LEAFLIST'
@@ -537,8 +535,52 @@ def get_class_crossref_tag(name, named_element, language):
         return template % (name,
                            named_element.get_py_mod_name(),
                            named_element.qn())
-    else:
+    elif language == 'cpp':
         template = get_tag_template('cpp', 'class', True)
         return template % (name,
                            named_element.qualified_cpp_name())
 
+
+def get_bits_class_docstring(bitz):
+    bitz_description = []
+    if bitz.comment is not None:
+        for line in bitz.comment.split('\n'):
+            bitz_description.append(convert_to_reStructuredText(line))
+    bitz_description.append('\n\t**Bits positions\:**\n')
+    for pos, name in enumerate(bitz._dictionary):
+        bitz_description.append("\t\t%s\: %s\n" % (name, pos))
+
+    return ''.join(bitz_description)
+
+
+def get_bits_doc_link(bitz, language):
+    if language == 'py':
+        return get_class_crossref_tag(bitz.name, bitz, language)
+    elif language == 'cpp':
+        return '``ydk::Value``\n\t%s' % get_bits_class_docstring(bitz)
+
+
+def get_langage_spec_tags(named_element, language):
+    tags = []
+    if language == 'py':
+        if isinstance(named_element, Package):
+            tags.append(get_py_module_tag(named_element))
+        else:
+            tags.append(get_py_currentmodule_tag(named_element))
+    return tags
+
+def get_class_bases(clazz, language):
+    bases = []
+    if language == 'py':
+        bases.append(':class:`object`')
+    if isinstance(clazz, Enum):
+        base_tag = get_primitive_type_tag('Enum', language)
+    elif clazz.is_identity():
+        base_tag = get_primitive_type_tag('Identity', language)
+    else:
+        base_tag = get_class_crossref_tag(clazz.name, clazz, language)
+    bases.append(base_tag)
+    if hasattr(clazz, 'extends'):
+        for item in clazz.extends:
+            base_tag = get_class_crossref_tag(item.name, item, language)
+    return bases

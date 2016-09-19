@@ -112,7 +112,7 @@ class ClassMetaPrinter(object):
         module_name = "%s" % get_module_name(clazz.stmt)
         self.ctx.writeln("'%s'," % module_name)
         self.ctx.writeln("'%s'," % clazz.stmt.arg)
-        if clazz.is_grouping_contribution():
+        if clazz.is_grouping():
             self.ctx.writeln('None,')
         else:
             self.ctx.writeln("_yang_ns._namespaces['%s']," % module_name)

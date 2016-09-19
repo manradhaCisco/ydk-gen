@@ -23,7 +23,7 @@ from __future__ import print_function
 
 import os
 
-from ydkgen.api_model import Class, Enum
+from ydkgen.api_model import Bits, Class, Enum
 from ydkgen.common import get_rst_file_name
 
 from .deviation_printer import DeviationPrinter
@@ -106,7 +106,9 @@ class PythonBindingsPrinter(LanguageBindingsPrinter):
                             _EmitArgs(self.ypy_ctx, named_element, self.identity_subclasses))
 
             for owned_element in named_element.owned_elements:
-                if isinstance(owned_element, Class) or isinstance(owned_element, Enum):
+                if any((isinstance(owned_element, Bits),
+                        isinstance(owned_element, Class),
+                        isinstance(owned_element, Enum))):
                     _walk_n_print(owned_element, p)
 
         _walk_n_print(package, self.ydk_doc_dir)
