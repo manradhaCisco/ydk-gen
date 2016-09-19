@@ -21,12 +21,15 @@ doc_printer.py
 Print rst documents for the generated Python api
 """
 
-from ydkgen.api_model import Class, Enum, Package
+from ydkgen.api_model import Bits, Class, Enum, Package
 from ydkgen.common import get_rst_file_name
-from ydkgen.printer.meta_data_util import (get_class_crossref_tag,
+from ydkgen.printer.meta_data_util import (get_bits_class_docstring,
+                                           get_class_bases,
+                                           get_class_crossref_tag,
                                            get_class_docstring,
                                            get_class_tag,
                                            get_enum_class_docstring,
+                                           get_langage_spec_tags,
                                            get_primitive_type_tag,
                                            get_py_module_tag,
                                            get_py_currentmodule_tag,
@@ -42,7 +45,9 @@ class DocPrinter(object):
         self.identity_subclasses = identity_subclasses
         self.lines = []
 
-        if isinstance(named_element, Enum):
+        if isinstance(named_element, Bits):
+            self._print_bits_rst(named_element)
+        elif isinstance(named_element, Enum):
             self._print_enum_rst(named_element)
         elif isinstance(named_element, Class):
             self._print_class_rst(named_element)
@@ -72,6 +77,14 @@ class DocPrinter(object):
         self._append('%s\n' % package.name)
         if package.comment is not None:
             self._append(package.comment)
+
+    def _print_bits_rst(self, bitz):
+        if self.lang != 'py':
+            return
+        self._print_header(bitz)
+        self.ctx.lvl_inc()
+        self._print_docstring(bitz, get_bits_class_docstring(bitz))
+        self.ctx.lvl_dec()
 
     def _print_class_rst(self, clazz):
         self._print_header(clazz)
@@ -115,14 +128,8 @@ class DocPrinter(object):
             self._print_toctree(named_element.owned_elements)
 
         # Tagging
-        tags = []
-        if isinstance(named_element, Package):
-            if self.lang == 'py':
-                tags.append(get_py_module_tag(named_element))
-        else:
-            if self.lang == 'py':
-                tags.append(get_py_currentmodule_tag(named_element))
-            tags.append(get_class_tag(named_element, self.lang))
+        tags = get_langage_spec_tags(named_element, self.lang)
+        tags.append(get_class_tag(named_element, self.lang))
         self._extend(tags)
 
     def _print_title(self, title):
@@ -138,7 +145,9 @@ class DocPrinter(object):
         if not is_package:
             elements.reverse()
             for elem in elements:
-                if isinstance(elem, Class) or isinstance(elem, Enum):
+                if any((isinstance(elem, Class),
+                        isinstance(elem, Enum),
+                        isinstance(elem, Bits) and self.lang == 'py')):
                     self._append('%s <%s>' % (elem.name, get_rst_file_name(elem)))
         else:
             for elem in elements:
@@ -148,7 +157,7 @@ class DocPrinter(object):
         self.ctx.lvl_dec()
 
     def _print_bases(self, clazz):
-        bases = _get_class_bases(clazz, self.lang)
+        bases = get_class_bases(clazz, self.lang)
         if bases:
             self._append('Bases: %s\n' % (', '.join(bases)))
 
@@ -189,24 +198,8 @@ class DocPrinter(object):
     def _print_class_config_method(self):
         self._append('.. method:: is_config()\n')
         self.ctx.lvl_inc()
-        self._append("Returns True if this instance \
-            represents config data else returns False")
+        self._append("Returns True if this instance "
+                     "represents config data else returns False")
         self.ctx.lvl_dec()
         self._append('\n')
-
-
-def _get_class_bases(clazz, language):
-    # check is clazz is enum class or identity class
-    bases = []
-    if isinstance(clazz, Enum):
-        base_tag = get_primitive_type_tag('Enum', language)
-    elif clazz.is_identity():
-        base_tag = get_primitive_type_tag('Identity', language)
-    else:
-        base_tag = get_class_crossref_tag(clazz.name, clazz, language)
-    bases.append(base_tag)
-    if hasattr(clazz, 'extends'):
-        for item in clazz.extends:
-            base_tag = get_class_crossref_tag(item.name, item, language)
-    return bases
 

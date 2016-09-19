@@ -599,9 +599,9 @@ class Bits(DataType):
         while leaf_or_typedef.parent is not None and not leaf_or_typedef.keyword in ('leaf', 'leaf-list', 'typedef'):
             leaf_or_typedef = leaf_or_typedef.parent
 
-        name = '%s_Bits' % camel_case(leaf_or_typedef.arg)
+        name = '%sBits' % camel_case(leaf_or_typedef.arg)
         if self.iskeyword(name):
-            name = '%s_' % name
+            name = '%s' % name
         self.name = name
 
         desc = stmt.search_one('description')
