@@ -65,19 +65,20 @@ set(libydk_install_headers src/netconf_provider.hpp
                            src/service.hpp
                            src/validation_service.hpp)
 
-add_library(ydk_core OBJECT ${libydk_src} ${libydk_headers})
-set_property(TARGET ydk_core PROPERTY CXX_STANDARD 14)
-set_property(TARGET ydk_core PROPERTY CXX_STANDARD_REQUIRED ON)
+set(Boost_USE_STATIC_LIBS        OFF)
+set(Boost_USE_MULTITHREADED      ON)
+set(Boost_USE_STATIC_RUNTIME     OFF)
+set(BOOST_ALL_DYN_LINK           ON)   # force dynamic linking for all libraries
 
 # Find dependent libraries
-SET(Boost_USE_STATIC_LIBS ON)
+#SET(Boost_USE_STATIC_LIBS ON)
 find_library(xml2_location xml2)
 find_library(curl_location curl)
 find_library(ssh_threads_location ssh_threads)
 find_library(xslt_location xslt)
 find_library(pcre_location pcre)
 find_package(BOOST REQUIRED)
-find_package(Boost COMPONENTS system filesystem log REQUIRED)
+find_package(Boost COMPONENTS log_setup log thread date_time system filesystem REQUIRED)
 find_package(LibSSH REQUIRED)
 find_package(LibYANG REQUIRED)
 find_package(LibNetconf REQUIRED)
@@ -121,20 +122,30 @@ foreach(libyang_obj IN LISTS LIBYANG_OBJS)
      list(APPEND libyang_inc_objs libyang_objs/${libyang_obj})
 endforeach(libyang_obj)
 
+add_library(ydk_core OBJECT ${libydk_src} ${libydk_headers})
+set_property(TARGET ydk_core PROPERTY CXX_STANDARD 14)
+set_property(TARGET ydk_core PROPERTY CXX_STANDARD_REQUIRED ON)
+target_compile_definitions(ydk_core PRIVATE "BOOST_ALL_DYN_LINK=1")
+target_compile_definitions(ydk_core PRIVATE "BOOST_LOG_DYN_LINK=1")
+
+
+
 add_library(ydk STATIC $<TARGET_OBJECTS:ydk_core> ${libnetconf_inc_objs} ${libyang_inc_objs})
+target_compile_definitions(ydk PRIVATE "BOOST_ALL_DYN_LINK=1")
+target_compile_definitions(ydk PRIVATE "BOOST_LOG_DYN_LINK=1")
 
 target_link_libraries(ydk 
-	${Boost_LIBRARIES}
+        ${Boost_LOG_SETUP_LIBRARY}
+        ${Boost_LOG_LIBRARY}
+        ${BOOST_THREAD_LIBRARY}
+        ${BOOST_DATE_TIME_LIBRARY}
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
-        ${Boost_LOG_LIBRARY}
-	${netconf_location}
 	${xml2_location}
 	${curl_location}
 	${ssh_threads_location}
         ${pcre_location}
 	${xslt_location}
-        ${LIBYANG_LIBRARIES}
         ${LIBSSH_LIBRARIES}
 )
 

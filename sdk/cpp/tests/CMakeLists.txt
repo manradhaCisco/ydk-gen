@@ -13,7 +13,7 @@ find_library(ssh_threads_location ssh_threads)
 find_library(pcre_location pcre)
 find_library(xslt_location xslt)
 find_library(ydk_openconfig_location ydk_openconfig)
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost REQUIRED COMPONENTS log filesystem system unit_test_framework)
 find_package(LibYDK REQUIRED)
 
 set(BOOST_INCLUDE_DIRS $boost_installation_prefix/include)
@@ -46,6 +46,9 @@ foreach(test_name IN LISTS netconf_tests)
         ${LIBYDK_LIBRARIES}
         ${ydk_openconfig_location}
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+        ${Boost_FILESYSTEM_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+        ${Boost_LOG_LIBRARY}
     )
 
     add_test(NAME ${test_name} COMMAND $<TARGET_FILE:${test_name}>)
