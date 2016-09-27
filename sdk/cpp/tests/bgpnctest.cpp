@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE( bgp_netconf_create  )
 {
     ydk::core::Repository repo{};
     
-    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  2022};
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
 
     BOOST_REQUIRE(schema != nullptr);

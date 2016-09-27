@@ -70,7 +70,6 @@ class ClassConstructorPrinter(object):
         if len(leafs) > 0:
             self.ctx.writeln(': \n\t%s' % ',\n\t '.join('%s{YType::%s, "%s"}' % (prop.name, get_type_name(prop.property_type), prop.stmt.arg) for prop in leafs))
         children_init = ''
-        parent_init = ''
         if len(leafs) > 0:
             children_init = ', '
         else:
@@ -79,12 +78,6 @@ class ClassConstructorPrinter(object):
         children_init += '\t%s' % (',\n '.join('\t%s(std::make_unique<%s>())' % (prop.name, prop.property_type.qualified_cpp_name()) for prop in chs))
         if len(chs) > 0:
             self.ctx.writeln('%s' % (children_init))
-        if len(chs) > 0 or len(leafs) > 0:
-            parent_init = ', '
-        if len(chs) == 0 and len(leafs) == 0:
-            parent_init = ': '
-        parent_init += 'parent(nullptr)'
-        self.ctx.writeln('%s' % parent_init)
 
 
 def get_type_name(prop_type):

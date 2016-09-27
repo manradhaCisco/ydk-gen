@@ -22,10 +22,12 @@
 
 #include "../ydk/src/netconf_provider.hpp"
 #include "../ydk/src/crud_service.hpp"
-#include "ydk_openconfig/openconfig_bgp.hpp"
+#include "ydk_ydktest/openconfig_bgp.hpp"
 
 using namespace ydk;
 using namespace std;
+
+#define MODELS_DIR "/Users/abhirame/Cisco/003/ydk-gen/sdk/cpp/ydk/tests/models"
 
 
 void config_bgp(openconfig_bgp::Bgp* bgp)
@@ -60,13 +62,14 @@ void config_bgp(openconfig_bgp::Bgp* bgp)
 	peer_group->config->peer_as = 65001;
 	peer_group->config->local_as = 65001;
 	peer_group->config->peer_type = "INTERNAL";
+    peer_group->parent = bgp->peer_groups.get();
 	bgp->peer_groups->peer_group.push_back(move(peer_group));
 }
 
 BOOST_AUTO_TEST_CASE(bgp_create_delete)
 {
-	ydk::core::Repository repo{};
-	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 2022};
+	ydk::core::Repository repo{MODELS_DIR};
+	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
 	CrudService crud{};
 	auto bgp = make_unique<openconfig_bgp::Bgp>();
 	bool reply = crud.delete_(provider, *bgp);
@@ -79,8 +82,8 @@ BOOST_AUTO_TEST_CASE(bgp_create_delete)
 
 BOOST_AUTO_TEST_CASE(bgp_read_delete)
 {
-	ydk::core::Repository repo{};
-	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 2022};
+	ydk::core::Repository repo{MODELS_DIR};
+	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
 	CrudService crud{};
 	auto bgp_set = make_unique<openconfig_bgp::Bgp>();
 	bool reply = crud.delete_(provider, *bgp_set);
@@ -104,20 +107,38 @@ BOOST_AUTO_TEST_CASE(bgp_read_delete)
 	BOOST_CHECK_EQUAL(bgp_set->global->afi_safis->afi_safi[0]->config->afi_safi_name, bgp_read_ptr->global->afi_safis->afi_safi[0]->config->afi_safi_name);
 
 //	cerr<<bgp_set->global->afi_safis->afi_safi[0]->config->enabled<<","<<bgp_read_ptr->global->afi_safis->afi_safi[0]->config->enabled<<endl;
-//	res &= string(bgp_set->global->afi_safis->afi_safi[0]->config->enabled)  == string(bgp_read_ptr->global->afi_safis->afi_safi[0]->config->enabled);
-//	BOOST_REQUIRE(res==1);
+//	reply = reply && string(bgp_set->global->afi_safis->afi_safi[0]->config->enabled)  == string(bgp_read_ptr->global->afi_safis->afi_safi[0]->config->enabled);
+//	BOOST_REQUIRE(reply);
 }
 
 BOOST_AUTO_TEST_CASE(bgp_update_delete)
 {
-	ydk::core::Repository repo{};
-	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 2022};
+	ydk::core::Repository repo{MODELS_DIR};
+	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
 	CrudService crud{};
 	auto bgp = make_unique<openconfig_bgp::Bgp>();
 	bool reply = crud.delete_(provider, *bgp);
 	BOOST_REQUIRE(reply);
 
 	config_bgp(bgp.get());
+	reply = crud.create(provider, *bgp);
+	BOOST_REQUIRE(reply);
+
+	auto bgp_update = make_unique<openconfig_bgp::Bgp>();
+	bgp_update->global->config->as = 65210;
+	reply = crud.update(provider, *bgp_update);
+	BOOST_REQUIRE(reply);
+}
+
+BOOST_AUTO_TEST_CASE(bgp_set_leaf)
+{
+	ydk::core::Repository repo{MODELS_DIR};
+	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
+	CrudService crud{};
+	auto bgp = make_unique<openconfig_bgp::Bgp>();
+	bool reply = crud.delete_(provider, *bgp);
+	BOOST_REQUIRE(reply);
+
 	bgp->global->config->as = 65210;
 	reply = crud.update(provider, *bgp);
 	BOOST_REQUIRE(reply);

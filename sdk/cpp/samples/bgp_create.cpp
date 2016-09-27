@@ -14,11 +14,13 @@
  limitations under the License.
 ------------------------------------------------------------------*/
 #include <iostream>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
 
 #include "ydk/netconf_provider.hpp"
 #include "ydk/crud_service.hpp"
-#include "ydk_openconfig/openconfig_bgp.hpp"
-#include "ydk_openconfig/openconfig_bgp_types.hpp"
+#include "ydk_ydktest/openconfig_bgp.hpp"
+#include "ydk_ydktest/openconfig_bgp_types.hpp"
 
 #include "args_parser.h"
 
@@ -33,13 +35,12 @@ void config_bgp(openconfig_bgp::Bgp* bgp)
 	bgp->global->config->as = 65001;
 	bgp->global->config->router_id = "1.2.3.4";
 
-        /*auto afi_safi = 
-         * make_unique<openconfig_bgp::Bgp::Global::AfiSafis::AfiSafi>();
+	auto afi_safi = make_unique<openconfig_bgp::Bgp::Global::AfiSafis::AfiSafi>();
 	afi_safi->afi_safi_name = openconfig_bgp_types::L3Vpn_Ipv4_UnicastIdentity();
 	afi_safi->config->afi_safi_name = openconfig_bgp_types::L3Vpn_Ipv4_UnicastIdentity();
 	afi_safi->config->enabled = false;
 	afi_safi->parent = bgp->global->afi_safis.get();
-	bgp->global->afi_safis->afi_safi.push_back(move(afi_safi));*/
+	bgp->global->afi_safis->afi_safi.push_back(move(afi_safi));
 
 	auto neighbor = make_unique<openconfig_bgp::Bgp::Neighbors::Neighbor>();
 	neighbor->neighbor_address = "6.7.8.9";
@@ -49,6 +50,7 @@ void config_bgp(openconfig_bgp::Bgp* bgp)
 	neighbor->config->local_as = 65001;
 	neighbor->config->peer_group = "IBGP";
 	neighbor->config->peer_type = "INTERNAL";
+	//neighbor->config->remove_private_as = openconfig_bgp_types::Remove_Private_As_OptionIdentity();
 	neighbor->parent = bgp->neighbors.get();
 	bgp->neighbors->neighbor.push_back(move(neighbor));
 
@@ -60,12 +62,17 @@ void config_bgp(openconfig_bgp::Bgp* bgp)
 	peer_group->config->peer_as = 65001;
 	peer_group->config->local_as = 65001;
 	peer_group->config->peer_type = "INTERNAL";
+	//peer_group->config->remove_private_as = openconfig_bgp_types::Remove_Private_As_OptionIdentity();
 	peer_group->parent = bgp->peer_groups.get();
 	bgp->peer_groups->peer_group.push_back(move(peer_group));
 }
 
 int main(int argc, char* argv[])
 {
+	boost::log::core::get()->set_filter(
+		        boost::log::trivial::severity >= boost::log::trivial::debug
+		    );
+
 	vector<string> args = parse_args(argc, argv);
 	if(args.empty()) return 1;
 	string host, username, password;

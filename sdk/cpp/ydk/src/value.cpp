@@ -25,6 +25,8 @@
 //
 //////////////////////////////////////////////////////////////////
 
+#include <boost/log/trivial.hpp>
+
 #include <iostream>
 
 #include "core.hpp"
@@ -35,7 +37,6 @@ namespace ydk {
 
 static std::string get_bits_string(const std::map<std::string, bool> & bitmap);
 static std::string get_bool_string(const std::string & value);
-static std::string trim_last_character(std::string value);
 
 std::string to_str(YType t)
 {
@@ -123,11 +124,13 @@ const std::string  Value::get() const
 	{
 		return get_bits_string(bitmap);
 	}
+	BOOST_LOG_TRIVIAL(trace) <<"Returning value "<<value<<" for leaf "<<name;
 	return value;
 }
 
 std::pair<std::string, std::string> Value::get_name_value() const
 {
+	BOOST_LOG_TRIVIAL(trace) <<name<<" : "<<get();
 	return {name, get()};
 }
 
@@ -136,7 +139,7 @@ void Value::operator = (uint8 val)
 	value_buffer.clear();
 	value_buffer.str("");
 	value_buffer << val;
-//	std::cerr<<"uint8"<<std::endl;
+	BOOST_LOG_TRIVIAL(trace)<<"setting uint8";
 	store_value();
 }
 
@@ -145,7 +148,7 @@ void Value::operator = (uint32 val)
 	value_buffer.clear();
 	value_buffer.str("");
 	value_buffer << val;
-//	std::cerr<<"uint32"<<std::endl;
+	BOOST_LOG_TRIVIAL(trace)<<"setting uint32: "<<val;
 	store_value();
 }
 
@@ -154,7 +157,7 @@ void Value::operator = (uint64 val)
 	value_buffer.clear();
 	value_buffer.str("");
 	value_buffer << val;
-	std::cerr<<"uint64"<<std::endl;
+	BOOST_LOG_TRIVIAL(trace)<<"setting uint64";
 	store_value();
 }
 
@@ -163,7 +166,7 @@ void Value::operator = (int8 val)
 	value_buffer.clear();
 	value_buffer.str("");
 	value_buffer << val;
-//	std::cerr<<"int8"<<std::endl;
+	BOOST_LOG_TRIVIAL(trace)<<"setting int8";
 	store_value();
 }
 
@@ -174,14 +177,17 @@ void Value::operator = (int32 val)
 	if(is_enum())
 	{
 		if(enum_to_string_func == nullptr)
+		{
+			BOOST_LOG_TRIVIAL(error)<<"Enum to string function not set for " << name ;
 			throw YDKException("Enum to string function not set for " + name);
+		}
 		value_buffer << enum_to_string_func(val);
 	}
 	else
 	{
 		value_buffer << val;
 	}
-//	std::cerr<<"int32"<<std::endl;
+	BOOST_LOG_TRIVIAL(trace)<<"setting int32";
 	store_value();
 }
 
@@ -195,7 +201,7 @@ void Value::operator = (int64 val)
 	value_buffer.clear();
 	value_buffer.str("");
 	value_buffer << val;
-//	std::cerr<<"int64"<<std::endl;
+	BOOST_LOG_TRIVIAL(trace)<<"setting int64";
 	store_value();
 }
 
@@ -204,7 +210,7 @@ void Value::operator = (Empty val)
 	value_buffer.clear();
 	value_buffer.str("");
 	value_buffer << name;
-//	std::cerr<<"empty"<<std::endl;
+	BOOST_LOG_TRIVIAL(trace)<<"setting empty";
 	store_value();
 }
 
@@ -219,15 +225,9 @@ void Value::operator = (std::string val)
 	value_buffer.clear();
 	value_buffer.str("");
 	value_buffer << val;
+	BOOST_LOG_TRIVIAL(trace)<<"setting string: "<<val;
 	store_value();
 }
-
-//void Value::operator = (bool val)
-//{
-//	value_buffer << val;
-//	std::cerr<<"bools"<<std::endl;
-//	store_value();
-//}
 
 void Value::store_value()
 {
@@ -240,8 +240,8 @@ void Value::store_value()
 	{
 		value = value_buffer.str();
 	}
-//	std::cerr<<"stoing "<<value<<std::endl;
-//	std::cerr<<to_str(type)<<">>-----<<"<<std::endl;
+	BOOST_LOG_TRIVIAL(trace)<<"storing "<<value;
+	BOOST_LOG_TRIVIAL(trace)<<"type of leaf: "<<to_str(type);
 }
 
 Value::operator std::string() const
@@ -293,16 +293,9 @@ std::string get_bits_string(const std::map<std::string, bool> & bitmap)
 			value += entry.first + " ";
 		}
 	}
+    BOOST_LOG_TRIVIAL(trace)<<value<<": value of bits";
 
 	return (value);
 }
 
-static std::string trim_last_character(std::string value)
-{
-	if(value.size() > 0)
-	{
-		value.erase(value.size() - 1);
-	}
-	return value;
-}
 }

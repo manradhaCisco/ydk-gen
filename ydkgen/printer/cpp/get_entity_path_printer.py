@@ -92,7 +92,8 @@ class GetEntityPathPrinter(object):
                 parents = []
                 p = clazz
                 while p is not None and not isinstance(p, Package):
-                    parents.append(p)
+                    if p != clazz:
+                        parents.append(p)
                     p = p.owner
 
                 parents.reverse()
@@ -108,8 +109,10 @@ class GetEntityPathPrinter(object):
                             path += p.stmt.i_module.arg
                             path += ':'
                         path += p.stmt.arg
-
-                self.ctx.writeln('path_buffer << "%s";' % path)
+                slash = ""
+                if len(path) > 0:
+                    slash = "/"
+                self.ctx.writeln('path_buffer << "%s%s" << get_segment_path();' % (path, slash))
 
             self.ctx.lvl_dec()
             self.ctx.writeln('} else { ')
@@ -151,11 +154,19 @@ class GetEntityPathPrinter(object):
             self.ctx.writeln('path_buffer << p1->get_segment_path();')  
             self.ctx.lvl_dec()
             self.ctx.writeln('}')
+            self.ctx.writeln('if(p)')
+            self.ctx.lvl_inc()
+            self.ctx.writeln('path_buffer << "/";')
+            self.ctx.lvl_dec()
+            self.ctx.writeln('path_buffer<<this->get_segment_path();')
 
             self.ctx.lvl_dec()
             self.ctx.writeln('}')
        
-        self.ctx.writeln('std::vector<std::pair<std::string, std::string> > leaf_name_values {%s};' % (', '.join('%s.get_name_value()' % (prop.name) for prop in leafs if not prop.is_many)))
+        self.ctx.writeln('std::vector<std::pair<std::string, std::string> > leaf_name_values {};')
+        for prop in leafs:
+            if not prop.is_many:
+                self.ctx.writeln('if (%s.is_set) leaf_name_values.push_back(%s.get_name_value());' % (prop.name, prop.name))
         self._print_get_ydk_path_leaflists(leafs)
         self.ctx.writeln('EntityPath entity_path {path_buffer.str(), leaf_name_values};')
         self.ctx.writeln('return entity_path;')
@@ -166,7 +177,7 @@ class GetEntityPathPrinter(object):
             self.ctx.writeln('for( const Value & leaf : %s )' % leaf.name)
             self.ctx.writeln('{')
             self.ctx.lvl_inc()
-            self.ctx.writeln('leaf_name_values.push_back(leaf.get_name_value());')
+            self.ctx.writeln('if (leaf.is_set) leaf_name_values.push_back(leaf.get_name_value());')
             self.ctx.lvl_dec()
             self.ctx.writeln('}')
 
@@ -234,7 +245,6 @@ class GetSegmentPathPrinter(object):
         key_props = clazz.get_key_props()
         for key_prop in key_props:
             predicates += insert_token
-            property_type = key_prop.property_type
             
             predicates += '"['
             if key_prop.stmt.i_module.arg != clazz.stmt.i_module.arg:
@@ -243,8 +253,7 @@ class GetSegmentPathPrinter(object):
             
             predicates += key_prop.stmt.arg + '='
             
-            if not isinstance(property_type, IntTypeSpec):
-                predicates+= "'"
+            predicates+= "'"
                 
             predicates+='"'
 
@@ -254,8 +263,7 @@ class GetSegmentPathPrinter(object):
 
             predicates += '"'
                 
-            if not isinstance(property_type, IntTypeSpec):
-                predicates += "'"
+            predicates += "'"
                 
             predicates += ']"'
             

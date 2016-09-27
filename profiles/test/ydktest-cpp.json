@@ -1,5 +1,5 @@
 {
-    "name": "openconfig",
+    "name": "ydktest",
    "version":"0.1.0",
    "ydk_version":"0.5.0",
     "Author": "Cisco",
@@ -26,7 +26,6 @@
             "sdk/cpp/ydk/tests/models/openconfig-policy-types.yang",
             "sdk/cpp/ydk/tests/models/openconfig-routing-policy.yang",
             "sdk/cpp/ydk/tests/models/openconfig-types.yang",
-            "sdk/cpp/ydk/tests/models/ydk@2016-02-26.yang",
             "sdk/cpp/ydk/tests/models/ydktest-filterread@2015-11-17.yang",
             "sdk/cpp/ydk/tests/models/ydktest-sanity-augm@2015-11-17.yang",
             "sdk/cpp/ydk/tests/models/ydktest-sanity-submodule@2016-04-25.yang",

@@ -26,7 +26,7 @@ using namespace std;
 
 BOOST_AUTO_TEST_CASE(Create)
 {
-	NetconfClient client{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	int OK = 0;
 
 	int result = client.connect();
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(Create)
 
 BOOST_AUTO_TEST_CASE(EditgetConfig)
 {
-	NetconfClient client{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	int OK = 0;
 
 	int result = client.connect();
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(EditgetConfig)
 
 BOOST_AUTO_TEST_CASE(Validate)
 {
-	NetconfClient client{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	int OK = 0;
 
 	int result = client.connect();
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(Validate)
 
 BOOST_AUTO_TEST_CASE(LockUnlock)
 {
-	NetconfClient client{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	int OK = 0;
 
 	int result = client.connect();
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(LockUnlock)
 
 BOOST_AUTO_TEST_CASE(RpcError)
 {
-	NetconfClient client{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	int OK = 0;
 
 	int result = client.connect();
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(RpcError)
 
 BOOST_AUTO_TEST_CASE(DeviceNotConnectedClose)
 {
-	NetconfClient client{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	int result = 1;
 	try
 	{
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(DeviceNotConnectedClose)
 
 BOOST_AUTO_TEST_CASE(DeviceNotConnectedExecute)
 {
-	NetconfClient client{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	try
 	{
 		string s = client.execute_payload(
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(DeviceNotConnectedExecute)
 
 BOOST_AUTO_TEST_CASE(RpcInvalid)
 {
-	NetconfClient client{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	int OK = 0;
 
 	int result = client.connect();
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(RpcInvalid)
 
 BOOST_AUTO_TEST_CASE(WrongXml)
 {
-	NetconfClient client{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	int OK = 0;
 
 	int result = client.connect();
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE(WrongXml)
 
 BOOST_AUTO_TEST_CASE(CorrectXmlWrongRpc)
 {
-	NetconfClient client{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	int OK = 0;
 
 	int result = client.connect();
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(CorrectXmlWrongRpc)
 
 BOOST_AUTO_TEST_CASE(EmptyRpc)
 {
-	NetconfClient client{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client{ "admin", "admin", "127.0.0.1", 12022, 0};
 	int OK = 0;
 
 	int result = client.connect();
@@ -313,21 +313,21 @@ BOOST_AUTO_TEST_CASE(EmptyRpc)
 
 BOOST_AUTO_TEST_CASE(MultipleClients)
 {
-	NetconfClient client1{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client2{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client3{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client4{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client5{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client6{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client7{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client8{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client9{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client10{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client11{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client12{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client13{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client14{ "admin", "admin", "127.0.0.1", 2022, 0};
-	NetconfClient client15{ "admin", "admin", "127.0.0.1", 2022, 0};
+	NetconfClient client1{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client2{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client3{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client4{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client5{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client6{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client7{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client8{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client9{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client10{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client11{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client12{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client13{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client14{ "admin", "admin", "127.0.0.1", 12022, 0};
+	NetconfClient client15{ "admin", "admin", "127.0.0.1", 12022, 0};
 
 	int result = client1.connect() && client2.connect() && client3.connect() && client4.connect() && client5.connect()
 		 && client6.connect() && client7.connect() && client8.connect() && client9.connect() && client10.connect()

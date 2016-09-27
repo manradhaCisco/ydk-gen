@@ -93,18 +93,6 @@ class ClassMembersPrinter(object):
             self.ctx.lvl_dec()
             return
         self._print_value_members(clazz)
-        self._print_parent_member(clazz)
-        self._print_children_member(clazz)
-
-    def _print_parent_member(self, clazz):
-        self.ctx.writeln('Entity * parent;')
-        self.ctx.lvl_dec()
-        self.ctx.bline()
-
-    def _print_children_member(self, clazz):
-        self.ctx.writeln('private:')
-        self.ctx.lvl_inc()
-        self.ctx.writeln('std::vector<Entity*> children;')
         self.ctx.lvl_dec()
 
     def _print_value_members(self, clazz):

@@ -21,6 +21,8 @@
 //
 //////////////////////////////////////////////////////////////////
 
+#include <boost/log/trivial.hpp>
+
 #include "crud_service.hpp"
 #include "types.hpp"
 #include "core.hpp"
@@ -41,6 +43,7 @@ CrudService::CrudService()
 
 bool CrudService::create(core::ServiceProvider & provider, Entity & entity)
 {
+	BOOST_LOG_TRIVIAL(debug) << "Executing CRUD create operation";
 	return operation_succeeded(
 			execute_rpc(provider, entity, "ydk:create", "entity")
 			);
@@ -48,6 +51,7 @@ bool CrudService::create(core::ServiceProvider & provider, Entity & entity)
 
 bool CrudService::update(core::ServiceProvider & provider, Entity & entity)
 {
+	BOOST_LOG_TRIVIAL(debug) << "Executing CRUD update operation";
 	return operation_succeeded(
 			execute_rpc(provider, entity, "ydk:update", "entity")
 			);
@@ -55,6 +59,7 @@ bool CrudService::update(core::ServiceProvider & provider, Entity & entity)
 
 bool CrudService::delete_(core::ServiceProvider & provider, Entity & entity)
 {
+	BOOST_LOG_TRIVIAL(debug) << "Executing CRUD delete operation";
 	return operation_succeeded(
 			execute_rpc(provider, entity, "ydk:delete", "entity")
 			);
@@ -62,12 +67,14 @@ bool CrudService::delete_(core::ServiceProvider & provider, Entity & entity)
 
 unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & filter)
 {
+	BOOST_LOG_TRIVIAL(debug) << "Executing CRUD read operation";
 	core::DataNode* read_data_node = execute_rpc(provider, filter, "ydk:read", "filter");
 	return read(provider, filter, read_data_node);
 }
 
 unique_ptr<Entity> CrudService::read(core::ServiceProvider & provider, Entity & filter, bool config_only)
 {
+	BOOST_LOG_TRIVIAL(debug) << "Executing CRUD config read operation";
 	core::DataNode* read_data_node = execute_rpc(provider, filter, "ydk:read", "filter", config_only);
 	return read(filter, read_data_node);
 }
@@ -83,6 +90,7 @@ std::unique_ptr<Entity> CrudService::read(Entity & filter, core::DataNode* read_
 
 static bool operation_succeeded(core::DataNode * node)
 {
+	BOOST_LOG_TRIVIAL(debug) << "Operation " << ((node == nullptr)?"succeeded":"failed");
 	return node == nullptr;
 }
 

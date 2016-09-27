@@ -9,7 +9,7 @@ class TestEntity:public Entity
 {
   public:
 	TestEntity()
-		: parent(nullptr), name{YType::str, "name"}, enabled{YType::boolean, "enabled"}, bits_field{YType::bits, "bits-field"}
+		: name{YType::str, "name"}, enabled{YType::boolean, "enabled"}, bits_field{YType::bits, "bits-field"}
 	{
 	}
 
@@ -54,7 +54,10 @@ class TestEntity:public Entity
 		}
 	}
 
-  Entity* parent;
+	class Child:public Entity
+	{
+
+	};
 
   Value name;
   Value enabled;

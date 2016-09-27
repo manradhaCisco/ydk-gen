@@ -149,12 +149,6 @@ class YdkGenerator(object):
         """
         gen_api_root = self._init_dirs(pkg_name='ydk', pkg_type='core')
 
-        if self.language == 'cpp':
-            sys.path.append(gen_api_root)
-            from download_libs import LibDownloader
-
-            dl = LibDownloader(gen_api_root)
-            dl.download()
 
         return gen_api_root
 
