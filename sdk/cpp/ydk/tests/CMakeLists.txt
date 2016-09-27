@@ -42,13 +42,11 @@ endforeach(test_name)
 
 
 foreach(test_name IN LISTS entity_tests)
-    add_executable(${test_name} entity/${test_name}.cpp models_gen/ydktest_filterread.cpp models_gen/ydktest_sanity.cpp
-     models_gen/ydktest_sanity_augm.cpp models_gen/ydktest_sanity_submodule.cpp 
-     models_gen/ydktest_sanity_types.cpp models_gen/ydktest_types.cpp)
+    add_executable(${test_name} entity/${test_name}.cpp)
 
     set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 14)
     set_property(TARGET ${test_name} PROPERTY CXX STANDARD_REQUIRED ON)
-    target_include_directories(${test_name} PRIVATE ${BOOST_INCLUDE_DIRS}  models_gen)
+    target_include_directories(${test_name} PRIVATE ${BOOST_INCLUDE_DIRS} )
 
     target_compile_definitions(${test_name} PRIVATE "BOOST_TEST_DYN_LINK=1")
     target_link_libraries(${test_name} ydk ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
