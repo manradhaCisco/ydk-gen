@@ -50,7 +50,8 @@ void config_bgp(openconfig_bgp::Bgp* bgp)
 	neighbor->config->local_as = 65001;
 	neighbor->config->peer_group = "IBGP";
 	neighbor->config->peer_type = "INTERNAL";
-	//neighbor->config->remove_private_as = openconfig_bgp_types::Remove_Private_As_OptionIdentity();
+//	neighbor->config->remove_private_as = 
+//	openconfig_bgp_types::Private_As_Remove_AllIdentity();
 	neighbor->parent = bgp->neighbors.get();
 	bgp->neighbors->neighbor.push_back(move(neighbor));
 
