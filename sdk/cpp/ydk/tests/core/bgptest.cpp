@@ -368,11 +368,10 @@ BOOST_AUTO_TEST_CASE( bgp_validation )
     
     BOOST_REQUIRE( peer_as != nullptr );
    
-//TODO: Not working
-//    auto neighbor_remove_as = neighbor->create("config/remove-private-as", 
-//    "openconfig-bgp-types:PRIVATE_AS_REMOVE_ALL");
+     auto neighbor_remove_as = neighbor->create("config/remove-private-as",
+    "openconfig-bgp-types:PRIVATE_AS_REMOVE_ALL");
     
-//    BOOST_REQUIRE( neighbor_remove_as != nullptr );
+    BOOST_REQUIRE( neighbor_remove_as != nullptr );
     
     //bgp/neighbors/neighbor/afi-safis/afi-safi
     auto neighbor_af = neighbor->create("afi-safis/afi-safi[afi-safi-name='openconfig-bgp-types:L3VPN_IPV4_UNICAST']", "");

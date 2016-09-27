@@ -26,7 +26,6 @@
 #include <iostream>
 
 #include "ydk/core.hpp"
-#include "../config.hpp"
 #include "ydk/netconf_provider.hpp"
 #include "ydk_ydktest/ydktest_sanity.hpp"
 #include "ydk/types.hpp"
