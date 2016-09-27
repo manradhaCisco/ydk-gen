@@ -124,8 +124,6 @@ class Entity {
 
   public:
 	Entity* parent;
-
-  private:
 	std::vector<Entity*> children;
 };
 

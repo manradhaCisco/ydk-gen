@@ -29,7 +29,6 @@
 #include <boost/log/trivial.hpp>
 
 namespace fs = boost::filesystem;
-namespace io = boost::iostreams;
 
 ////////////////////////////////////////////////////////////////////
 /// Function segmentalize()
@@ -215,7 +214,7 @@ ydk::core::SchemaValueType::~SchemaValueType()
 
 ydk::core::SchemaValueBinaryType::SchemaValueBinaryType(): length{Range<uint64_t>{0,18446744073709551615UL}}
 {
-    
+
 }
 
 
@@ -383,7 +382,7 @@ ydk::core::SchemaValueIdentityType::validate(const std::string& value) const
         diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
         return diag;
     }
-    
+
     auto tokens = ydk::core::split(value, ':');
     if(tokens.size() == 1) {
         //no module name just compare the name
@@ -393,13 +392,13 @@ ydk::core::SchemaValueIdentityType::validate(const std::string& value) const
     } else if(tokens[0] == module_name && tokens[1] == name){
             return diag;
     }
-    
+
     for(auto ident : derived) {
         if(!ident->validate(value).has_errors()){
             return diag;
         }
     }
-    
+
     BOOST_LOG_TRIVIAL(debug) << "Invalid identity" << value;
     diag.errors.push_back(ydk::core::ValidationError::INVALID_IDENTITY);
     return diag;
@@ -423,8 +422,8 @@ ydk::core::SchemaValueInstanceIdType::validate(const std::string& value) const
         BOOST_LOG_TRIVIAL(debug) << "Empty attribute error for SchemaValueInstanceIdType";
         diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
     }
-    
-    
+
+
     return diag;
 }
 
@@ -434,7 +433,7 @@ ydk::core::SchemaValueInstanceIdType::validate(const std::string& value) const
 
 ydk::core::SchemaValueStringType::SchemaValueStringType(): length{Range<uint64_t>{0,18446744073709551615UL}}
 {
-    
+
 }
 
 
@@ -459,7 +458,7 @@ ydk::core::SchemaValueStringType::validate(const std::string& value) const
         if(size < length.default_range.min || size > length.default_range.max) {
             BOOST_LOG_TRIVIAL(debug) << "Invalid length for string size is " << size;
             diag.errors.push_back(ValidationError::INVALID_LENGTH);
-            
+
         }
     } else {
         bool constraint_satisfied = false;
@@ -469,14 +468,14 @@ ydk::core::SchemaValueStringType::validate(const std::string& value) const
                 break;
             }
         }
-        
+
         if(!constraint_satisfied){
             BOOST_LOG_TRIVIAL(debug) << "Invalid length for string size is " << size;
             diag.errors.push_back(ValidationError::INVALID_LENGTH);
         }
     }
-    
-    
+
+
     /// then a pattern check
     /// all patterns have to be matched
     for(auto p : patterns) {
@@ -486,7 +485,7 @@ ydk::core::SchemaValueStringType::validate(const std::string& value) const
             diag.errors.push_back(ValidationError::INVALID_PATTERN);
         }
     }
-    
+
     return diag;
 }
 
@@ -527,7 +526,7 @@ ydk::core::SchemaValueUnionType::validate(const std::string& value) const
 
 ydk::core::SchemaValueEmptyType::SchemaValueEmptyType(const std::string& mleaf_name) : leaf_name{mleaf_name}
 {
-    
+
 }
 
 
@@ -766,63 +765,63 @@ namespace ydk {
                 // min
                 const char* ptr = seg_ptr;
                 Range<T> range{intervals.default_range.min, intervals.default_range.max};
-            
+
                 if(ptr) {
                     // start processing min
                     while(isspace(ptr[0])) {
                         ++ptr;
                     }
-                
+
                     if (isdigit(ptr[0]) || (ptr[0] == '+') ||  (ptr[0] == '-')) {
                         range.min = atoll(ptr);
                     if((ptr[0] == '+') || (ptr[0] == '-')) {
                         ++ptr;
                     }
-                    
+
                     while (isdigit(ptr[0])) {
                         ++ptr;
                     }
-                    
+
                     } else if (!strncmp(ptr, "min", 3)) {
                         ptr += 3;
                     } else if(!strncmp(ptr, "max", 3)) {
                         ptr += 3;
                     } else {
-                        BOOST_LOG_TRIVIAL(error) << "Error parsing range " << str_restr; 
+                        BOOST_LOG_TRIVIAL(error) << "Error parsing range " << str_restr;
                         throw YDKIllegalStateException{"Error parsing range"};
                     }
-                
+
                     while (isspace(ptr[0])) {
                         ptr++;
                     }
-                
+
                     //no interval or interval
                     if ((ptr[0] == '|' || !ptr[0])) {
                         range.max = atoll(ptr);
-                    
+
                     } else if( !strncmp(ptr, "..", 2)) {
                         // skip ..
                         ptr += 2;
                         while (isspace(ptr[0])) {
                             ++ptr;
                         }
-                    
+
                         // max
                         if (isdigit(ptr[0]) || (ptr[0] == '+') || (ptr[0] == '-')) {
                             range.max = atoll(ptr);
                         } else if (!strncmp(ptr, "max", 3)) {
                             // do nothing since max is already set
-                        
+
                         } else {
-                            BOOST_LOG_TRIVIAL(error) << "Error parsing range " << str_restr; 
+                            BOOST_LOG_TRIVIAL(error) << "Error parsing range " << str_restr;
                             throw YDKIllegalStateException{"Error parsing range"};
                         }
                     } else {
-                        BOOST_LOG_TRIVIAL(error) << "Error parsing range " << str_restr; 
+                        BOOST_LOG_TRIVIAL(error) << "Error parsing range " << str_restr;
                         throw YDKIllegalStateException{"Error parsing range"};
                     }
                     intervals.intervals.push_back(range);
-                    
+
                     /* next segment (next OR) */
                     seg_ptr = strchr(seg_ptr, '|');
                     if (!seg_ptr) {
@@ -833,16 +832,16 @@ namespace ydk {
             }
 
         }
-        
-        
+
+
         SchemaValueIdentityType* create_identity_type(struct lys_ident *ident)
         {
-            
+
             SchemaValueIdentityType* identity_type = new SchemaValueIdentityType{};
-            
+
             identity_type->module_name = ident->module->name;
             identity_type->name = ident->name;
-            
+
             if(ident->der) {
                 struct lys_ident *der;
                 int i = 0;
@@ -851,11 +850,11 @@ namespace ydk {
                 }
             }
             return identity_type;
-            
-            
+
+
         }
-        
-        
+
+
         SchemaValueType* create_schema_value_type(struct lys_node_leaf* leaf,
                                                   struct lys_type* type)
         {
@@ -870,14 +869,14 @@ namespace ydk {
                         SchemaValueBinaryType* binary = new SchemaValueBinaryType{};
                         m_type = binary;
                         parse_range_intervals(binary->length, type->info.binary.length->expr);
-                        
+
                     } else if(type->der){
                         m_type = create_schema_value_type(leaf, &(type->der->type));
                     } else {
                         SchemaValueBinaryType* binary = new SchemaValueBinaryType{};
                         m_type = binary;
                     }
-                    
+
                     break;
                     }
                 case LY_TYPE_BITS: {
@@ -911,7 +910,7 @@ namespace ydk {
                     } else if(type->der){
                         m_type = create_schema_value_type(leaf, &(type->der->type));
                     } else {
-                        BOOST_LOG_TRIVIAL(error) << "Unable to determine union's types"; 
+                        BOOST_LOG_TRIVIAL(error) << "Unable to determine union's types";
                         throw ydk::YDKIllegalStateException{"Unable to determine union's types"};
                     }
                     break;
@@ -948,25 +947,25 @@ namespace ydk {
                         SchemaValueStringType* stringType = new SchemaValueStringType{};
                         m_type = stringType;
                         parse_range_intervals(stringType->length, type->info.str.length->expr);
-                        
+
                         if(type->info.str.pat_count != 0){
                             for(int i =0; i < type->info.str.pat_count; i++) {
                                 stringType->patterns.push_back(type->info.str.patterns[i].expr);
                             }
                         }
-                        
+
                     } else if(type->der){
                         m_type = create_schema_value_type(leaf, &(type->der->type));
                     } else {
                         SchemaValueStringType* stringType = new SchemaValueStringType{};
                         m_type = stringType;
-                        
+
                         if(type->info.str.pat_count != 0){
                             for(int i=0; i < type->info.str.pat_count; i++) {
                                 stringType->patterns.push_back(type->info.str.patterns[i].expr);
                             }
                         }
-                        
+
                     }
                     break;
                 }
@@ -1076,7 +1075,7 @@ namespace ydk {
                     }
                     break;
                 }
-                    
+
                 case LY_TYPE_INT64:
                 {
                     if(type->info.num.range) {
@@ -1249,7 +1248,7 @@ ydk::core::SchemaNodeImpl::statement() const
 {
     Statement s{};
     s.arg = m_node->name;
-	
+
     switch(m_node->nodetype) {
     case LYS_CONTAINER:
         s.keyword = "container";
@@ -1372,27 +1371,27 @@ ydk::core::RootSchemaNodeImpl::find(const std::string& path) const
         BOOST_LOG_TRIVIAL(debug) << "path is empty";
         throw YDKInvalidArgumentException{"path is empty"};
     }
-    
+
     //has to be a relative path
     if(path.at(0) == '/') {
         BOOST_LOG_TRIVIAL(debug) << "path must be a relative path";
         throw YDKInvalidArgumentException{"path must be a relative path"};
     }
-    
+
     std::vector<SchemaNode*> ret;
 
     std::string full_path{"/"};
     full_path+=path;
-    
+
     const struct lys_node* found_node = ly_ctx_get_node(m_ctx, nullptr, full_path.c_str());
-    
+
     if (found_node){
         auto p = reinterpret_cast<SchemaNode*>(found_node->priv);
         if(p) {
             ret.push_back(p);
         }
     }
-    
+
     return ret;
 }
 
@@ -1412,11 +1411,11 @@ ydk::core::DataNode*
 ydk::core::RootSchemaNodeImpl::create(const std::string& path, const std::string& value) const
 {
     RootDataImpl* rd = new RootDataImpl{this, m_ctx, "/"};
-    
+
     if (rd){
         return rd->create(path, value);
     }
-    
+
     return nullptr;
 }
 
@@ -1426,7 +1425,7 @@ ydk::core::RootSchemaNodeImpl::from_xml(const std::string& xml) const
     struct lyd_node *root = lyd_parse_mem(m_ctx, xml.c_str(), LYD_XML, 0);
     RootDataImpl* rd = new RootDataImpl{this, m_ctx, "/"};
     DataNodeImpl* nodeImpl = new DataNodeImpl{rd,root};
-    
+
     return nodeImpl;
 
 }
@@ -1506,11 +1505,11 @@ ydk::core::RootDataImpl::create(const std::string& path, const std::string& valu
         throw YDKInvalidArgumentException{"Path starts with /"};
     }
     std::vector<std::string> segments = segmentalize(path);
-    
+
     std::string start_seg = m_path + segments[0];
     struct lyd_node* dnode = lyd_new_path(m_node, m_ctx, start_seg.c_str(),
                                           segments.size() == 1 ? value.c_str():nullptr,0);
-    
+
     if( dnode == nullptr){
         BOOST_LOG_TRIVIAL(debug) << "Path " << path << " is invalid";
         throw YDKInvalidArgumentException{"Path is invalid."};
@@ -1667,14 +1666,14 @@ ydk::core::DataNodeImpl::~DataNodeImpl()
     for (auto p : child_map) {
         delete p.second;
     }
-    
+
     if(m_node){
         if(m_parent) {
             lyd_free(m_node);
         } else {
             lyd_free_withsiblings(m_node);
         }
-        
+
         m_node = nullptr;
     }
 }
@@ -1706,12 +1705,12 @@ ydk::core::DataNodeImpl::create(const std::string& path, const std::string& valu
     }
 
     std::vector<std::string> segments = segmentalize(path);
-    
+
     DataNodeImpl* dn = this;
 
     size_t start_index = 0;
     auto iter = segments.begin();
-    
+
     while (iter != segments.end()) {
         auto r = dn->find(*iter);
         if(r.empty()){
@@ -1729,16 +1728,16 @@ ydk::core::DataNodeImpl::create(const std::string& path, const std::string& valu
             start_index++;
         }
     }
-    
+
     if (segments.empty()) {
         BOOST_LOG_TRIVIAL(debug) << "path " << path << " points to existing node";
 	throw YDKInvalidArgumentException{"path points to existing node."};
     }
-    
+
     std::vector<struct lyd_node*> nodes_created;
     struct lyd_node* first_node_created = nullptr;
     struct lyd_node* cn = dn->m_node;
-    
+
     for(size_t i=start_index; i< segments.size(); i++){
         if (i != segments.size() - 1) {
             cn = lyd_new_path(cn, nullptr, segments[i].c_str(), nullptr, 0);
@@ -1750,24 +1749,27 @@ ydk::core::DataNodeImpl::create(const std::string& path, const std::string& valu
             if(first_node_created) {
 		lyd_unlink(first_node_created);
 		lyd_free(first_node_created);
-		throw YDKInvalidArgumentException{"invalid path"};
             }
+            throw YDKInvalidArgumentException{"invalid path"};
         } else if (!first_node_created) {
             first_node_created = cn;
         }
     }
 
-    auto p = new DataNodeImpl{dn, first_node_created};
-    dn->child_map.insert(std::make_pair(first_node_created, p));
+    if (first_node_created) {
+        auto p = new DataNodeImpl{dn, first_node_created};
+        dn->child_map.insert(std::make_pair(first_node_created, p));
 
-    DataNodeImpl* rdn = p;
-    
-    while(!rdn->children().empty() && rdn->m_node != cn){
-        rdn = dynamic_cast<DataNodeImpl*>(rdn->children()[0]);
+        DataNodeImpl* rdn = p;
+
+        while(!rdn->children().empty() && rdn->m_node != cn){
+            rdn = dynamic_cast<DataNodeImpl*>(rdn->children()[0]);
+        }
+
+        return rdn;
+    } else {
+        return dn;
     }
-    
-    return rdn;
-
 }
 
 void
@@ -1775,7 +1777,7 @@ ydk::core::DataNodeImpl::set(const std::string& value)
 {
     //set depends on the kind of the node
     struct lys_node* s_node = m_node->schema;
-    
+
     if (s_node->nodetype == LYS_LEAF || s_node->nodetype == LYS_LEAFLIST) {
         struct lyd_node_leaf_list* leaf= reinterpret_cast<struct lyd_node_leaf_list *>(m_node);
         if(lyd_change_leaf(leaf, value.c_str())) {
@@ -1827,7 +1829,7 @@ ydk::core::DataNodeImpl::find(const std::string& path) const
         ly_ctx_get_node(m_node->schema->module->ctx, m_node->schema, spath.c_str());
 
     if(found_snode) {
-        struct ly_set* result_set = lyd_get_node2(m_node, found_snode);
+        struct ly_set* result_set = lyd_get_node(m_node, path.c_str());
         if( result_set ){
             if (result_set->number > 0){
                 for(size_t i=0; i < result_set->number; i++){
@@ -1839,7 +1841,7 @@ ydk::core::DataNodeImpl::find(const std::string& path) const
         }
 
     }
-    
+
     return results;
 }
 
@@ -1866,7 +1868,7 @@ ydk::core::DataNodeImpl::children() const
 
         }
     }
-    
+
     return ret;
 }
 
@@ -1909,7 +1911,7 @@ ydk::core::DataNodeImpl::get_dn_for_desc_node(struct lyd_node* desc_node) const
 	std::reverse(nodes.begin(), nodes.end());
 
 	const DataNodeImpl* parent = this;
-        
+
         if(nodes[0] == m_node){
             nodes.erase(nodes.begin());
         }
@@ -1926,7 +1928,7 @@ ydk::core::DataNodeImpl::get_dn_for_desc_node(struct lyd_node* desc_node) const
                    //special case the root is the first node
                    parent = child_map.begin()->second;
                    res = parent->child_map.find(p);
-                   
+
                    if(res != parent->child_map.end()){
                        dn = res->second;
                    } else {
@@ -1936,7 +1938,7 @@ ydk::core::DataNodeImpl::get_dn_for_desc_node(struct lyd_node* desc_node) const
                } else {
                    BOOST_LOG_TRIVIAL(error) << "Parent is nullptr";
                    throw YDKCoreException{"Parent is nullptr"};
-               } 
+               }
            }
 	   parent = dn;
 	}
@@ -2039,7 +2041,7 @@ ydk::core::ValidationService::validate(const ydk::core::DataNode* dn, ydk::core:
 
     }
     ly_option = ly_option | LYD_OPT_NOAUTODEL;
-    
+
     BOOST_LOG_TRIVIAL(debug) << "Validation called on " << dn->path() << " with option " << option_str;
 
     //what kind of a DataNode is this
@@ -2117,7 +2119,7 @@ ydk::core::CodecService::decode(const RootSchemaNode* root_schema, const std::st
 
     struct lyd_node *root = lyd_parse_mem(rs_impl->m_ctx, buffer.c_str(), scheme, LYD_OPT_TRUSTED |  LYD_OPT_KEEPEMPTYCONT | LYD_WD_TRIM | LYD_OPT_GET);
     if( ly_errno ) {
-     
+
         BOOST_LOG_TRIVIAL(debug) << "Parsing failed with message " << ly_errmsg();
         throw YDKCodecException{YDKCodecException::Error::XML_INVAL};
     }
@@ -2150,29 +2152,29 @@ ydk::core::Repository::Repository()
 
 ydk::core::Repository::Repository(const std::string& search_dir) : path{search_dir}
 {
-    
+
     if(!fs::exists(path) || !fs::is_directory(path)) {
         BOOST_LOG_TRIVIAL(debug) << "Path " << search_dir << " is not a valid directory.";
         throw YDKInvalidArgumentException{"path is not a valid directory"};
     }
-    
+
     ly_verb(LY_LLSILENT);
 }
 
 
 namespace ydk {
     namespace core {
-        
+
         extern "C" void cpp_free_data(void *model_data)
         {
             delete [] static_cast<char*>(model_data);
         }
-        
+
         extern "C" void c_free_data(void *model_data)
         {
             std::free(model_data);
         }
-        
+
         char* convert_str_to_buffer(const std::string& str)
         {
             auto data = str.c_str();
@@ -2182,9 +2184,9 @@ namespace ydk {
             copy[length] = '\0';
             BOOST_LOG_TRIVIAL(trace) << "String to buffer:-" << copy;
             return copy;
-            
+
         }
-        
+
         void sink_to_file(const std::string& filename, const std::string& contents)
         {
             std::ofstream sink {filename, std::ios::binary};
@@ -2195,19 +2197,19 @@ namespace ydk {
                 BOOST_LOG_TRIVIAL(debug) << "Cannot sink to file " << filename;
             }
         }
-    
+
         extern "C" char* get_module_callback(const char* name, const char* revision, void* user_data,
                                        LYS_INFORMAT* format, void (**free_module_data)(void *model_data))
         {
-            BOOST_LOG_TRIVIAL(debug) << "Getting module " << name;
-            
+            BOOST_LOG_TRIVIAL(trace) << "Getting module " << name;
+
             if(user_data != nullptr){
                 ModelProvider::Format m_format = ModelProvider::Format::YANG;
                 *format = LYS_IN_YANG;
                 auto pair = reinterpret_cast<std::pair<struct ly_ctx* , const ydk::core::Repository*>*>(user_data);
                 struct ly_ctx* ctx = pair->first;
                 const Repository* repo = pair->second;
-                
+
                 //check if the module is avaliable
                 const struct lys_module* module = ly_ctx_get_module(ctx, name, revision);
                 if(module != nullptr){
@@ -2216,11 +2218,11 @@ namespace ydk {
                         *free_module_data = nullptr;
                         return strp;
                     }
-                    
+
                 }
-                
+
                 //first check our directory for a file of the form <module-name>@<revision-date>.yang
-                
+
                 std::string yang_file_path_str{repo->path.string()};
                 yang_file_path_str += '/';
                 yang_file_path_str += name;
@@ -2229,7 +2231,7 @@ namespace ydk {
                     yang_file_path_str += revision;
                 }
                 yang_file_path_str += ".yang";
-                
+
                 fs::path yang_file_path{yang_file_path_str};
                 if(fs::is_regular_file(yang_file_path)) {
                     //open the file read the data and return it
@@ -2241,9 +2243,9 @@ namespace ydk {
                             model_data+=line;
                             model_data+='\n';
                         }
-                        
+
                         yang_file.close();
-                        
+
                         *free_module_data = c_free_data;
                         char *enlarged_data = nullptr;
                         /* enlarge data by 2 bytes for flex */
@@ -2260,14 +2262,14 @@ namespace ydk {
                         BOOST_LOG_TRIVIAL(debug) << "Cannot open file " << yang_file_path_str;
                         throw YDKIllegalStateException("Cannot open file");
                     }
-                    
+
                 }
 
-                
+
                 for(auto model_provider : repo->get_model_providers()) {
                     std::string model_data = model_provider->get_model(name, revision != nullptr ? revision : "", m_format);
                     if(!model_data.empty()){
-                       
+
                         sink_to_file(yang_file_path_str, model_data);
                         *free_module_data = c_free_data;
                         char *enlarged_data = nullptr;
@@ -2282,7 +2284,7 @@ namespace ydk {
                         enlarged_data[len] = enlarged_data[len + 1] = '\0';
                         return enlarged_data;
                     } else {
-                        BOOST_LOG_TRIVIAL(error) << "Cannot find model with name:- " << name << " revision:-" << (revision !=nullptr ? revision : ""); 
+                        BOOST_LOG_TRIVIAL(error) << "Cannot find model with name:- " << name << " revision:-" << (revision !=nullptr ? revision : "");
                         throw YDKIllegalStateException{"Cannot find model"};
                     }
                 }
@@ -2291,7 +2293,7 @@ namespace ydk {
             throw YDKIllegalStateException{"Cannot find model"};
         }
     }
-    
+
 }
 
 ydk::core::RootSchemaNode*
@@ -2299,31 +2301,31 @@ ydk::core::Repository::create_root_schema(const std::vector<ydk::core::Capabilit
 {
     std::string path_str = path.string();
     struct ly_ctx* ctx = ly_ctx_new(path_str.c_str());
-    
+
     if(!ctx) {
         throw std::bad_alloc{};
     }
     auto pair = new std::pair<struct ly_ctx* , const ydk::core::Repository*>{};
     pair->first = ctx;
     pair->second = this;
-    
+
     //set module callback (only if there is a model provider)
     if(!model_providers.empty()){
         ly_ctx_set_module_clb(ctx, get_module_callback, pair);
     }
-    
+
     for (auto c : capabilities) {
         if(c.module == "ietf-yang-library")
             continue;
         BOOST_LOG_TRIVIAL(trace) << "Module " << c.module.c_str() << " Revision " << c.revision.c_str();
         auto p = ly_ctx_get_module(ctx, c.module.c_str(), c.revision.empty() ? 0 : c.revision.c_str());
-        
+
         if(!p) {
             p = ly_ctx_load_module(ctx, c.module.c_str(), c.revision.empty() ? 0 : c.revision.c_str());
         } else {
             BOOST_LOG_TRIVIAL(trace) << "Cache hit module name:-" << c.module;
         }
-        
+
         if (!p) {
             BOOST_LOG_TRIVIAL(debug) << "Unable to parse module " << c.module;
             continue;
@@ -2332,7 +2334,7 @@ ydk::core::Repository::create_root_schema(const std::vector<ydk::core::Capabilit
             lys_features_enable(p, f.c_str());
 
     }
-    
+
     RootSchemaNodeImpl* rs = new RootSchemaNodeImpl{ctx};
     return rs;
 }

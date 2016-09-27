@@ -27,9 +27,12 @@ START_FLAGS ?=
 
 all:  ydktest-filterread.fxs ydktest-sanity-augm.fxs ydktest-sanity-types.fxs ydktest-sanity.fxs\
     ydktest-types.fxs openconfig-bgp-types.fxs openconfig-bgp-policy.fxs openconfig-extensions.fxs openconfig-policy-types.fxs\
-    ietf-interfaces.fxs openconfig-types.fxs openconfig-routing-policy.fxs openconfig-interfaces.fxs openconfig-bgp.fxs\
+    ietf-interfaces.fxs ietf-netconf-monitoring.fxs openconfig-types.fxs openconfig-routing-policy.fxs openconfig-interfaces.fxs openconfig-bgp.fxs\
 		$(CDB_DIR) ssh-keydir
 	@echo "Build complete"
+
+ietf-netconf-monitoring.yang:
+	cp ../models/ietf-netconf-monitoring.yang ietf-netconf-monitoring.yang
 
 ietf-interfaces.yang:
 	cp ../models/ietf-interfaces\@2014-05-08.yang ietf-interfaces.yang
@@ -114,6 +117,6 @@ start_confd:
 ######################################################################
 stop:
 	### Killing any confd daemon or DHCP confd agents
-	$(CONFD) --stop    || true
+	$(CONFD) --stop &> /dev/null   || true
 
 ######################################################################

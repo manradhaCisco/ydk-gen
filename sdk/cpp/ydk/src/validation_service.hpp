@@ -36,18 +36,18 @@
 
 namespace ydk {
 
-   
+
 struct EntityDiagnostic : public ydk::core::DiagnosticNode<Entity*, ydk::core::ValidationError>
 {
-    
+
     std::vector<DiagnosticNode<std::string, ydk::core::ValidationError>> attrs;
-    
+
     bool has_errors()
     {
         if(!errors.empty() || !attrs.empty()){
             return true;
         }
-        
+
         for(auto c : children) {
             if(c.has_errors()){
                 return true;
@@ -56,12 +56,12 @@ struct EntityDiagnostic : public ydk::core::DiagnosticNode<Entity*, ydk::core::V
         return false;
     }
 };
-    
-    
-    
-    
+
+
+
+
 struct ValidationService {
-    
+
     ///
     /// @brief Options for validation.
     ///
@@ -74,15 +74,16 @@ struct ValidationService {
         GET, // Get validation
         EDIT_CONFIG // Edit validation. Checks on the values of leafs etc
     };
-   
+
     ValidationService()
     {
     }
+    virtual ~ValidationService(){}
 
     virtual EntityDiagnostic validate(const ydk::core::ServiceProvider& sp, ydk::Entity& entity, ydk::ValidationService::Option option);
 };
 
-    
+
 }
 
 #endif /* VALIDATION_SERVICE_HPP */

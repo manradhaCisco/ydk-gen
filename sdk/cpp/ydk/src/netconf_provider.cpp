@@ -184,7 +184,7 @@ NetconfServiceProvider::NetconfServiceProvider(core::Repository* repo, string ad
     read_schema = get_schema_for_operation(*root_schema, "ydk:read");
     update_schema  = get_schema_for_operation(*root_schema, "ydk:update");
     delete_schema = get_schema_for_operation(*root_schema, "ydk:delete");
-   
+
 }
 
 NetconfServiceProvider::~NetconfServiceProvider()
@@ -210,11 +210,11 @@ core::DataNode* NetconfServiceProvider::handle_read(core::Rpc* ydk_rpc) const
     std::string filter_value = get_filter_payload(*ydk_rpc);
 
     string netconf_payload = get_netconf_payload(input, filter_value, "filter");
-    BOOST_LOG_TRIVIAL(trace) << netconf_payload;
-
 
     std::string reply = client->execute_payload(netconf_payload);
-    BOOST_LOG_TRIVIAL(trace) << reply;
+    BOOST_LOG_TRIVIAL(debug) <<"=============Reply payload=============";
+    BOOST_LOG_TRIVIAL(debug) << reply;
+    BOOST_LOG_TRIVIAL(debug) <<"=========================="<<endl;
     return handle_read_reply(reply, root_schema.get());
 }
 
@@ -230,10 +230,11 @@ core::DataNode* NetconfServiceProvider::handle_edit(core::Rpc* ydk_rpc, core::An
     string config_payload = get_annotated_config_payload(root_schema.get(), *ydk_rpc, annotation);
 
     string netconf_payload = get_netconf_payload(input, config_payload, "config");
-    BOOST_LOG_TRIVIAL(debug) << netconf_payload;
 
     std::string reply = client->execute_payload(netconf_payload);
+    BOOST_LOG_TRIVIAL(debug) <<"=============Reply payload=============";
     BOOST_LOG_TRIVIAL(debug) << reply;
+    BOOST_LOG_TRIVIAL(debug) <<"=========================="<<endl;
     return handle_edit_reply(reply, *client, candidate_supported);
 }
 
@@ -269,17 +270,17 @@ core::DataNode* NetconfServiceProvider::invoke(core::Rpc* rpc) const
 
     return datanode;
 }
-    
+
 
 std::string
 NetconfServiceProvider::get_model(const std::string& name, const std::string& version, Format format)
 {
     std::string model{};
-    
+
     if(!ietf_nc_monitoring_available){
         return model;
     }
-   
+
     if(name == ydk::core::YDK_MODULE_NAME && version == ydk::core::YDK_MODULE_REVISION) {
        return ydk::core::YDK_MODULE;
     }
@@ -291,7 +292,7 @@ NetconfServiceProvider::get_model(const std::string& name, const std::string& ve
     if(format == Format::YIN) {
         file_format = "yin";
     }
-    
+
     core::CodecService codec_service{};
 
     std::string payload{"<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"};
@@ -310,29 +311,29 @@ NetconfServiceProvider::get_model(const std::string& name, const std::string& ve
     payload+="</get-schema>";
     payload+="</rpc>";
 
-    BOOST_LOG_TRIVIAL(trace) << "Get schema request " << payload;
+    BOOST_LOG_TRIVIAL(debug) << "Get schema request " << payload;
     std::string reply = client->execute_payload(payload);
-    BOOST_LOG_TRIVIAL(trace) << "Get schema reply " << reply;
+    BOOST_LOG_TRIVIAL(debug) << "Get schema reply " << reply;
 
-    
+
     auto data_start = reply.find("<data ");
     if(data_start == std::string::npos) {
         return model;
     }
-    
+
     auto data_end = reply.find("</data>", data_start);
     if(data_end == std::string::npos) {
         //indicates that data was probably empty
         return model;
     }
-    
+
     //need to find the end of the "<data start tag
     auto data_start_end = reply.find(">", data_start);
     data_start = data_start_end + 1;
-    
+
     data_end -= 1;
     model = reply.substr(data_start, data_end-data_start+1);
-    
+
     //Remove <!CDATA[ if any
     auto cdata_start = model.find("<![CDATA[");
     if(cdata_start != std::string::npos) {
@@ -344,7 +345,7 @@ NetconfServiceProvider::get_model(const std::string& name, const std::string& ve
         }
     }
 
-    BOOST_LOG_TRIVIAL(trace) << "Model " << model;
+    BOOST_LOG_TRIVIAL(debug) << "Model " << model;
 
     return model;
 }
@@ -363,7 +364,7 @@ static core::DataNode* create_rpc_input(core::Rpc & netconf_rpc)
 {
 	return netconf_rpc.input();
 }
-    
+
 static string get_commit_rpc_payload()
 {
 	return "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
@@ -429,8 +430,8 @@ static string get_annotated_config_payload(core::RootSchemaNode* root_schema,
     core::DataNode* datanode = codec_service.decode(root_schema, entity_value, core::CodecService::Format::XML);
 
     if(!datanode){
-        BOOST_LOG_TRIVIAL(debug) << "Failed to deserialize entity node";
-        throw YDKInvalidArgumentException{"Failed to deserialize entity node"};
+        BOOST_LOG_TRIVIAL(debug) << "Failed to decode entity node";
+        throw YDKInvalidArgumentException{"Failed to decode entity node"};
     }
 
     std::string config_payload {};
@@ -468,6 +469,9 @@ static string get_netconf_payload(core::DataNode* input, string data_value, stri
     std::string payload{"<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"};
     payload+=codec_service.encode(input, core::CodecService::Format::XML, false);
     payload+="</rpc>";
+    BOOST_LOG_TRIVIAL(debug) <<"=============Generating payload=============";
+    BOOST_LOG_TRIVIAL(debug) <<payload;
+    BOOST_LOG_TRIVIAL(debug) <<"=========================="<<endl;
     return payload;
 }
 
@@ -475,7 +479,7 @@ static core::DataNode* handle_edit_reply(string reply, NetconfClient & client, b
 {
 	if(reply.find("<ok/>") == std::string::npos)
 	{
-                BOOST_LOG_TRIVIAL(debug) << "No ok in reply " << reply;
+        BOOST_LOG_TRIVIAL(debug) << "No ok in reply " << reply;
 		throw YDKServiceProviderException{reply};
 	}
 
@@ -485,7 +489,7 @@ static core::DataNode* handle_edit_reply(string reply, NetconfClient & client, b
 		reply = client.execute_payload(get_commit_rpc_payload());
 		if(reply.find("<ok/>") == std::string::npos)
 		{
-                    BOOST_LOG_TRIVIAL(debug) << "No ok in reply " << reply;
+			BOOST_LOG_TRIVIAL(debug) << "No ok in reply " << reply;
 		    throw YDKServiceProviderException{reply};
 		}
 	}
@@ -500,21 +504,21 @@ static core::DataNode* handle_read_reply(string reply, core::RootSchemaNode * ro
 	auto empty_data = reply.find("<data/>");
 	if(empty_data != std::string::npos)
 	{
-                BOOST_LOG_TRIVIAL(debug) << "Found empty data tag";
+		BOOST_LOG_TRIVIAL(debug) << "Found empty data tag";
 		return nullptr;
 	}
 
 	auto data_start = reply.find("<data>");
 	if(data_start == std::string::npos)
 	{
-                BOOST_LOG_TRIVIAL(debug) << "Can't find data tag in reply " << reply;
+		BOOST_LOG_TRIVIAL(debug) << "Can't find data tag in reply " << reply;
 		throw YDKServiceProviderException{reply};
 	}
 	data_start+= sizeof("<data>") - 1;
 	auto data_end = reply.find("</data>", data_start);
 	if(data_end == std::string::npos)
 	{
-                BOOST_LOG_TRIVIAL(debug) << "No end data tag found in reply " << reply;
+		BOOST_LOG_TRIVIAL(debug) << "No end data tag found in reply " << reply;
 		throw YDKException{"No end data tag found"};
 	}
 
@@ -523,7 +527,7 @@ static core::DataNode* handle_read_reply(string reply, core::RootSchemaNode * ro
 	auto datanode = codec_service.decode(root_schema, data, core::CodecService::Format::XML);
 
 	if(!datanode){
-                BOOST_LOG_TRIVIAL(debug) << "Codec service failed to decode datanode";
+		BOOST_LOG_TRIVIAL(debug) << "Codec service failed to decode datanode";
 		throw YDKException{"Problems deserializing output"};
 	}
 	return datanode;
@@ -550,8 +554,9 @@ static bool is_config(core::Rpc & rpc)
 static core::SchemaNode* get_schema_for_operation(core::RootSchemaNode & root_schema, string operation)
 {
 	auto c = root_schema.find(operation);
-	if(c.empty()){
-                BOOST_LOG_TRIVIAL(error) << "CRUD create rpc schema not found!";
+	if(c.empty())
+	{
+		BOOST_LOG_TRIVIAL(error) << "CRUD create rpc schema not found!";
 		throw YDKIllegalStateException{"CRUD create rpc schema not found!"};
 	}
 	return c[0];

@@ -108,7 +108,7 @@ nc_rpc* NetconfClient::build_rpc_request(const string & payload)
 	nc_rpc* rpc = nc_rpc_build(payload.c_str(), session);
 
 	if (rpc == NULL) {
-              BOOST_LOG_TRIVIAL(debug) << "Could not build rpc payload:-" << payload ;       
+              BOOST_LOG_TRIVIAL(debug) << "Could not build rpc payload:-" << payload ;
 	      throw YDKClientException{"Could not build payload"};
 	} else if(NC_RPC_UNKNOWN==nc_rpc_get_type(rpc)) {
 		nc_rpc_free(rpc);
@@ -143,13 +143,13 @@ void NetconfClient::clb_print(NC_VERB_LEVEL level, const char* msg)
 	switch (level)
 	{
 	case NC_VERB_ERROR:
-                BOOST_LOG_TRIVIAL(error) << "libnetconf ERROR: " << msg;
+         BOOST_LOG_TRIVIAL(error) << "libnetconf ERROR: " << msg;
 		break;
 	case NC_VERB_WARNING:
-                BOOST_LOG_TRIVIAL(warning) << "libnetconf WARNING: " << msg;
+         BOOST_LOG_TRIVIAL(warning) << "libnetconf WARNING: " << msg;
 		break;
 	case NC_VERB_VERBOSE:
-                BOOST_LOG_TRIVIAL(trace) << "libnetconf VERBOSE: " << msg;
+         BOOST_LOG_TRIVIAL(trace) << "libnetconf VERBOSE: " << msg;
 		break;
 	case NC_VERB_DEBUG:
 		BOOST_LOG_TRIVIAL(debug) << "libnetconf DEBUG: " << msg;
@@ -178,8 +178,8 @@ int NetconfClient::clb_ssh_host_authenticity_check(const char *hostname,
 void NetconfClient::perform_session_check(string message)
 {
 	if (session == NULL)
-	{      
-                BOOST_LOG_TRIVIAL(debug) << message;
+	{
+        BOOST_LOG_TRIVIAL(error) << message;
 		throw YDKClientException{message};
 	}
 }

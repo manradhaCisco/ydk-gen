@@ -1,7 +1,8 @@
 #include "entity_data_node_walker.hpp"
 
-#include <iostream>
 #include <assert.h>
+#include <boost/log/trivial.hpp>
+#include <iostream>
 
 #include "core.hpp"
 #include "types.hpp"
@@ -21,6 +22,7 @@ core::DataNode* get_data_node_from_entity(Entity & entity, const ydk::core::Root
 {
 	EntityPath root_path = get_top_entity_path(entity);
 	auto root_data_node = root_schema.create(root_path.path);
+	BOOST_LOG_TRIVIAL(debug) <<"Root entity: "<<root_path.path;
 	populate_name_values(root_data_node, root_path);
 	walk_children(entity, root_data_node);
 	return root_data_node;
@@ -42,7 +44,7 @@ void get_entity_from_data_node(core::DataNode * node, Entity* entity)
 		{
 			Entity * child_entity = entity->set_child(path);
 			if(child_entity == nullptr)
-			    cerr << "Couln't find child entity!"<<endl;
+			    BOOST_LOG_TRIVIAL(error)  << "Couln't find child entity!";
 			get_entity_from_data_node(child_data_node, child_entity);
 		}
 	}
@@ -52,6 +54,7 @@ static void populate_data_node(Entity & entity, core::DataNode* parent_data_node
 {
 	EntityPath path = entity.get_entity_path(entity.parent);
 	auto data_node = parent_data_node->create(path.path);
+
 	populate_name_values(data_node, path);
 	walk_children(entity, data_node);
 }
@@ -59,18 +62,24 @@ static void populate_data_node(Entity & entity, core::DataNode* parent_data_node
 static void walk_children(Entity & entity, core::DataNode* data_node)
 {
 	std::vector<Entity*> & children = entity.get_children();
+	BOOST_LOG_TRIVIAL(trace) <<"Children count for: " <<entity.get_entity_path(entity.parent).path<<": "<<children.size();
 	for(Entity* child:children)
 	{
+		BOOST_LOG_TRIVIAL(trace)  <<"Looking at child "<<child->get_entity_path(child->parent).path;
 		if(child->has_data())
 			populate_data_node(*child, data_node);
+		else
+			BOOST_LOG_TRIVIAL(trace)  <<"Child has no data";
 	}
 }
 
 static void populate_name_values(core::DataNode* data_node, EntityPath & path)
 {
+	BOOST_LOG_TRIVIAL(trace) <<"Leaf count: "<<path.value_paths.size();
 	for(const std::pair<std::string, std::string> & name_value : path.value_paths)
 	{
-		data_node->create(name_value.first, name_value.second);
+		auto result = data_node->create(name_value.first, name_value.second);
+		BOOST_LOG_TRIVIAL(debug)  <<"Creating datanode child "<<name_value.first<<", with value: "<<name_value.second<<" . Result: "<<(result?"success":"failure");
 	}
 }
 

@@ -6,6 +6,8 @@ project(bgp_samples)
 set(SAMPLE_DESCRIPTION "BGP sample application using YANG Development Kit Library, the library for YDK API.")
 
 
+set(bgp_samples bgp_create; bgp_update;bgp_read;bgp_delete)
+
 # set default build type if not specified by user
 set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
@@ -13,67 +15,47 @@ set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0")
 
 # Find dependent libraries
 find_library(ydk_location ydk)
-find_library(ydk_openconfig_location ydk_openconfig)
+find_library(ydk_ydktest_location ydk_ydktest)
 find_library(xml2_location xml2)
 find_library(curl_location curl)
 find_library(ssh_location ssh)
 find_library(ssh_threads_location ssh_threads)
 find_library(pcre_location pcre)
 find_library(xslt_location xslt)
+find_package(Boost COMPONENTS log_setup log thread date_time system filesystem unit_test_framework REQUIRED)
+set(BOOST_INCLUDE_DIRS $boost_installation_prefix/include)
 
-add_executable(bgp_create bgp_create.cpp args_parser.cpp)
-add_executable(bgp_read bgp_read.cpp args_parser.cpp)
-add_executable(bgp_update bgp_update.cpp args_parser.cpp)
-add_executable(bgp_delete bgp_delete.cpp args_parser.cpp)
+include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 
-target_link_libraries(bgp_create 
-	${ydk_location} 
-	${ydk_ydktest_location} 
-	${xml2_location}
-	${curl_location}
-	${ssh_location}
-	${ssh_threads_location}
-	${pcre_location}
-	${xslt_location})
+# set default build type if not specified by user
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE debug)
+endif()
 
-target_link_libraries(bgp_read
-	${ydk_location} 
-	${ydk_ydktest_location} 
-	${xml2_location}
-	${curl_location}
-	${ssh_location}
-	${ssh_threads_location}
-	${pcre_location}
-	${xslt_location})
+foreach(sample IN LISTS bgp_samples)
+    add_executable(${sample} ${sample}.cpp args_parser.cpp)
+    target_compile_definitions(${sample} PRIVATE "BOOST_LOG_DYN_LINK=1")
 
-target_link_libraries(bgp_update
-	${ydk_location} 
-	${ydk_ydktest_location} 
-	${xml2_location}
-	${curl_location}
-	${ssh_location}
-	${ssh_threads_location}
-	${pcre_location}
-	${xslt_location})
+    target_link_libraries(${sample}
+            ${ydk_location} 
+            ${ydk_ydktest_location} 
+            ${xml2_location}
+            ${curl_location}
+            ${ssh_location}
+            ${ssh_threads_location}
+            ${pcre_location}
+            ${xslt_location}
+            ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+            ${Boost_LOG_SETUP_LIBRARY}
+            ${Boost_LOG_LIBRARY}
+            ${BOOST_THREAD_LIBRARY}
+            ${BOOST_DATE_TIME_LIBRARY}
+            ${Boost_FILESYSTEM_LIBRARY}
+            ${Boost_SYSTEM_LIBRARY}
+            -rdynamic
+            )
 
-target_link_libraries(bgp_delete
-	${ydk_location} 
-	${ydk_ydktest_location} 
-	${xml2_location}
-	${curl_location}
-	${ssh_location}
-	${ssh_threads_location}
-	${pcre_location}
-	${xslt_location})
+    set_property(TARGET ${sample} PROPERTY CXX_STANDARD 14)
+    set_property(TARGET ${sample} PROPERTY CXX_STANDARD_REQUIRED ON)
+endforeach(sample)
 
-set_property(TARGET bgp_create PROPERTY CXX_STANDARD 14)
-set_property(TARGET bgp_create PROPERTY CXX_STANDARD_REQUIRED ON)
-
-set_property(TARGET bgp_read PROPERTY CXX_STANDARD 14)
-set_property(TARGET bgp_read PROPERTY CXX_STANDARD_REQUIRED ON)
-
-set_property(TARGET bgp_update PROPERTY CXX_STANDARD 14)
-set_property(TARGET bgp_update PROPERTY CXX_STANDARD_REQUIRED ON)
-
-set_property(TARGET bgp_delete PROPERTY CXX_STANDARD 14)
-set_property(TARGET bgp_delete PROPERTY CXX_STANDARD_REQUIRED ON)
