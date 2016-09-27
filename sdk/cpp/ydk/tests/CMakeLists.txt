@@ -5,7 +5,6 @@ set(core_tests bgptest)
 set(netconf_tests test_entity;test_value)
 
 
-set(entity_tests testsanityvalidationtest)
 
 include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 set(Boost_USE_STATIC_LIBS        OFF)
@@ -40,18 +39,6 @@ foreach(test_name IN LISTS netconf_tests)
     add_test(NAME ${test_name} COMMAND $<TARGET_FILE:${test_name}>)
 endforeach(test_name)
 
-
-foreach(test_name IN LISTS entity_tests)
-    add_executable(${test_name} entity/${test_name}.cpp)
-
-    set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 14)
-    set_property(TARGET ${test_name} PROPERTY CXX STANDARD_REQUIRED ON)
-    target_include_directories(${test_name} PRIVATE ${BOOST_INCLUDE_DIRS} )
-
-    target_compile_definitions(${test_name} PRIVATE "BOOST_TEST_DYN_LINK=1")
-    target_link_libraries(${test_name} ydk ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-    add_test(NAME ${test_name} COMMAND $<TARGET_FILE:${test_name}>)
-endforeach(test_name)
 
 
 configure_file("${PROJECT_SOURCE_DIR}/tests/config.hpp.in" "${PROJECT_SOURCE_DIR}/tests/config.hpp" ESCAPE_QUOTES @ONLY)
