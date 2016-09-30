@@ -77,7 +77,8 @@ std::vector<ydk::core::Capability> test_openconfig {
     {"openconfig-routing-policy", ""},
     {"openconfig-types", ""},
     {"ietf-interfaces", ""},
-    {"ydk", ""}
+    {"ydk", ""},
+    {"ydktest-sanity", ""}
     
 };
 const char* m = "\
@@ -392,4 +393,54 @@ BOOST_AUTO_TEST_CASE( bgp_validation )
     
     
     
+}
+BOOST_AUTO_TEST_CASE( decode_remove_as )
+{
+    std::string searchdir{TEST_HOME};
+    mock::MockServiceProvider sp{searchdir, test_openconfig};
+
+    std::unique_ptr<ydk::core::RootSchemaNode> schema{sp.get_root_schema()};
+
+    BOOST_REQUIRE(schema.get() != nullptr);
+    auto s = ydk::core::CodecService{};
+
+    //XML Codec Test
+    auto xml = "<bgp xmlns=\"http://openconfig.net/yang/bgp\"><neighbors><neighbor><neighbor-address>1.2.3.4</neighbor-address><config><neighbor-address>1.2.3.4</neighbor-address><remove-private-as xmlns:oc-bgp-types=\"http://openconfig.net/yang/bgp-types\">oc-bgp-types:PRIVATE_AS_REMOVE_ALL</remove-private-as></config></neighbor></neighbors></bgp>";
+
+    auto bgp = s.decode(schema.get(), xml, ydk::core::CodecService::Format::XML);
+
+    BOOST_REQUIRE( bgp != nullptr);
+
+    auto new_xml = s.encode(bgp, ydk::core::CodecService::Format::XML, false);
+
+    BOOST_REQUIRE(xml == new_xml);
+
+}
+
+BOOST_AUTO_TEST_CASE( bits_order )
+{
+    std::string searchdir{TEST_HOME};
+    mock::MockServiceProvider sp{searchdir, test_openconfig};
+    auto s = ydk::core::CodecService{};
+
+    std::unique_ptr<ydk::core::RootSchemaNode> schema{sp.get_root_schema()};
+
+    BOOST_REQUIRE(schema.get() != nullptr);
+
+    auto runner = schema->create("ydktest-sanity:runner", "");
+
+    BOOST_REQUIRE( runner != nullptr );
+
+    //get the root
+    std::unique_ptr<const ydk::core::DataNode> data_root{runner->root()};
+
+    BOOST_REQUIRE( data_root != nullptr );
+
+    auto bits = runner->create("ytypes/built-in-t/bits-value", "auto-sense-speed disable-nagle"); //TODO: this fails
+//    auto bits = runner->create("ytypes/built-in-t/bits-value", "disable-nagle auto-sense-speed"); //TODO: this works
+
+    BOOST_REQUIRE( bits != nullptr );
+
+    auto new_xml = s.encode(runner, ydk::core::CodecService::Format::XML, false);
+    std::cout<<new_xml<<std::endl;
 }
