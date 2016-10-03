@@ -6,7 +6,7 @@ project(bgp_samples)
 set(SAMPLE_DESCRIPTION "BGP sample application using YANG Development Kit Library, the library for YDK API.")
 
 
-set(bgp_samples bgp_create; bgp_update;bgp_read;bgp_delete)
+set(bgp_samples bgp_create; bgp_update;bgp_read;bgp_delete;bgp_routing_policy_create)
 
 # set default build type if not specified by user
 set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wall -Wextra")

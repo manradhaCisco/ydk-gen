@@ -209,7 +209,6 @@ void Value::operator = (Empty val)
 {
 	value_buffer.clear();
 	value_buffer.str("");
-	value_buffer << name;
 	BOOST_LOG_TRIVIAL(trace)<<"setting empty";
 	store_value();
 }
@@ -293,6 +292,9 @@ std::string get_bits_string(const std::map<std::string, bool> & bitmap)
 			value += entry.first + " ";
 		}
 	}
+
+	value = value.substr(0, value.size()-1);
+
     BOOST_LOG_TRIVIAL(trace)<<value<<": value of bits";
 
 	return (value);

@@ -27,6 +27,7 @@
 #include "../ydk/src/core.hpp"
 #include "../ydk/tests/config.hpp"
 #include "../ydk/src/netconf_provider.hpp"
+#include "config.hpp"
 
 const char* expected_bgp_output ="\
 <bgp xmlns=\"http://openconfig.net/yang/bgp\">\
@@ -169,7 +170,7 @@ void print_tree(ydk::core::DataNode* dn, const std::string& indent)
         for(auto c : dn->children())
             print_tree(c, child_indent);
         std::cout << indent << "</" << s.arg << ">" << std::endl;
-        
+
     }
 }
 
@@ -178,12 +179,12 @@ void print_tree(ydk::core::DataNode* dn, const std::string& indent)
 BOOST_AUTO_TEST_CASE( bgp_netconf_create  )
 {
     ydk::core::Repository repo{};
-    
+
     ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
     ydk::core::RootSchemaNode* schema = sp.get_root_schema();
 
     BOOST_REQUIRE(schema != nullptr);
-    
+
     auto s = ydk::core::CodecService{};
 
     auto bgp = schema->create("openconfig-bgp:bgp", "");
@@ -194,17 +195,17 @@ BOOST_AUTO_TEST_CASE( bgp_netconf_create  )
     std::unique_ptr<const ydk::core::DataNode> data_root{bgp->root()};
 
     BOOST_REQUIRE( data_root != nullptr );
-    
+
     //first delete
     std::unique_ptr<ydk::core::Rpc> delete_rpc { schema->rpc("ydk:delete") };
-    
+
     auto xml = s.encode(bgp, ydk::core::CodecService::Format::XML, false);
-    
+
     delete_rpc->input()->create("entity", xml);
-    
+
     //call delete
     (*delete_rpc)(sp);
-    
+
 
     auto as = bgp->create("global/config/as", "65172");
 
@@ -250,52 +251,85 @@ BOOST_AUTO_TEST_CASE( bgp_netconf_create  )
     auto neighbor_enabled = neighbor_af->create("config/enabled","true");
 
     BOOST_REQUIRE( neighbor_enabled != nullptr );
-    
+
     xml = s.encode(bgp, ydk::core::CodecService::Format::XML, false);
-    
+
     BOOST_CHECK_MESSAGE( !xml.empty(),
                         "XML output :" << xml);
 
     BOOST_REQUIRE(xml == expected_bgp_output);
-    
-    
+
+
     //call create
     std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("ydk:create") };
     create_rpc->input()->create("entity", xml);
     (*create_rpc)(sp);
-    
+
     //call read
     std::unique_ptr<ydk::core::Rpc> read_rpc { schema->rpc("ydk:read") };
     auto bgp_read = schema->create("openconfig-bgp:bgp", "");
     BOOST_REQUIRE( bgp_read != nullptr );
     std::unique_ptr<const ydk::core::DataNode> data_root2{bgp_read->root()};
-    
+
     xml = s.encode(bgp_read, ydk::core::CodecService::Format::XML, false);
     BOOST_REQUIRE( !xml.empty() );
     read_rpc->input()->create("filter", xml);
-    
+
     auto read_result = (*read_rpc)(sp);
-    
+
     BOOST_REQUIRE(read_result != nullptr);
 
     print_tree(read_result,"");
-    
+
     xml = s.encode(read_result, ydk::core::CodecService::Format::XML, false);
-    
+
     std::cout << xml << std::endl;
-    
+
     BOOST_REQUIRE(xml == expected_bgp_read);
-    
+
     peer_as->set("6500");
-    
+
     //call update
     std::unique_ptr<ydk::core::Rpc> update_rpc { schema->rpc("ydk:update") };
     xml = s.encode(bgp, ydk::core::CodecService::Format::XML, false);
     BOOST_REQUIRE( !xml.empty() );
     update_rpc->input()->create("entity", xml);
     (*update_rpc)(sp);
-    
-    
+
+
 
 }
 
+
+BOOST_AUTO_TEST_CASE(bits)
+{
+    ydk::core::Repository repo{TEST_HOME};
+
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+    ydk::core::RootSchemaNode* schema = sp.get_root_schema();
+
+	BOOST_REQUIRE(schema != nullptr);
+
+	auto runner = schema->create("ydktest-sanity:runner", "");
+
+	BOOST_REQUIRE( runner != nullptr );
+
+	//get the root
+	std::unique_ptr<const ydk::core::DataNode> data_root{runner->root()};
+	BOOST_REQUIRE( data_root != nullptr );
+
+	auto ysanity = runner->create("ytypes/built-in-t/bits-value", "disable-nagle");
+	BOOST_REQUIRE( ysanity != nullptr );
+
+	auto s = ydk::core::CodecService{};
+    auto xml = s.encode(runner, ydk::core::CodecService::Format::XML, false);
+
+    BOOST_CHECK_MESSAGE( !xml.empty(),
+                        "XML output :" << xml);
+
+
+    //call create
+    std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("ydk:create") };
+    create_rpc->input()->create("entity", xml);
+    (*create_rpc)(sp);
+}

@@ -5,7 +5,7 @@ project(ydk_entity_test)
 enable_testing()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules/")
-set(netconf_tests bgpnctest;test_netconf_client;testsanitynctest;test_crud;test_sanity_levels;testsanityvalidationtest)
+set(netconf_tests bgpnctest;test_netconf_client;testsanitynctest;test_crud;test_sanity_levels;test_sanity_types;testsanityvalidationtest)
 
 
 find_library(xml2_location xml2)

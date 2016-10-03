@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(test_empty)
 {
 	Value test_value{YType::empty, "name"};
 	test_value = Empty{};
-	BOOST_REQUIRE(test_value.get()=="name");
+	BOOST_REQUIRE(test_value.get()=="");
 }
 
 BOOST_AUTO_TEST_CASE(test_identity)
@@ -153,10 +153,10 @@ BOOST_AUTO_TEST_CASE(test_bits)
 	test_value["bit2"] = true;
 	test_value["bit3"] = true;
 	test_value["bit4"] = true;
-	BOOST_REQUIRE(test_value.get()=="bit1 bit2 bit3 bit4 ");
+	BOOST_REQUIRE(test_value.get()=="bit1 bit2 bit3 bit4");
 
 	test_value["bit3"] = false;
-	BOOST_REQUIRE(test_value.get()=="bit1 bit2 bit4 ");
+	BOOST_REQUIRE(test_value.get()=="bit1 bit2 bit4");
 }
 
 BOOST_AUTO_TEST_CASE(test_deci64)
