@@ -28,8 +28,9 @@
 #ifndef CRUD_SERVICE_HPP
 #define CRUD_SERVICE_HPP
 
-#include <string>
+#include <map>
 #include <memory>
+#include <string>
 #include "service.hpp"
 
 namespace ydk
@@ -49,13 +50,23 @@ class CrudService : public Service
 		CrudService();
 
 		bool create(core::ServiceProvider & provider, Entity & entity);
+		bool create(core::ServiceProvider & provider, std::map<std::string, Entity*> entity_map);
+
 		bool update(core::ServiceProvider & provider, Entity & entity);
+		bool update(core::ServiceProvider & provider, std::map<std::string, Entity*> entity_map);
+
 		bool delete_(core::ServiceProvider & provider, Entity & entity);
+		bool delete_(core::ServiceProvider & provider, std::map<std::string, Entity*> entity_map);
+
 		std::unique_ptr<Entity> read(core::ServiceProvider & provider, Entity & filter);
-		std::unique_ptr<Entity> read(core::ServiceProvider & provider, Entity & filter, bool config_only);
+		std::map<std::string, std::unique_ptr<Entity> > read(core::ServiceProvider & provider, std::map<std::string, Entity*> entity);
+
+		std::unique_ptr<Entity> read_config(core::ServiceProvider & provider, Entity & filter);
+		std::map<std::string, std::unique_ptr<Entity> > read_config(core::ServiceProvider & provider, std::map<std::string, Entity*> entity);
 
 	private:
 		std::unique_ptr<Entity> read(Entity & filter, core::DataNode* read_data_node);
+		std::map<std::string, std::unique_ptr<Entity> > read(std::map<std::string, Entity*> filter_map, core::DataNode* read_data_node);
 };
 
 }

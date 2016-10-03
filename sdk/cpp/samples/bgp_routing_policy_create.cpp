@@ -21,6 +21,7 @@
 #include "ydk/crud_service.hpp"
 #include "ydk_ydktest/openconfig_bgp.hpp"
 #include "ydk_ydktest/openconfig_bgp_types.hpp"
+#include "ydk_ydktest/openconfig_routing_policy.hpp"
 
 #include "args_parser.h"
 
@@ -50,7 +51,8 @@ void config_bgp(openconfig_bgp::Bgp* bgp)
 	neighbor->config->local_as = 65001;
 	neighbor->config->peer_group = "IBGP";
 	neighbor->config->peer_type = "INTERNAL";
-	neighbor->config->remove_private_as = openconfig_bgp_types::Private_As_Remove_AllIdentity();
+//	neighbor->config->remove_private_as =
+//	openconfig_bgp_types::Private_As_Remove_AllIdentity();
 	neighbor->parent = bgp->neighbors.get();
 	bgp->neighbors->neighbor.push_back(move(neighbor));
 
@@ -62,9 +64,17 @@ void config_bgp(openconfig_bgp::Bgp* bgp)
 	peer_group->config->peer_as = 65001;
 	peer_group->config->local_as = 65001;
 	peer_group->config->peer_type = "INTERNAL";
-	peer_group->config->remove_private_as = openconfig_bgp_types::Private_As_Remove_AllIdentity();
+	//peer_group->config->remove_private_as = openconfig_bgp_types::Remove_Private_As_OptionIdentity();
 	peer_group->parent = bgp->peer_groups.get();
 	bgp->peer_groups->peer_group.push_back(move(peer_group));
+}
+
+void config_routing_policy(openconfig_routing_policy::RoutingPolicy* routing_policy)
+{
+	auto policy_definition = make_unique<openconfig_routing_policy::RoutingPolicy::PolicyDefinitions::PolicyDefinition>();
+	policy_definition->name = "PASS-ALL";
+	policy_definition->parent = routing_policy->policy_definitions.get();
+	routing_policy->policy_definitions->policy_definition.push_back(move(policy_definition));
 }
 
 int main(int argc, char* argv[])
@@ -84,8 +94,14 @@ int main(int argc, char* argv[])
 	CrudService crud{};
 
 	auto bgp = make_unique<openconfig_bgp::Bgp>();
+	auto routing_policy = make_unique<openconfig_routing_policy::RoutingPolicy>();
 	config_bgp(bgp.get());
-	bool reply = crud.create(provider, *bgp);
+	config_routing_policy(routing_policy.get());
+
+	bool reply = crud.create(provider, {
+                                        {"openconfig-bgp", bgp.get()},
+                                        {"openconfig-routing-policy", routing_policy.get()}
+                                       });
 
 	if(reply) cout << "Create operation success" << endl << endl; else cout << "Operation failed" << endl << endl;
 

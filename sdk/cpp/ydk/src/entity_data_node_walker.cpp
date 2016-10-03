@@ -44,7 +44,7 @@ void get_entity_from_data_node(core::DataNode * node, Entity* entity)
 		{
 			Entity * child_entity = entity->set_child(path);
 			if(child_entity == nullptr)
-			    BOOST_LOG_TRIVIAL(error)  << "Couln't find child entity!";
+			    BOOST_LOG_TRIVIAL(error)  << "Couln't find child entity "<<path<< " in parent "<<node->path() <<"!";
 			get_entity_from_data_node(child_data_node, child_entity);
 		}
 	}
@@ -65,7 +65,8 @@ static void walk_children(Entity & entity, core::DataNode* data_node)
 	BOOST_LOG_TRIVIAL(trace) <<"Children count for: " <<entity.get_entity_path(entity.parent).path<<": "<<children.size();
 	for(Entity* child:children)
 	{
-		BOOST_LOG_TRIVIAL(trace)  <<"Looking at child "<<child->get_entity_path(child->parent).path;
+		BOOST_LOG_TRIVIAL(trace) <<"=================="<<endl;
+		BOOST_LOG_TRIVIAL(trace) <<"Looking at child "<<child->get_entity_path(child->parent).path;
 		if(child->has_data())
 			populate_data_node(*child, data_node);
 		else

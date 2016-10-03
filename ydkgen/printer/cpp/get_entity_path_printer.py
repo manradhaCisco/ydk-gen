@@ -21,7 +21,6 @@ class_path_printer.py
 
 """
 from ydkgen.api_model import Package
-from pyang.types import IntTypeSpec
 
 class GetEntityPathPrinter(object):
 
