@@ -492,3 +492,111 @@ BOOST_AUTO_TEST_CASE(test_identity_other_module)
 	ydktest_sanity::Runner * r_2 = dynamic_cast<ydktest_sanity::Runner*>(r_read.get());
 	BOOST_REQUIRE(r_1->ytypes->built_in_t->identity_ref_value == r_2->ytypes->built_in_t->identity_ref_value);
 }
+
+BOOST_AUTO_TEST_CASE(test_enum_leaflist)
+{
+	ydk::core::Repository repo{TEST_HOME};
+	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
+	CrudService crud{};
+
+	//DELETE
+	auto r_1 = make_unique<ydktest_sanity::Runner>();
+	bool reply = crud.delete_(provider, *r_1);
+	BOOST_REQUIRE(reply);
+
+	//CREATE
+	r_1->ytypes->built_in_t->enum_llist.append(ydktest_sanity::YdkEnumTestEnum::local);
+	r_1->ytypes->built_in_t->enum_llist.append(ydktest_sanity::YdkEnumTestEnum::remote);
+	reply = crud.create(provider, *r_1);
+	BOOST_REQUIRE(reply);
+
+	//READ
+	auto filter = make_unique<ydktest_sanity::Runner>();
+	auto r_read = crud.read(provider, *filter);
+	BOOST_REQUIRE(r_read!=nullptr);
+	ydktest_sanity::Runner * r_2 = dynamic_cast<ydktest_sanity::Runner*>(r_read.get());
+	BOOST_REQUIRE(r_1->ytypes->built_in_t->enum_llist == r_2->ytypes->built_in_t->enum_llist);
+}
+
+BOOST_AUTO_TEST_CASE(test_identity_leaflist)
+{
+	ydk::core::Repository repo{TEST_HOME};
+	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
+	CrudService crud{};
+
+	//DELETE
+	auto r_1 = make_unique<ydktest_sanity::Runner>();
+	bool reply = crud.delete_(provider, *r_1);
+	BOOST_REQUIRE(reply);
+
+	//CREATE
+	r_1->ytypes->built_in_t->identity_llist.append(ydktest_sanity::ChildIdentityIdentity());
+	r_1->ytypes->built_in_t->identity_llist.append(ydktest_sanity::ChildChildIdentityIdentity());
+	reply = crud.create(provider, *r_1);
+	BOOST_REQUIRE(reply);
+
+	//READ
+	auto filter = make_unique<ydktest_sanity::Runner>();
+	auto r_read = crud.read(provider, *filter);
+	BOOST_REQUIRE(r_read!=nullptr);
+	ydktest_sanity::Runner * r_2 = dynamic_cast<ydktest_sanity::Runner*>(r_read.get());
+	BOOST_REQUIRE(r_1->ytypes->built_in_t->enum_llist == r_2->ytypes->built_in_t->enum_llist);
+}
+
+BOOST_AUTO_TEST_CASE(test_union_complex_list)
+{
+	ydk::core::Repository repo{TEST_HOME};
+	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
+	CrudService crud{};
+
+	//DELETE
+	auto r_1 = make_unique<ydktest_sanity::Runner>();
+	bool reply = crud.delete_(provider, *r_1);
+	BOOST_REQUIRE(reply);
+
+	//CREATE
+	r_1->ytypes->built_in_t->younion_list.append("123:45");
+	reply = crud.create(provider, *r_1);
+	BOOST_REQUIRE(reply);
+
+	//READ
+	auto filter = make_unique<ydktest_sanity::Runner>();
+	auto r_read = crud.read(provider, *filter);
+	BOOST_REQUIRE(r_read!=nullptr);
+	ydktest_sanity::Runner * r_2 = dynamic_cast<ydktest_sanity::Runner*>(r_read.get());
+	BOOST_REQUIRE(r_1->ytypes->built_in_t->younion_list == r_2->ytypes->built_in_t->younion_list);
+}
+
+BOOST_AUTO_TEST_CASE(test_list)
+{
+	ydk::core::Repository repo{TEST_HOME};
+	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
+	CrudService crud{};
+
+	//DELETE
+	auto r_1 = make_unique<ydktest_sanity::Runner>();
+	bool reply = crud.delete_(provider, *r_1);
+	BOOST_REQUIRE(reply);
+
+	//CREATE
+	r_1->ytypes->built_in_t->llunion.append(1);
+	r_1->ytypes->built_in_t->llunion.append(2);
+	r_1->ytypes->built_in_t->llunion.append(3);
+	r_1->ytypes->built_in_t->llunion.append(4);
+	r_1->ytypes->built_in_t->llunion.append(5);
+	r_1->ytypes->built_in_t->llunion.append(6);
+	r_1->ytypes->built_in_t->llunion.append(7);
+	r_1->ytypes->built_in_t->llunion.append(8);
+	r_1->ytypes->built_in_t->llunion.append(9);
+	r_1->ytypes->built_in_t->llunion.append(10);
+	r_1->ytypes->built_in_t->llunion.append(11);
+	reply = crud.create(provider, *r_1);
+	BOOST_REQUIRE(reply);
+
+	//READ
+	auto filter = make_unique<ydktest_sanity::Runner>();
+	auto r_read = crud.read(provider, *filter);
+	BOOST_REQUIRE(r_read!=nullptr);
+	ydktest_sanity::Runner * r_2 = dynamic_cast<ydktest_sanity::Runner*>(r_read.get());
+	BOOST_REQUIRE(r_1->ytypes->built_in_t->younion_list == r_2->ytypes->built_in_t->younion_list);
+}

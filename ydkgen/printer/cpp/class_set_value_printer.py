@@ -50,7 +50,7 @@ class ClassSetValuePrinter(object):
         if(isinstance(leaf.property_type, Bits)):
             self.ctx.writeln('%s[value] = true;' % leaf.name)
         elif(leaf.is_many):
-            self.ctx.writeln('//%s.push_back(value);' % leaf.name)
+            self.ctx.writeln('%s.append(value);' % leaf.name)
         else:
             self.ctx.writeln('%s = value;' % leaf.name)
         self.ctx.lvl_dec()

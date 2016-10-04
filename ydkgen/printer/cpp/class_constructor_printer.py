@@ -45,7 +45,7 @@ class ClassConstructorPrinter(object):
 
     def _print_class_constructor_body(self, clazz, leafs, children):
         self._print_init_children(children)
-        self._print_init_leafs(leafs)
+        # self._print_init_leafs(leafs)
 
     def _print_init_children(self, children):
         for child in children:
@@ -66,7 +66,7 @@ class ClassConstructorPrinter(object):
         self.ctx.bline()
 
     def _print_class_inits(self, clazz, ls, children):
-        leafs = [prop for prop in ls if not prop.is_many]
+        leafs = [prop for prop in ls]
         if len(leafs) > 0:
             self.ctx.writeln(': \n\t%s' % ',\n\t '.join('%s{YType::%s, "%s"}' % (prop.name, get_type_name(prop.property_type), prop.stmt.arg) for prop in leafs))
         children_init = ''

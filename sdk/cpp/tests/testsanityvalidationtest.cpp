@@ -191,7 +191,19 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_bits )
 
 BOOST_AUTO_TEST_CASE( test_sanity_types_decimal64 )
 {
-  //TODO current no way to set this
+    ydk::core::Repository repo{};
+
+    ydk::NetconfServiceProvider sp{&repo,"127.0.0.1", "admin", "admin",  12022};
+
+    ydk::ValidationService validation_service{};
+
+    ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
+    builtInT.deci64 = "3.2";
+    auto r = builtInT.get_entity_path(nullptr);
+    BOOST_TEST_MESSAGE(r.path);
+
+    auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
+    BOOST_REQUIRE( !diagnostic.has_errors() ); //TODO: possible bug in core not able to validate bits
 
 }
 
@@ -299,7 +311,7 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_union)
 
     ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
 
-    builtInT.younion = ydk::ydktest_sanity::YdkEnumTestEnum_to_string(ydk::ydktest_sanity::YdkEnumTestEnum::none);
+    builtInT.younion = ydk::ydktest_sanity::YdkEnumTestEnum::none;
 
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
 
@@ -319,7 +331,7 @@ BOOST_AUTO_TEST_CASE( test_sanity_types_union_enum)
 
     ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
 
-    builtInT.enum_int_value = ydk::ydktest_sanity::YdkEnumIntTestEnum_to_string(ydk::ydktest_sanity::YdkEnumIntTestEnum::any);
+    builtInT.enum_int_value = ydk::ydktest_sanity::YdkEnumIntTestEnum::any;
 
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
 
@@ -361,8 +373,8 @@ BOOST_AUTO_TEST_CASE( test_union_leaflist)
     ydk::Value value2{ydk::YType::int16, "llunion"};
     value2 = (ydk::int16)2;
 
-    builtInT.llunion.push_back(value1);
-    builtInT.llunion.push_back(value2);
+    builtInT.llunion.append(value1);
+    builtInT.llunion.append(value2);
 
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
 
@@ -381,15 +393,13 @@ BOOST_AUTO_TEST_CASE( test_enum_leaflist)
 
     ydk::ydktest_sanity::Runner::Ytypes::BuiltInT builtInT{};
     ydk::Value value1{ydk::YType::enumeration, "enum-llist"};
-    value1.enum_to_string_func = ydk::ydktest_sanity::YdkEnumTestEnum_to_string;
     value1 = ydk::ydktest_sanity::YdkEnumTestEnum::local;
-    builtInT.enum_llist.push_back(value1);
+    builtInT.enum_llist.append(value1);
 
 
     ydk::Value value2{ydk::YType::enumeration, "enum-llist"};
-    value2.enum_to_string_func = ydk::ydktest_sanity::YdkEnumTestEnum_to_string;
     value2 = ydk::ydktest_sanity::YdkEnumTestEnum::remote;
-    builtInT.enum_llist.push_back(value2);
+    builtInT.enum_llist.append(value2);
 
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
 
@@ -412,8 +422,8 @@ BOOST_AUTO_TEST_CASE( test_identity_leaflist)
     ydk::Value value2{ydk::YType::identityref, "identity-llist"};
     value2 = ydk::ydktest_sanity::ChildChildIdentityIdentity{};
 
-    builtInT.identity_llist.push_back(value1);
-    builtInT.identity_llist.push_back(value2);
+    builtInT.identity_llist.append(value1);
+    builtInT.identity_llist.append(value2);
 
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
 
@@ -435,7 +445,7 @@ BOOST_AUTO_TEST_CASE( test_union_complex_list)
     ydk::Value value{ydk::YType::str, "younion-list"};
     value = "123:45";
 
-    builtInT.younion_list.push_back(value);
+    builtInT.younion_list.append(value);
 
     auto diagnostic = validation_service.validate(sp, builtInT, ydk::ValidationService::Option::EDIT_CONFIG);
 

@@ -42,7 +42,8 @@ endif()
 
 set(libydk_src src/netconf_provider.cpp 
                src/netconf_client.cpp 
-               src/value.cpp 
+               src/value.cpp
+               src/value_list.cpp 
                src/crud_service.cpp 
                src/core.cpp 
                src/entity_data_node_walker.cpp 

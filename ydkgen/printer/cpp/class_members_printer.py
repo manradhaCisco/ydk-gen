@@ -99,7 +99,7 @@ class ClassMembersPrinter(object):
         for leaf in self._get_leafs(clazz):
             self.ctx.writeln('Value %s;' % leaf.name)
         for leaf in self._get_leaf_lists(clazz):
-            self.ctx.writeln('std::vector<Value> %s;' % leaf.name)
+            self.ctx.writeln('ValueList %s;' % leaf.name)
         self.ctx.bline()
 
     def _print_class_inits(self, clazz):

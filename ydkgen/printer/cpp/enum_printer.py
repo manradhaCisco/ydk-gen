@@ -60,7 +60,6 @@ class EnumPrinter(object):
         self._print_enum_header(enum_class)
         self._print_enum_body(enum_class)
         self._print_enum_trailer(enum_class)
-        self._print_enum_to_string_func_declaration(enum_class)
 
     def _print_enum_header(self, enum_class):
         self.ctx.writeln('class %s : public Enum' % enum_class.qualified_cpp_name())
@@ -77,7 +76,7 @@ class EnumPrinter(object):
             self._print_enum_literal(enum_literal)
 
     def _print_enum_literal(self, enum_literal):
-        self.ctx.writeln('static const int %s = %s;' % (enum_literal.name, enum_literal.value))
+        self.ctx.writeln('static const Enum::Value %s;' % (enum_literal.name))
 
     def _print_enum_trailer(self, enum_class):
         self.ctx.lvl_dec()
@@ -86,40 +85,11 @@ class EnumPrinter(object):
         self.ctx.writeln('};')
         self.ctx.bline()
 
-    def _print_enum_to_string_func_declaration(self, enum_class):
-        self.ctx.writeln('std::string %s_to_string(int val); // %s' % (enum_class.qualified_cpp_name().replace('::', '_'), enum_class.name))
-        self.ctx.bline()
-
     def _print_enum_to_string_func(self, enum_class):
-        self._print_enum_to_string_func_header(enum_class)
-        self._print_enum_to_string_func_body(enum_class)
-        self._print_enum_to_string_func_trailer(enum_class)
-
-    def _print_enum_to_string_func_header(self, enum_class):
-        self.ctx.writeln('std::string %s_to_string(int val)' % enum_class.qualified_cpp_name().replace('::', '_'))
-        self.ctx.writeln('{')
-        self.ctx.lvl_inc()
-        
-    def _print_enum_to_string_func_body(self, enum_class):
-        self.ctx.writeln('#define TOSTRING(k, v) case %s::k: return v;' % enum_class.qualified_cpp_name())
-        self.ctx.writeln('switch(val)')
-        self.ctx.writeln('{')
-        self._print_enum_literals_to_string(enum_class)
-        self.ctx.writeln('}')
-        self.ctx.writeln('#undef TOSTRING')
-        self.ctx.writeln('return "";')
-
-    def _print_enum_literals_to_string(self, enum_class):
-        self.ctx.lvl_inc()
         for enum_literal in enum_class.literals:
-            self._print_enum_literal_to_string(enum_literal)
-        self.ctx.lvl_dec()
-
-    def _print_enum_literal_to_string(self, enum_literal):
-        self.ctx.writeln('TOSTRING(%s, "%s")' % (enum_literal.name, enum_literal.stmt.arg))
-
-    def _print_enum_to_string_func_trailer(self, enum_class):
-        self.ctx.lvl_dec()
-        self.ctx.writeln('} // %s' % enum_class.name)
+            self._print_enum_literal_to_string(enum_class, enum_literal)
         self.ctx.bline()
+
+    def _print_enum_literal_to_string(self, enum_class, enum_literal):
+        self.ctx.writeln('const Enum::Value %s::%s {%s, "%s"};' % (enum_class.qualified_cpp_name(), enum_literal.name, enum_literal.value, enum_literal.name))
 
