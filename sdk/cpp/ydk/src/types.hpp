@@ -33,6 +33,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <utility>
 
 namespace ydk {
 
@@ -146,6 +147,18 @@ class Identity {
 
 class Enum {
   public:
+	class Value {
+	  public:
+		Value(int value, std::string name)
+			: value(value), name(name)
+		{
+		}
+		~Value(){}
+
+		int value;
+		std::string name;
+	};
+
 	Enum()
 	{
 	}
@@ -180,7 +193,6 @@ class Value {
     Value(const Value& val);
     Value(Value&& val);
 
-
     Value& operator=(const Value& val);
     Value& operator=(Value&& val);
 
@@ -196,6 +208,7 @@ class Value {
 	void operator = (Empty val);
 	void operator = (Identity val);
 	void operator = (std::string val);
+	void operator = (Enum::Value val);
 
 	operator std::string() const;
 	bool operator == (Value & other) const;
@@ -204,12 +217,9 @@ class Value {
 	bool & operator [] (std::string key);
 
 	bool is_set;
-	std::string (*enum_to_string_func)(int);
 
   private:
 	void store_value();
-
-	bool is_enum();
 
 	std::string name;
 	std::ostringstream value_buffer;
@@ -219,9 +229,47 @@ class Value {
 	std::map<std::string, bool> bitmap;
 };
 
+class ValueList {
+  public:
+	ValueList(YType type, std::string name);
+	~ValueList();
+
+    ValueList(const ValueList& val);
+    ValueList(ValueList&& val);
+
+    ValueList& operator=(const ValueList& val);
+    ValueList& operator=(ValueList&& val);
+
+	const std::string get() const;
+	std::pair<std::string, std::string> get_name_value() const;
+
+	void append(uint8 val);
+	void append(uint32 val);
+	void append(uint64 val);
+	void append(int8 val);
+	void append(int32 val);
+	void append(int64 val);
+	void append(Empty val);
+	void append(Identity val);
+	void append(std::string val);
+	void append(Enum::Value val);
+
+	Value & operator [] (size_t index);
+
+	operator std::string() const;
+	bool operator == (ValueList & other) const;
+	bool operator == (const ValueList & other) const;
+
+	std::vector<std::pair<std::string, std::string> > get_name_values() const;
+	std::vector<Value> getValues() const;
+
+  private:
+	std::vector<Value> values;
+	YType type;
+	std::string name;
+};
+
 std::ostream& operator<< (std::ostream& stream, const Value& value);
-
-
 
 }
 

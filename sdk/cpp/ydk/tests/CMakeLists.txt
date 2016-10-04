@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.6)
 cmake_policy(SET CMP0048 NEW)
 
 set(core_tests bgptest)
-set(netconf_tests test_entity;test_value)
+set(entity_tests test_entity;test_value;test_value_list)
 
 
 
@@ -29,8 +29,8 @@ foreach(test_name IN LISTS core_tests)
     add_test(NAME ${test_name} COMMAND $<TARGET_FILE:${test_name}>)
 endforeach(test_name)
 
-foreach(test_name IN LISTS netconf_tests)
-    add_executable(${test_name} netconf/${test_name}.cpp)
+foreach(test_name IN LISTS entity_tests)
+    add_executable(${test_name} entity/${test_name}.cpp)
     set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 14)
     set_property(TARGET ${test_name} PROPERTY CXX_STANDARD_REQUIRED ON)
     target_include_directories(${test_name} PRIVATE ${BOOST_INCLUDE_DIRS})

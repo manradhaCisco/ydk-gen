@@ -64,7 +64,6 @@ std::string to_str(YType t)
 
 Value::Value(YType type, std::string name):
 		is_set(false),
-		enum_to_string_func(nullptr),
 		name(name),
 		value(""),
 		type(type)
@@ -73,7 +72,6 @@ Value::Value(YType type, std::string name):
 
 Value::Value(const Value& val):
     is_set{val.is_set},
-	enum_to_string_func(nullptr),
     name{val.name},
     value{val.value},
     type{val.type}
@@ -174,26 +172,18 @@ void Value::operator = (int32 val)
 {
 	value_buffer.clear();
 	value_buffer.str("");
-	if(is_enum())
-	{
-		if(enum_to_string_func == nullptr)
-		{
-			BOOST_LOG_TRIVIAL(error)<<"Enum to string function not set for " << name ;
-			throw YDKException("Enum to string function not set for " + name);
-		}
-		value_buffer << enum_to_string_func(val);
-	}
-	else
-	{
-		value_buffer << val;
-	}
+	value_buffer << val;
 	BOOST_LOG_TRIVIAL(trace)<<"setting int32";
 	store_value();
 }
 
-bool Value::is_enum()
+void Value::operator = (Enum::Value val)
 {
-	return type == YType::enumeration;
+	value_buffer.clear();
+	value_buffer.str("");
+	value_buffer << val.name;
+	BOOST_LOG_TRIVIAL(trace)<<"setting enum";
+	store_value();
 }
 
 void Value::operator = (int64 val)
@@ -215,7 +205,10 @@ void Value::operator = (Empty val)
 
 void Value::operator = (Identity val)
 {
+	value_buffer.clear();
+	value_buffer.str("");
 	value_buffer << val.to_string();
+	BOOST_LOG_TRIVIAL(trace)<<"setting identity: "<<val.to_string();
 	store_value();
 }
 

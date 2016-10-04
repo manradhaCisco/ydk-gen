@@ -14,27 +14,18 @@ class TestIdentity : public Identity
 	}
 };
 
-std::string test_enum_to_string(int val);
 class TestEnum : public Enum
 {
   public:
 	TestEnum() {}
 	~TestEnum(){}
 
-	static const int one=1;
-	static const int two=2;
+	static const Enum::Value one;
+	static const Enum::Value two;
 };
 
-std::string test_enum_to_string(int val)
-{
-	#define TOSTRING(t) case TestEnum::t: return #t
-	switch(val)
-	{
-		TOSTRING(one);
-		TOSTRING(two);
-	}
-	return "";
-}
+const Enum::Value TestEnum::one {1, "one"};
+const Enum::Value TestEnum::two {2, "two"};
 
 BOOST_AUTO_TEST_CASE(test_uint8)
 {
@@ -98,7 +89,6 @@ BOOST_AUTO_TEST_CASE(test_int64)
 	BOOST_REQUIRE(test_value.get()=="4");
 }
 
-
 BOOST_AUTO_TEST_CASE(test_empty)
 {
 	Value test_value{YType::empty, "name"};
@@ -117,16 +107,9 @@ BOOST_AUTO_TEST_CASE(test_identity)
 BOOST_AUTO_TEST_CASE(test_enum_)
 {
 	Value test_value{YType::enumeration, "enumval"};
-	test_value.enum_to_string_func = test_enum_to_string;
 	test_value = TestEnum::one;
 	BOOST_TEST_MESSAGE(test_value.get());
 	BOOST_REQUIRE(test_value.get()=="one");
-}
-
-BOOST_AUTO_TEST_CASE(enum_to_string_func_not_set)
-{
-	Value test_value{YType::enumeration, "enumval"};
-	BOOST_REQUIRE_THROW(test_value = TestEnum::one, YDKException);
 }
 
 BOOST_AUTO_TEST_CASE(test_str)

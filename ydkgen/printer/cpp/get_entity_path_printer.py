@@ -173,12 +173,8 @@ class GetEntityPathPrinter(object):
     def _print_get_ydk_path_leaflists(self, leafs):
         leaf_lists = [leaf for leaf in leafs if leaf.is_many]
         for leaf in leaf_lists:
-            self.ctx.writeln('for( const Value & leaf : %s )' % leaf.name)
-            self.ctx.writeln('{')
-            self.ctx.lvl_inc()
-            self.ctx.writeln('if (leaf.is_set) leaf_name_values.push_back(leaf.get_name_value());')
-            self.ctx.lvl_dec()
-            self.ctx.writeln('}')
+            self.ctx.writeln('auto %s_name_values = %s.get_name_values();' % (leaf.name, leaf.name))
+            self.ctx.writeln('leaf_name_values.insert(leaf_name_values.end(), %s_name_values.begin(), %s_name_values.end());' % (leaf.name, leaf.name))
 
     def _get_path_predicate(self, clazz):
         predicates = ''

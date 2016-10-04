@@ -35,10 +35,10 @@ class ClassHasDataPrinter(object):
         self.ctx.lvl_inc()
         for child in children:
             if child.is_many:
-                self._print_class_has_data_many(child, '->has_data()')
+                self._print_class_has_data_many(child, 'for (std::size_t index=0; index<%s.size(); index++)', 'if(%s[index]->has_data())' % child.name)
         for leaf in ls:
             if leaf.is_many:
-                self._print_class_has_data_many(leaf, '.is_set')
+                self._print_class_has_data_many(leaf, 'for (auto leaf : %s.getValues())', 'if(leaf.is_set)')
         if len(conditions) == 0:
             self.ctx.writeln('return false;')
         else:
@@ -47,11 +47,11 @@ class ClassHasDataPrinter(object):
         self.ctx.writeln('}')
         self.ctx.bline()
 
-    def _print_class_has_data_many(self, child, check_function):
-        self.ctx.writeln('for (std::size_t index=0; index<%s.size(); index++)' % child.name)
+    def _print_class_has_data_many(self, child, iter_statement, access_statement):
+        self.ctx.writeln(iter_statement % child.name)
         self.ctx.writeln('{')
         self.ctx.lvl_inc()
-        self.ctx.writeln('if(%s[index]%s)' % (child.name, check_function))
+        self.ctx.writeln(access_statement)
         self.ctx.lvl_inc()
         self.ctx.writeln('return true;')
         self.ctx.lvl_dec()
