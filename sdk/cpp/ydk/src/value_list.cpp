@@ -176,6 +176,15 @@ void ValueList::append(Identity val)
 	values.push_back(value);
 }
 
+void ValueList::append(Bits val)
+{
+	Value value {type, name};
+	value = val;
+	BOOST_LOG_TRIVIAL(trace)<<"appending "<<value.get();
+	BOOST_LOG_TRIVIAL(trace)<<"type of leaf: "<<to_string(type);
+	values.push_back(value);	
+}
+
 void ValueList::append(std::string val)
 {
 	Value value {type, name};

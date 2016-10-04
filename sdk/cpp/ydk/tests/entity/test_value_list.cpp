@@ -149,19 +149,22 @@ BOOST_AUTO_TEST_CASE(test_bool)
 	test_value.append(false);
 	BOOST_REQUIRE(test_value[1].get()=="false");
 }
-//
-//BOOST_AUTO_TEST_CASE(test_bits)
-//{
-//	ValueList test_value{YType::bits, "bits-field"};
-//	test_value["bit1"] = true;
-//	test_value["bit2"] = true;
-//	test_value["bit3"] = true;
-//	test_value["bit4"] = true;
-//	BOOST_REQUIRE(test_value[0].get()=="bit1 bit2 bit3 bit4");
-//
-//	test_value["bit3"] = false;
-//	BOOST_REQUIRE(test_value[0].get()=="bit1 bit2 bit4");
-//}
+
+BOOST_AUTO_TEST_CASE(test_bits)
+{
+	ValueList test_value{YType::bits, "bits-list"};
+	Bits test;
+	test["bit1"] = true;
+	test["bit2"] = true;
+	test["bit3"] = true;
+	test["bit4"] = true;
+	test_value.append(test);
+	BOOST_REQUIRE(test_value[0].get()=="bit1 bit2 bit3 bit4");
+
+	test["bit3"] = false;
+	test_value.append(test);
+	BOOST_REQUIRE(test_value[1].get()=="bit1 bit2 bit4");
+}
 
 BOOST_AUTO_TEST_CASE(test_deci64)
 {

@@ -30,7 +30,6 @@
 
 #include <map>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 #include <utility>
@@ -128,6 +127,21 @@ class Entity {
 	std::vector<Entity*> children;
 };
 
+class Bits {
+  public:
+	Bits()
+    {
+    }
+	virtual ~Bits()
+	{
+	}
+	bool & operator [] (std::string key);
+    const std::map<std::string, bool> & get_bitmap() const;
+
+  private:
+	std::map<std::string, bool> bitmap;
+};
+
 class Identity {
   public:
 	Identity(std::string tag) : tag(tag)
@@ -207,6 +221,7 @@ class Value {
 	void operator = (int64 val);
 	void operator = (Empty val);
 	void operator = (Identity val);
+	void operator = (Bits val);
 	void operator = (std::string val);
 	void operator = (Enum::Value val);
 
@@ -219,14 +234,13 @@ class Value {
 	bool is_set;
 
   private:
-	void store_value();
+	void store_value(std::string && val);
+	std::string get_bits_string() const;
 
 	std::string name;
-	std::ostringstream value_buffer;
 	std::string value;
 	YType type;
-
-	std::map<std::string, bool> bitmap;
+	Bits bits_value;
 };
 
 class ValueList {
@@ -251,6 +265,7 @@ class ValueList {
 	void append(int64 val);
 	void append(Empty val);
 	void append(Identity val);
+	void append(Bits val);
 	void append(std::string val);
 	void append(Enum::Value val);
 

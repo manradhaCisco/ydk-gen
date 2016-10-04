@@ -600,3 +600,32 @@ BOOST_AUTO_TEST_CASE(test_list)
 	ydktest_sanity::Runner * r_2 = dynamic_cast<ydktest_sanity::Runner*>(r_read.get());
 	BOOST_REQUIRE(r_1->ytypes->built_in_t->younion_list == r_2->ytypes->built_in_t->younion_list);
 }
+
+BOOST_AUTO_TEST_CASE(test_bits_list)
+{
+	ydk::core::Repository repo{TEST_HOME};
+	NetconfServiceProvider provider{&repo, "127.0.0.1", "admin", "admin", 12022};
+	CrudService crud{};
+
+	//DELETE
+	auto r_1 = make_unique<ydktest_sanity::Runner>();
+	bool reply = crud.delete_(provider, *r_1);
+	BOOST_REQUIRE(reply);
+
+	//CREATE
+	Bits bits1{};
+	bits1["disable-nagle"] = true;
+	Bits bits2{};
+	bits2["disable-nagle"] = true;
+	r_1->ytypes->built_in_t->bits_llist.append(bits1);
+	r_1->ytypes->built_in_t->bits_llist.append(bits2);
+//	reply = crud.create(provider, *r_1); //TODO: netsim issue
+//	BOOST_REQUIRE(reply);
+//
+//	//READ
+//	auto filter = make_unique<ydktest_sanity::Runner>();
+//	auto r_read = crud.read(provider, *filter);
+//	BOOST_REQUIRE(r_read!=nullptr);
+//	ydktest_sanity::Runner * r_2 = dynamic_cast<ydktest_sanity::Runner*>(r_read.get());
+//	BOOST_REQUIRE(r_1->ytypes->built_in_t->bits_llist == r_2->ytypes->built_in_t->bits_llist);
+}
