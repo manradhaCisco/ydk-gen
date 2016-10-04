@@ -28,6 +28,7 @@
 #include <boost/log/trivial.hpp>
 
 #include <iostream>
+#include <sstream>
 
 #include "core.hpp"
 #include "errors.hpp"
@@ -35,7 +36,6 @@
 
 namespace ydk {
 
-static std::string get_bits_string(const std::map<std::string, bool> & bitmap);
 static std::string get_bool_string(const std::string & value);
 
 std::string to_str(YType t)
@@ -74,7 +74,8 @@ Value::Value(const Value& val):
     is_set{val.is_set},
     name{val.name},
     value{val.value},
-    type{val.type}
+    type{val.type},
+	bits_value{val.bits_value}
 {
 
 }
@@ -84,7 +85,8 @@ Value::Value(Value&& val):
     is_set{val.is_set},
     name{std::move(val.name)},
     value{std::move(val.value)},
-    type{val.type}
+    type{val.type},
+	bits_value{val.bits_value}
 {
     val.is_set = false;
 }
@@ -96,6 +98,7 @@ Value::operator=(const Value& val)
     name = val.name;
     value = val.value;
     type = val.type;
+    bits_value = val.bits_value;
 
     return *this;
 }
@@ -107,6 +110,7 @@ Value::operator=(Value&& val)
     name = std::move(val.name);
     value = std::move(val.value);
     type = val.type;
+    bits_value = std::move(val.bits_value);
 
     return *this;
 }
@@ -120,7 +124,7 @@ const std::string  Value::get() const
 {
 	if(type == YType::bits)
 	{
-		return get_bits_string(bitmap);
+		return get_bits_string();
 	}
 	BOOST_LOG_TRIVIAL(trace) <<"Returning value "<<value<<" for leaf "<<name;
 	return value;
@@ -134,103 +138,112 @@ std::pair<std::string, std::string> Value::get_name_value() const
 
 void Value::operator = (uint8 val)
 {
-	value_buffer.clear();
-	value_buffer.str("");
+	std::ostringstream value_buffer;
+
 	value_buffer << val;
 	BOOST_LOG_TRIVIAL(trace)<<"setting uint8";
-	store_value();
+	store_value(value_buffer.str());
 }
 
 void Value::operator = (uint32 val)
 {
-	value_buffer.clear();
-	value_buffer.str("");
+	std::ostringstream value_buffer;
+
 	value_buffer << val;
-	BOOST_LOG_TRIVIAL(trace)<<"setting uint32: "<<val;
-	store_value();
+	BOOST_LOG_TRIVIAL(trace)<<"setting uint32";
+	store_value(value_buffer.str());
 }
 
 void Value::operator = (uint64 val)
 {
-	value_buffer.clear();
-	value_buffer.str("");
+	std::ostringstream value_buffer;
+
 	value_buffer << val;
 	BOOST_LOG_TRIVIAL(trace)<<"setting uint64";
-	store_value();
+	store_value(value_buffer.str());
 }
 
 void Value::operator = (int8 val)
 {
-	value_buffer.clear();
-	value_buffer.str("");
+	std::ostringstream value_buffer;
+
 	value_buffer << val;
 	BOOST_LOG_TRIVIAL(trace)<<"setting int8";
-	store_value();
+	store_value(value_buffer.str());
 }
 
 void Value::operator = (int32 val)
 {
-	value_buffer.clear();
-	value_buffer.str("");
+	std::ostringstream value_buffer;
+
 	value_buffer << val;
 	BOOST_LOG_TRIVIAL(trace)<<"setting int32";
-	store_value();
+	store_value(value_buffer.str());
 }
 
 void Value::operator = (Enum::Value val)
 {
-	value_buffer.clear();
-	value_buffer.str("");
+	std::ostringstream value_buffer;
+
 	value_buffer << val.name;
 	BOOST_LOG_TRIVIAL(trace)<<"setting enum";
-	store_value();
+	store_value(value_buffer.str());
+}
+
+void Value::operator = (Bits val)
+{
+	std::ostringstream value_buffer;
+
+	bits_value = val;
+	value_buffer << get_bits_string();
+	store_value(value_buffer.str());
 }
 
 void Value::operator = (int64 val)
 {
-	value_buffer.clear();
-	value_buffer.str("");
+	std::ostringstream value_buffer;
+
 	value_buffer << val;
 	BOOST_LOG_TRIVIAL(trace)<<"setting int64";
-	store_value();
+	store_value(value_buffer.str());
 }
 
 void Value::operator = (Empty val)
 {
-	value_buffer.clear();
-	value_buffer.str("");
+	std::ostringstream value_buffer;
+
 	BOOST_LOG_TRIVIAL(trace)<<"setting empty";
-	store_value();
+	store_value(value_buffer.str());
 }
 
 void Value::operator = (Identity val)
 {
-	value_buffer.clear();
-	value_buffer.str("");
+	std::ostringstream value_buffer;
+
 	value_buffer << val.to_string();
 	BOOST_LOG_TRIVIAL(trace)<<"setting identity: "<<val.to_string();
-	store_value();
+	store_value(value_buffer.str());
 }
 
 void Value::operator = (std::string val)
 {
-	value_buffer.clear();
-	value_buffer.str("");
+	std::ostringstream value_buffer;
+
 	value_buffer << val;
-	BOOST_LOG_TRIVIAL(trace)<<"setting string: "<<val;
-	store_value();
+	BOOST_LOG_TRIVIAL(trace)<<"setting string";
+	store_value(value_buffer.str());
 }
 
-void Value::store_value()
+void Value::store_value(std::string && val)
 {
 	is_set=true;
 	if(type == YType::boolean)
 	{
-		value = get_bool_string(value_buffer.str());
+		value = get_bool_string(val);
 	}
 	else
 	{
-		value = value_buffer.str();
+		value = val;
 	}
 	BOOST_LOG_TRIVIAL(trace)<<"storing "<<value;
 	BOOST_LOG_TRIVIAL(trace)<<"type of leaf: "<<to_str(type);
@@ -254,7 +267,25 @@ bool Value::operator == (const Value & other) const
 bool & Value::operator [] (std::string key)
 {
 	is_set = true;
-	return bitmap[key];
+	return bits_value[key];
+}
+
+std::string Value::get_bits_string() const
+{
+	std::string value;
+	for(auto const & entry : bits_value.get_bitmap())
+	{
+		if(entry.second)
+		{
+			value += entry.first + " ";
+		}
+	}
+
+	value = value.substr(0, value.size()-1);
+
+    BOOST_LOG_TRIVIAL(trace)<<value<<": value of bits";
+
+	return (value);
 }
 
 std::ostream& operator<< (std::ostream& stream, const Value& value)
@@ -275,22 +306,14 @@ std::string get_bool_string(const std::string & value)
 	}
 }
 
-std::string get_bits_string(const std::map<std::string, bool> & bitmap)
+bool & Bits::operator [] (std::string key)
 {
-	std::string value;
-	for(auto const & entry : bitmap)
-	{
-		if(entry.second)
-		{
-			value += entry.first + " ";
-		}
-	}
+	return bitmap[key];
+}
 
-	value = value.substr(0, value.size()-1);
-
-    BOOST_LOG_TRIVIAL(trace)<<value<<": value of bits";
-
-	return (value);
+const std::map<std::string, bool> & Bits::get_bitmap() const
+{
+	return bitmap;
 }
 
 }

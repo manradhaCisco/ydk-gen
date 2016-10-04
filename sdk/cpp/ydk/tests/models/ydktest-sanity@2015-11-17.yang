@@ -351,6 +351,19 @@ module ydktest-sanity {
           type string;
           description "A list of string";
         }
+        
+        leaf-list bits-llist {
+          description "this is bits list value";
+          type bits {
+            bit disable-nagle {
+              position 0;
+            }
+
+            bit auto-sense-speed {
+              position 1;
+            }
+          }
+        }
 
         leaf-list enum-llist {
           type Ydk-Enum-test;

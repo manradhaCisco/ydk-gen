@@ -142,6 +142,27 @@ BOOST_AUTO_TEST_CASE(test_bits)
 	BOOST_REQUIRE(test_value.get()=="bit1 bit2 bit4");
 }
 
+BOOST_AUTO_TEST_CASE(test_bits_assign)
+{
+	Value test_value{YType::bits, "bits-field"};
+	Bits test{};
+	test["bit1"] = true;
+	test["bit2"] = true;
+	test["bit3"] = true;
+	test["bit4"] = true;
+	test_value = test;
+	BOOST_REQUIRE(test_value.get()=="bit1 bit2 bit3 bit4");
+
+	test["bit3"] = false;
+	test_value = test;
+	BOOST_REQUIRE(test_value.get()=="bit1 bit2 bit4");
+
+	std::vector<Value> vs;
+	vs.push_back(test_value);
+	BOOST_REQUIRE(vs[0].get()=="bit1 bit2 bit4");
+	BOOST_REQUIRE(test_value.get()=="bit1 bit2 bit4");
+}
+
 BOOST_AUTO_TEST_CASE(test_deci64)
 {
 	Value test_value{YType::decimal64, "value"};

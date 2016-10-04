@@ -48,7 +48,12 @@ class ClassSetValuePrinter(object):
         self.ctx.writeln('{')
         self.ctx.lvl_inc()
         if(isinstance(leaf.property_type, Bits)):
-            self.ctx.writeln('%s[value] = true;' % leaf.name)
+            if leaf.is_many:
+                self.ctx.writeln('Bits bits_value{};')
+                self.ctx.writeln('bits_value[value] = true;')
+                self.ctx.writeln('%s.append(bits_value);' % leaf.name)
+            else:
+                self.ctx.writeln('%s[value] = true;' % leaf.name)
         elif(leaf.is_many):
             self.ctx.writeln('%s.append(value);' % leaf.name)
         else:
