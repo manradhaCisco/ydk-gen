@@ -296,7 +296,7 @@ std::ostream& operator<< (std::ostream& stream, const Value& value)
 
 std::string get_bool_string(const std::string & value)
 {
-	if(value == "1")
+	if(value == "1" || value == "true")
 	{
 		return "true";
 	}

@@ -106,9 +106,8 @@ BOOST_AUTO_TEST_CASE(bgp_read_delete)
 	BOOST_CHECK_EQUAL(bgp_set->global->afi_safis->afi_safi[0]->afi_safi_name, bgp_read_ptr->global->afi_safis->afi_safi[0]->afi_safi_name);
 	BOOST_CHECK_EQUAL(bgp_set->global->afi_safis->afi_safi[0]->config->afi_safi_name, bgp_read_ptr->global->afi_safis->afi_safi[0]->config->afi_safi_name);
 
-//	cerr<<bgp_set->global->afi_safis->afi_safi[0]->config->enabled<<","<<bgp_read_ptr->global->afi_safis->afi_safi[0]->config->enabled<<endl;
-//	reply = reply && string(bgp_set->global->afi_safis->afi_safi[0]->config->enabled)  == string(bgp_read_ptr->global->afi_safis->afi_safi[0]->config->enabled);
-//	BOOST_REQUIRE(reply);
+	reply = reply && (bgp_set->global->afi_safis->afi_safi[0]->config->enabled  == bgp_read_ptr->global->afi_safis->afi_safi[0]->config->enabled);
+	BOOST_REQUIRE(reply);
 }
 
 BOOST_AUTO_TEST_CASE(bgp_update_delete)
