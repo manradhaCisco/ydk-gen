@@ -340,7 +340,9 @@ BOOST_AUTO_TEST_CASE(test_bool)
 	auto r_read = crud.read(provider, *filter);
 	BOOST_REQUIRE(r_read!=nullptr);
 	ydktest_sanity::Runner * r_2 = dynamic_cast<ydktest_sanity::Runner*>(r_read.get());
-	//BOOST_REQUIRE(r_1->ytypes->built_in_t->bool_value == r_2->ytypes->built_in_t->bool_value); //TODO
+	std::cout<<r_1->ytypes->built_in_t->bool_value<<std::endl;
+	std::cout<<r_2->ytypes->built_in_t->bool_value<<std::endl;
+	BOOST_REQUIRE(r_1->ytypes->built_in_t->bool_value == r_2->ytypes->built_in_t->bool_value);
 }
 
 BOOST_AUTO_TEST_CASE(test_embeded_enum)
