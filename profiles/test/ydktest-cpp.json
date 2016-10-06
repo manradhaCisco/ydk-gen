@@ -33,7 +33,8 @@
             "sdk/cpp/ydk/tests/models/ydktest-sanity@2015-11-17.yang",
             "sdk/cpp/ydk/tests/models/ydktest-types@2016-05-23.yang",
             "yang/ietf/ietf-inet-types@2013-07-15.yang",
-            "yang/ietf/ietf-yang-types@2013-07-15.yang"
+            "yang/ietf/ietf-yang-types@2013-07-15.yang",
+            "yang/ydktest/oc-pattern@2015-11-17.yang"
         ]
     }
 }

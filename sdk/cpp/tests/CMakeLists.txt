@@ -5,7 +5,7 @@ project(ydk_entity_test)
 enable_testing()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules/")
-set(netconf_tests bgpnctest;test_netconf_client;testsanitynctest;test_crud;test_sanity_levels;test_sanity_types;testsanityvalidationtest)
+set(netconf_tests bgpnctest;test_netconf_client;testsanitynctest;test_crud;test_sanity_levels;test_sanity_types;testsanityvalidationtest;test_sanity_codec)
 
 
 find_library(xml2_location xml2)
@@ -37,17 +37,17 @@ foreach(test_name IN LISTS netconf_tests)
     add_executable(${test_name} ${test_name}.cpp)
     set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 14)
     set_property(TARGET ${test_name} PROPERTY CXX_STANDARD_REQUIRED ON)
-    target_include_directories(${test_name} PRIVATE ${BOOST_INCLUDE_DIRS} /opt/local/include)
+    target_include_directories(${test_name} PRIVATE ${BOOST_INCLUDE_DIRS} /opt/local/include /usr/local/include)
     target_compile_definitions(${test_name} PRIVATE "BOOST_TEST_DYN_LINK=1")
     target_compile_definitions(${test_name} PRIVATE "BOOST_LOG_DYN_LINK=1")
-    target_link_libraries(${test_name} 
+    target_link_libraries(${test_name}
         ${xml2_location}
         ${curl_location}
         ${ssh_location}
         ${ssh_threads_location}
         ${pcre_location}
         ${xslt_location}
-        ${ydk_location} 
+        ${ydk_location}
         ${ydk_ydktest_location}
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
         ${Boost_LOG_SETUP_LIBRARY}
