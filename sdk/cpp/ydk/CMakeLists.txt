@@ -40,28 +40,39 @@ else()
 	option(ENABLE_VALGRIND_TESTS "Build tests with valgrind" OFF)
 endif()
 
-set(libydk_src src/netconf_provider.cpp 
-               src/netconf_client.cpp 
+
+set(libydk_src src/netconf_provider.cpp
+               src/netconf_client.cpp
+               src/codec_service.cpp
+               src/codec_provider.cpp
+               src/entity_lookup.cpp
                src/value.cpp
-               src/value_list.cpp 
-               src/crud_service.cpp 
-               src/core.cpp 
-               src/entity_data_node_walker.cpp 
+               src/value_list.cpp
+               src/crud_service.cpp
+               src/core.cpp
+               src/entity_data_node_walker.cpp
+
                src/validation_service.cpp)
 
-set(libydk_headers src/netconf_provider.hpp 
-                   src/netconf_client.hpp 
-                   src/core.hpp 
-                   src/entity_data_node_walker.hpp 
-                   src/types.hpp 
+set(libydk_headers src/netconf_provider.hpp
+                   src/netconf_client.hpp
+                   src/codec_service.hpp
+                   src/codec_provider.hpp
+                   src/entity_lookup.hpp
+                   src/core.hpp
+                   src/entity_data_node_walker.hpp
+                   src/types.hpp
                    src/errors.hpp
                    src/validation_service.hpp
                    src/service.hpp)
 
-set(libydk_install_headers src/netconf_provider.hpp 
-                           src/core.hpp 
-                           src/crud_service.hpp 
-                           src/errors.hpp 
+set(libydk_install_headers src/netconf_provider.hpp
+                           src/codec_service.hpp
+                           src/codec_provider.hpp
+                           src/entity_lookup.hpp
+                           src/core.hpp
+                           src/crud_service.hpp
+                           src/errors.hpp
                            src/types.hpp
                            src/service.hpp
                            src/validation_service.hpp)
@@ -135,7 +146,7 @@ add_library(ydk STATIC $<TARGET_OBJECTS:ydk_core> ${libnetconf_inc_objs} ${libya
 target_compile_definitions(ydk PRIVATE "BOOST_ALL_DYN_LINK=1")
 target_compile_definitions(ydk PRIVATE "BOOST_LOG_DYN_LINK=1")
 
-target_link_libraries(ydk 
+target_link_libraries(ydk
         ${Boost_LOG_SETUP_LIBRARY}
         ${Boost_LOG_LIBRARY}
         ${BOOST_THREAD_LIBRARY}
