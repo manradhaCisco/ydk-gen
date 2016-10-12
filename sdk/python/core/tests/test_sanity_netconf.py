@@ -22,7 +22,7 @@ from __future__ import absolute_import
 import unittest
 from compare import is_equal
 
-from ydk.errors import YPYModelError, YPYError
+from ydk.errors import YPYModelError, YPYError, YPYServiceError
 from ydk.models import ydktest_sanity as ysanity
 from ydk.providers import NetconfServiceProvider, NativeNetconfServiceProvider
 from ydk.services import NetconfService
@@ -144,6 +144,62 @@ class SanityNetconf(unittest.TestCase):
     def test_copy_config(self):
         op = self.netconf_service.copy_config(self.ncc, Datastore.candidate, Datastore.running)
         self.assertIn('ok', op)
+
+    def test_delete_config(self):
+        pass
+        # startup and candidate cannot be both enabled in ConfD
+        # op = self.netconf_service.delete_config(self.ncc, Datastore.startup)
+        # self.assertIn('ok', op)
+
+    def test_delete_config_fail(self):
+        self.assertRaises(YPYServiceError,
+                          self.netconf_service.delete_config,
+                          self.ncc,
+                          Datastore.running)
+        self.assertRaises(YPYServiceError,
+                          self.netconf_service.delete_config,
+                          self.ncc,
+                          Datastore.candidate)
+
+    def test_copy_config_fail(self):
+        self.assertRaises(YPYServiceError,
+                          self.netconf_service.copy_config,
+                          self.ncc,
+                          target=123,
+                          source=456)
+
+    def test_edit_config_fail(self):
+        self.assertRaises(YPYServiceError,
+                          self.netconf_service.edit_config,
+                          self.ncc,
+                          Datastore.startup,
+                          Datastore.candidate)
+
+    def test_get_config_fail(self):
+        runner = ysanity.Runner()
+        self.assertRaises(YPYServiceError,
+                        self.netconf_service.get_config,
+                        self.ncc,
+                        "invalid-input",
+                        runner)
+
+    def test_lock_fail(self):
+        self.assertRaises(YPYServiceError,
+                          self.netconf_service.lock,
+                          self.ncc,
+                          "invalid-input")
+
+    def test_unlock_fail(self):
+        self.assertRaises(YPYServiceError,
+                          self.netconf_service.unlock,
+                          self.ncc,
+                          "invalid-input")
+
+    def test_validate_fail(self):
+        self.assertRaises(YPYServiceError,
+                          self.netconf_service.validate,
+                          self.ncc,
+                          source=123)
 
 
 if __name__ == '__main__':
