@@ -91,6 +91,8 @@ def get_type_name(prop_type):
         return 'str'
     elif prop_type.name == 'binary':
         return 'str'
+    elif prop_type.name == 'instance-identifier':
+        return 'str'
     elif isinstance(prop_type, Bits):
         return 'bits'
     elif isinstance(prop_type, Class) and prop_type.is_identity():

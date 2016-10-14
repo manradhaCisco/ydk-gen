@@ -384,11 +384,12 @@ def _modify_cpp_cmake(gen_api_root, pkg_name, models, version, descriptions=""):
             print(line, end='')
 
 
-def _get_cpp_files(models, ext):
+def _get_cpp_files(models, extension):
     files = []
     for model in models:
-        file_name = 'ydk/models/%s.%s' % (model.pkg_name, ext)
-        files.append(file_name)
+        if 'deviation' not in model.pkg_name:
+            file_name = 'ydk/models/%s.%s' % (model.pkg_name, extension)
+            files.append(file_name)
     return ' '.join(files)
 
 # Generator checks #####################################################

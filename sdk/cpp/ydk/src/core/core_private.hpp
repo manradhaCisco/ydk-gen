@@ -32,7 +32,7 @@
 #include "libyang/tree_data.h"
 #include "libyang/xml.h"
 
-#include "core.hpp"
+#include "../core.hpp"
 
 #include <algorithm>
 #include <map>
@@ -77,16 +77,16 @@ namespace ydk {
             Statement statement() const;
 
             std::vector<Statement> keys() const;
-            
+
             SchemaValueType* type() const;
-            
+
             const SchemaNode* m_parent;
             struct lys_node* m_node;
             std::vector<SchemaNode*> m_children;
-            
+
             SchemaValueType* m_type;
-            
-            
+
+
         };
 
         class RootSchemaNodeImpl : public RootSchemaNode
@@ -109,13 +109,13 @@ namespace ydk {
             Rpc* rpc(const std::string& path) const;
 
 
-            
+
             SchemaValueType* type() const
             {
                 return nullptr;
             }
-            
-            
+
+
             struct ly_ctx* m_ctx;
             std::vector<SchemaNode*> m_children;
 
@@ -237,9 +237,11 @@ namespace ydk {
 
 
         };
+
+        SchemaValueType* create_schema_value_type(struct lys_node_leaf* leaf,
+        												  struct lys_type* type);
+        SchemaValueType* create_schema_value_type(struct lys_node_leaf* leaf);
     }
-
-
 
 
 

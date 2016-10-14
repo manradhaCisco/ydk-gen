@@ -60,7 +60,8 @@ struct EntityDiagnostic : public ydk::core::DiagnosticNode<Entity*, ydk::core::V
 
 
 
-struct ValidationService {
+class ValidationService {
+  public:
 
     ///
     /// @brief Options for validation.
@@ -78,9 +79,9 @@ struct ValidationService {
     ValidationService()
     {
     }
-    virtual ~ValidationService(){}
+    ~ValidationService(){}
 
-    virtual EntityDiagnostic validate(const ydk::core::ServiceProvider& sp, ydk::Entity& entity, ydk::ValidationService::Option option);
+    EntityDiagnostic validate(const ydk::core::ServiceProvider& sp, ydk::Entity& entity, ydk::ValidationService::Option option);
 };
 
 
