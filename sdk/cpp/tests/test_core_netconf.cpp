@@ -332,3 +332,42 @@ BOOST_AUTO_TEST_CASE(bits)
     create_rpc->input()->create("entity", xml);
     (*create_rpc)(sp);
 }
+
+
+
+
+BOOST_AUTO_TEST_CASE( bgp_xr  )
+{
+    ydk::core::Repository repo{};
+
+    ydk::NetconfServiceProvider sp{&repo,"localhost", "admin", "admin",  1220};
+    ydk::core::RootSchemaNode* schema = sp.get_root_schema();
+
+    BOOST_REQUIRE(schema != nullptr);
+
+    auto s = ydk::core::CodecService{};
+
+    auto bgp = schema->create("openconfig-bgp:bgp", "");
+
+    BOOST_REQUIRE( bgp != nullptr );
+
+    //get the root
+    std::unique_ptr<const ydk::core::DataNode> data_root{bgp->root()};
+
+    BOOST_REQUIRE( data_root != nullptr );
+//call read
+    std::unique_ptr<ydk::core::Rpc> read_rpc { schema->rpc("ydk:read") };
+    auto bgp_read = schema->create("openconfig-bgp:bgp", "");
+    BOOST_REQUIRE( bgp_read != nullptr );
+    std::unique_ptr<const ydk::core::DataNode> data_root2{bgp_read->root()};
+
+    auto xml = s.encode(bgp_read, ydk::core::CodecService::Format::XML, false);
+    BOOST_REQUIRE( !xml.empty() );
+    read_rpc->input()->create("filter", xml);
+
+    auto read_result = (*read_rpc)(sp);
+
+    BOOST_REQUIRE(read_result != nullptr);
+
+
+}
