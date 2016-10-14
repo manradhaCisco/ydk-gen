@@ -23,7 +23,7 @@ class LibDownloader(object):
     def __init__(self, home_dir):
         self.home_dir = home_dir
 
-        self.download_dir =     '%s/.temp'  % self.home_dir
+        self.download_dir =     '%s/.temp'      % self.home_dir
         self.objects_dir =      '%s/.libs'  % self.home_dir
 
     def download(self):
