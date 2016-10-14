@@ -42,17 +42,30 @@ endif()
 
 # Set LibYDK variables
 set(libydk_src
-    src/netconf_provider.cpp
-    src/netconf_client.cpp
-    src/codec_service.cpp
     src/codec_provider.cpp
+    src/codec_service.cpp
+    src/crud_service.cpp
+    src/entity_data_node_walker.cpp
     src/entity_lookup.cpp
+    src/errors.cpp
+    src/netconf_client.cpp
+    src/netconf_model_provider.cpp
+    src/netconf_provider.cpp
+    src/validation_service.cpp
     src/value.cpp
     src/value_list.cpp
-    src/crud_service.cpp
-    src/core.cpp
-    src/entity_data_node_walker.cpp
-    src/validation_service.cpp)
+    src/ydk_yang.cpp
+    src/core/annotation.cpp
+    src/core/capability.cpp
+    src/core/core.cpp
+    src/core/data_node.cpp
+    src/core/repository.cpp
+    src/core/root_data_node.cpp
+    src/core/root_schema_node.cpp
+    src/core/rpc.cpp
+    src/core/schema_node.cpp
+    src/core/schema_value_type.cpp
+    src/core/statement.cpp)
 
 set(libydk_headers 
     src/netconf_provider.hpp
@@ -117,6 +130,7 @@ add_dependencies(libnetconf project_libnetconf)
 ExternalProject_Add(project_libyang
     PREFIX "${CMAKE_CURRENT_BINARY_DIR}/project_libyang"
     URL "https://github.com/manradhaCisco/libyang/archive/ydk_core.zip"
+    INSTALL_COMMAND ""
     INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/project_libyang")
 
 ExternalProject_Get_Property(project_libyang install_dir)

@@ -32,7 +32,6 @@
 #include <vector>
 #include <algorithm>
 #include "errors.hpp"
-#include <cstdlib>
 #include <boost/filesystem.hpp>
 
 namespace ydk {
@@ -294,7 +293,7 @@ namespace ydk {
                 JSON /// JSON
 
             };
-           
+
             ///
             /// @brief encode the given DataNode Tree
             ///
@@ -334,7 +333,7 @@ namespace ydk {
 
         };
 
-                
+
         ///
         /// @brief Exception that encapsualtes the validation errors
         ///        on a data tree
@@ -409,7 +408,7 @@ namespace ydk {
             Error err;
 
             YDKPathException(YDKPathException::Error error_code);
-            
+
         };
 
         struct YDKCodecException : public YDKCoreException
@@ -485,34 +484,34 @@ namespace ydk {
             DiagnosticNode<E,T>* parent;
             E source;
             std::vector<T> errors;
-            
+
             std::vector<DiagnosticNode<E,T>> children;
-            
+
             bool has_errors()
             {
                 if(!errors.empty()){
                     return true;
                 }
-                
+
                 for(auto c : children) {
                     if (c.has_errors()) {
                         return true;
                     }
                 }
-                
+
                 return false;
             }
         };
-        
-        
+
+
         /// Data Validation Error Enum
         enum class ValidationError {
             SUCCESS,  /// no error
-            
+
             SCHEMA_NOT_FOUND,  /// Entity's schema node is not found
             INVALID_USE_OF_SCHEMA, // If element cannot have children as per schema (leaf, leaf-list, anyxml)
-            
-            
+
+
             TOOMANY,      /// too many instances of some object
             DUPLEAFLIST,  /// multiple instances of leaf-list
             DUPLIST,      /// multiple instances of list
@@ -540,7 +539,7 @@ namespace ydk {
             NOREQINS,     /// required instance does not exits (data) */
             NOLEAFREF,    /// leaf pointed to by leafref does not exist (data) */
             NOMANDCHOICE, /// no mandatory choice case branch exists (data) */
-            
+
             INVALID_BOOL_VAL, // invalid boolean value
             INVALID_EMPTY_VAL, // invalid empty value
             INVALID_PATTERN, // pattern did not match
@@ -548,9 +547,9 @@ namespace ydk {
             INVALID_IDENTITY, // invalid identity
             INVALID_ENUM, // invalid enumeration
             RANGE_VIOLATION, // range violation
-            
+
         };
-        
+
         ///
         /// @brief Annotation
         ///
@@ -562,19 +561,19 @@ namespace ydk {
         /// to describe the kind of operation one needs to perform on the given DataNode.
         ///
         struct Annotation{
-           
+
             Annotation(const std::string& ns, const std::string& name, const std::string& val);
-            
+
             Annotation(const Annotation& an);
-            
+
             Annotation(Annotation&& an);
-            
+
             Annotation& operator=(const Annotation& an);
-            
+
             Annotation& operator=(Annotation&& an);
-            
+
             bool operator==(const Annotation& an) const;
-            
+
             std::string m_ns;
             std::string m_name;
             std::string m_val;
@@ -586,55 +585,55 @@ namespace ydk {
         /// @brief represents the YANG Statement
         ///
         struct Statement {
-           
+
             Statement();
-            
+
             Statement(const std::string& mkeyword, const std::string& marg);
-            
-            
+
+
             Statement(const Statement& stmt);
-            
+
             Statement(Statement&& stmt);
-            
+
             ~Statement();
-            
+
             Statement& operator=(const Statement& stmt);
-            
+
             Statement& operator=(Statement&& stmt);
-            
-            
+
+
             /// YANG keyword corresponding to the Statement
             std::string keyword;
             /// the arg if any
             std::string  arg;
 
         };
-        
-        
+
+
         template<typename T>
         struct Range{
             Range(T m_min, T m_max) : min{m_min}, max{m_max}
             {
-                
+
             }
-            
-            
+
+
             T min;
             T max;
-            
+
         };
-        
-        
-        
-        
+
+
+
+
         template<typename T>
         struct LengthRangeIntervals {
             LengthRangeIntervals(Range<T> m_default_range): default_range(m_default_range)
             {
-                
+
             }
-            
-            
+
+
             Range<T> default_range;
             std::vector<Range<T>> intervals;
         };
@@ -643,122 +642,122 @@ namespace ydk {
         /// @brief the type of the leaf or leaf-list
         ///
         struct SchemaValueType {
-            
-            
+
+
             ///
             /// Enumeration representing the yang data types
             ///
             enum class DataType {
                 /// UNKNOWN
                 UNKNOWN,
-                
+
                 /// binary
                 BINARY,
-                
+
                 /// bits
                 BITS,
-                
+
                 /// boolean
                 BOOL,
-                
+
                 /// decimal64
                 DEC64,
-                
+
                 /// empty
                 EMPTY,
-                
+
                 /// enumeration
                 ENUMERATION,
-                
+
                 /// identity
                 IDENTITY,
-                
+
                 /// leafref
                 LEAFREF,
-                
+
                 /// string
                 STRING,
-                
+
                 /// int8
                 INT8,
-                
+
                 /// uint8
                 UINT8,
-                
+
                 /// int16
                 INT16,
-                
+
                 /// uint16
                 UINT16,
-                
+
                 /// int32
                 INT32,
-                
+
                 /// uint32
                 UINT32,
-                
+
                 /// int64
                 INT64,
-                
+
                 /// uint64
                 UINT64,
-                
+
                 /// union
                 UNION
-                
+
             };
-            
-            
+
+
             virtual ~SchemaValueType();
-            
+
             ///
             /// @brief validate the value and return a DiagnosticNode
             ///
             /// If the value is valid the
             virtual DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const = 0;
-            
+
             ///
             /// module name of the type referenced
             std::string module_name;
-            
+
             /// data type
             DataType type;
-            
 
-            
+
+
         };
-        
-        
+
+
         ///
         /// binary type
         ///
         struct SchemaValueBinaryType : public SchemaValueType {
-            
-            SchemaValueBinaryType();
-            
-            ~SchemaValueBinaryType();
-            
-             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
-            
 
-            
+            SchemaValueBinaryType();
+
+            ~SchemaValueBinaryType();
+
+             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
+
+
+
             LengthRangeIntervals<uint64_t> length;
 
-            
+
         };
-        
+
         ///
         /// Bits type
         ///
         struct SchemaValueBitsType  : public SchemaValueType {
-            
+
             ///
             /// Single bit value specification
             ///
             struct Bit {
-                
+
                 Bit(std::string m_name, uint32_t m_pos);
-                
+
                 ///
                 /// bit name
                 ///
@@ -768,123 +767,123 @@ namespace ydk {
                 /// position
                 ///
                 uint32_t pos;
-                
+
             };
-            
+
             ~SchemaValueBitsType();
-            
+
             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
-            
+
             ///
             /// bit definitions
             ///
             std::vector<Bit> bits;
         };
-        
+
         ///
         /// Decimal64 type
         ///
         struct SchemaValueDec64Type : public SchemaValueType {
-            
 
-            
+
+
             /// fraction digits
             uint8_t fraction_digits;
-            
+
             ~SchemaValueDec64Type();
-            
+
             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
         };
-        
+
         ///
         /// enumeration value specification
         ///
         struct SchemaValueEnumerationType : public SchemaValueType {
-            
+
             struct Enum {
-                
+
                 Enum(std::string m_name, int32_t m_value);
-                
+
                 /// enum's name (mandatory)
                 std::string name;
-                
-                
+
+
                 /// enum's value (mandatory)
                 int32_t value;
-                
-                
+
+
             };
-            
+
             ~SchemaValueEnumerationType();
-            
+
             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
-            
+
             /// enum literals
             std::vector<Enum> enums;
-            
+
         };
-        
+
         ///
         /// Identity Schema value type
         ///
         struct SchemaValueIdentityType : public SchemaValueType {
-            
+
             ~SchemaValueIdentityType();
-            
+
             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
-            
+
             /// identity name
             std::string name;
-            
+
             /// name of the module
             std::string module_name;
-            
-            
+
+
             /// derived identities
             std::vector<SchemaValueIdentityType*> derived;
-            
+
         };
-        
+
         ///
         /// Instance identifier value type
         ///
         struct SchemaValueInstanceIdType : public SchemaValueType {
-            
+
             ~SchemaValueInstanceIdType();
-           
-            
+
+
             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
-            
+
             /// require
             bool require_identifier = false;
-            
+
         };
-        
+
         ///
         /// Number types
         ///
         template<typename T>
         struct SchemaValueNumberType: public SchemaValueType {
-            
+
             SchemaValueNumberType(T min, T max) : SchemaValueType{} , range{Range<T>{min, max}}
             {
-                
+
             }
-            
+
             ~SchemaValueNumberType()
             {
-                
+
             }
-            
+
             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const
             {
                 DiagnosticNode<std::string, ValidationError> diag{};
-                
+
                 if(value.empty()){
                     diag.errors.push_back(ydk::core::ValidationError::INVALATTR);
                     return diag;
                 }
-                
+
                 T number = static_cast<T>(std::atoll(value.c_str()));
                 if(range.intervals.empty()){
                     //use the default
@@ -899,75 +898,75 @@ namespace ydk {
                             return diag;
                         }
                     }
-                    
+
                     diag.errors.push_back(ydk::core::ValidationError::RANGE_VIOLATION);
                 }
-                
+
                 return diag;
-                
+
             }
-            
+
             LengthRangeIntervals<T> range;
-            
+
         };
-        
+
         ///
         /// string types
         ///
         struct SchemaValueStringType : public SchemaValueType {
-            
+
             SchemaValueStringType();
-            
+
             ~SchemaValueStringType();
-            
+
             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
-            
+
             /// length restriction
             LengthRangeIntervals<uint64_t> length;
-            
+
             /// pattern restrictions
             std::vector<std::string> patterns;
         };
-        
+
         ///
         /// Union type
         ///
         struct SchemaValueUnionType : public SchemaValueType {
-            
+
             ~SchemaValueUnionType();
-            
+
             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
-            
-            /// types defined 
+
+            /// types defined
             std::vector<SchemaValueType*> types;
         };
-        
+
         ///
         /// Empty type
         ///
         struct SchemaValueEmptyType : public SchemaValueType {
-            
+
             SchemaValueEmptyType(const std::string& mleaf_name);
             ~SchemaValueEmptyType();
-            
+
             DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
-            
+
             std::string leaf_name;
         };
-        
+
         ///
         /// Bool type
         ///
         struct SchemaValueBoolType : public SchemaValueType {
-            
+
            ~SchemaValueBoolType();
-            
-            
+
+
            DiagnosticNode<std::string, ValidationError> validate(const std::string& value) const;
         };
-        
-        
-        
+
+
+
         ///
         /// @brief Represents a Node in the SchemaTree.
         ///
@@ -982,7 +981,7 @@ namespace ydk {
             /// invocation of the destructor will lead to the children of this
             /// node being destroyed.
            virtual ~SchemaNode();
-            
+
             ///
             /// @brief returns the XPath expression of this Node in the NodeTree
             ///
@@ -1033,7 +1032,7 @@ namespace ydk {
             /// @return the yang statement for this SchemaNode
             ///
             virtual Statement statement() const = 0;
-            
+
             ///
             /// @brief return YANG statement corresponding the the keys
             ///
@@ -1041,8 +1040,8 @@ namespace ydk {
             /// @return vector of Statement that represent keys
             ///
             virtual std::vector<Statement> keys() const = 0;
-            
-            
+
+
             ///
             /// @brief return the pointer to the type associated with this
             /// schema node.
@@ -1054,7 +1053,7 @@ namespace ydk {
             /// it is contained within the SchemaNode so destroying the SchemaNode.
             ///
             virtual SchemaValueType* type() const = 0;
-            
+
         };
 
         ///
@@ -1072,9 +1071,9 @@ namespace ydk {
             /// @brief Destructor for the RootSchemaNode
             ///
            virtual ~RootSchemaNode();
-            
+
            std::string path() const;
-            
+
             ///
             /// @brief finds descendant nodes that match the given xpath expression
             ///
@@ -1094,7 +1093,7 @@ namespace ydk {
             /// @return pointer the parent Node or nullptr in case this is the root.
             ///
            virtual SchemaNode* parent() const noexcept;
-            
+
             ///
             /// @brief return the children of this SchemaNode in the NodeTree.
             ///
@@ -1109,7 +1108,7 @@ namespace ydk {
             /// @return the pointer to the root
             ///
             virtual const SchemaNode* root() const noexcept;
-            
+
             ///
             /// @brief create a DataNode corresponding to the path and set its value
             ///
@@ -1158,7 +1157,7 @@ namespace ydk {
             /// @return an empty statement
             ///
            virtual Statement statement() const;
-            
+
             ///
             /// @brief return vector of keys
             ///
@@ -1166,7 +1165,7 @@ namespace ydk {
             /// @return empty vector
             ///
             virtual std::vector<Statement> keys() const;
-            
+
             ///
             /// @brief create an rpc instance
             ///
@@ -1194,7 +1193,7 @@ namespace ydk {
             /// invocation of the destructor will lead to the children of this
             /// node being destroyed.
            virtual ~DataNode();
-            
+
             ///
             /// @brief Return the SchemaNode associated with this DataNode.
             ///
@@ -1230,7 +1229,7 @@ namespace ydk {
             /// @throws YDKPathException In case the path is invalid.
             ///
            virtual DataNode* create(const std::string& path);
-            
+
             ///
             /// @brief create a DataNode corresponding to the path and set its value
             ///
@@ -1346,21 +1345,21 @@ namespace ydk {
         /// by this module
         struct Capability {
            Capability(const std::string& mod, const std::string& rev);
-            
+
             Capability(const std::string& mod, const std::string& rev, const std::vector<std::string>& f,
                        const std::vector<std::string>& d);
-            
+
             Capability(const Capability& cap);
-            
+
             Capability(Capability&& cap);
-            
+
             Capability& operator=(const Capability& cap);
-            
+
             Capability& operator=(Capability&& cap);
 
-            
+
             bool operator==(const Capability& cap);
-            
+
             /// The module
             std::string module;
 
@@ -1378,17 +1377,17 @@ namespace ydk {
         /// @brief interface for module provider.
         ///
         /// This is the interface for module provider
-        struct ModelProvider {
-            
+        class ModelProvider {
+          public:
             enum class Format {
                 YANG,
                 YIN
             };
-            
+
             virtual ~ModelProvider() {};
-            
-            
-            
+
+
+
             ///
             /// @brief returns the model identified by the name and version
             ///
@@ -1399,8 +1398,8 @@ namespace ydk {
             /// probably cannot be provided
             ///
             virtual std::string get_model(const std::string& name, const std::string& version, Format format) = 0;
-            
-            
+
+
         };
 
         ///
@@ -1413,7 +1412,7 @@ namespace ydk {
         ///
         class Repository {
         public:
-            
+
             ///
             /// @brief Constructor for the Repositor.
             ///
@@ -1421,7 +1420,7 @@ namespace ydk {
             /// Uses the temp directory to download the yang files
             /// from the model provider
             Repository();
-            
+
             ///
             /// @brief Constructor for the Repository.
             ///
@@ -1441,8 +1440,8 @@ namespace ydk {
             /// @param[in] capabilities vector of Capability
             /// @return pointer to the RootSchemaNode or nullptr if one could not be created.
             ///
-            RootSchemaNode* create_root_schema(const std::vector<Capability> capabilities) const;
-            
+            RootSchemaNode* create_root_schema(const std::vector<core::Capability> & capabilities) const;
+
             ///
             /// @brief Adds a model provider.
             ///
@@ -1454,14 +1453,14 @@ namespace ydk {
             /// @param[in] module_provider The Module Provider to add
             ///
             void add_model_provider(ModelProvider* model_provider);
-            
+
             ///
             /// @brief Removes a model provider.
             ///
             /// Removes the given model provider from this Repository.
             ///
             void remove_model_provider(ModelProvider* model_provider);
-            
+
             ///
             /// @brief Get model providers
             ///
@@ -1471,7 +1470,7 @@ namespace ydk {
             ///
             std::vector<ModelProvider*> get_model_providers() const;
 
-       
+
             boost::filesystem::path path;
          private:
             std::vector<ModelProvider*> model_providers;
@@ -1492,10 +1491,10 @@ namespace ydk {
             /// @return pointer to the RootSchemaNode or nullptr if one could not be created
             ///
            virtual RootSchemaNode* get_root_schema() const = 0;
-            
-            
+
+
             virtual ~ServiceProvider();
-            
+
             ///
             /// @brief invoke the Rpc
             ///
@@ -1522,9 +1521,9 @@ namespace ydk {
         class Rpc
         {
         public:
-           
+
             virtual ~Rpc();
-           
+
             ///
             /// @brief execute/invoke the rpc through the given service provider.
             ///
