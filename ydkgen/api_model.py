@@ -141,7 +141,7 @@ class NamedElement(Element):
         pkg = get_top_pkg(self)
         if not pkg.bundle_name:
             py_mod_name = 'ydk.models.%s' % pkg.name
-        elif hasattr(pkg, 'aug_bundle_name'):
+        elif pkg.aug_bundle_name:
             py_mod_name = 'ydk.models.%s.%s' % (pkg.aug_bundle_name, pkg.name)
         else:
             py_mod_name = 'ydk.models.%s.%s' % (pkg.bundle_name, pkg.name)
@@ -153,10 +153,10 @@ class NamedElement(Element):
             NamedElement.
         """
         pkg = get_top_pkg(self)
-        if not pkg.bundle_name:
+        if pkg.curr_bundle_name == pkg.bundle_name:
             cpp_header_name = '%s.hpp' % pkg.name
         else:
-            cpp_header_name = '%s.hpp' % (pkg.name)
+            cpp_header_name = 'ydk_%s/%s.hpp' % (pkg.bundle_name, pkg.name)
         return cpp_header_name
 
     def get_meta_py_mod_name(self):
@@ -168,7 +168,7 @@ class NamedElement(Element):
         pkg = get_top_pkg(self)
         if not pkg.bundle_name:
             meta_py_mod_name = 'ydk.models._meta'
-        elif hasattr(pkg, 'aug_bundle_name'):
+        elif pkg.aug_bundle_name:
             meta_py_mod_name = 'ydk.models.%s._meta' % pkg.aug_bundle_name
         else:
             meta_py_mod_name = 'ydk.models.%s._meta' % pkg.bundle_name
@@ -232,6 +232,8 @@ class Package(NamedElement):
         self._stmt = None
         self._sub_name = ''
         self._bundle_name = ''
+        self._aug_bundle_name = ''
+        self._curr_bundle_name = ''
         self._augments_other = False
         self.identity_subclasses = {}
         self.iskeyword = iskeyword
@@ -262,6 +264,22 @@ class Package(NamedElement):
     @bundle_name.setter
     def bundle_name(self, bundle_name):
         self._bundle_name = bundle_name
+
+    @property
+    def aug_bundle_name(self):
+        return self._aug_bundle_name
+
+    @aug_bundle_name.setter
+    def aug_bundle_name(self, aug_bundle_name):
+        self._aug_bundle_name = aug_bundle_name
+
+    @property
+    def curr_bundle_name(self):
+        return self._curr_bundle_name
+
+    @curr_bundle_name.setter
+    def curr_bundle_name(self, curr_bundle_name):
+        self._curr_bundle_name = curr_bundle_name
 
     @property
     def sub_name(self):

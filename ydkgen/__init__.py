@@ -131,7 +131,7 @@ class YdkGenerator(object):
         curr_bundle, all_bundles = resolver.resolve(tmp_file)
 
         api_pkgs = self._get_api_pkgs(curr_bundle.resolved_models_dir)
-        _set_api_pkg_sub_name(all_bundles, api_pkgs)
+        _set_api_pkg_sub_name(all_bundles, api_pkgs, curr_bundle)
         gen_api_root = self._init_dirs(api_pkgs=api_pkgs, bundle=curr_bundle)
 
         self._print_pkgs(api_pkgs, gen_api_root, curr_bundle.name)
@@ -306,7 +306,7 @@ class YdkGenerator(object):
                   ignore=shutil.ignore_patterns('.gitignore', 'ncclient'))
 
 
-def _set_api_pkg_sub_name(bundles, api_pkgs):
+def _set_api_pkg_sub_name(bundles, api_pkgs, curr_bundle):
     """ Set nmsp_pkg for api packages.
 
     Args:
@@ -316,6 +316,7 @@ def _set_api_pkg_sub_name(bundles, api_pkgs):
     """
     # add API for model being augmented to bundle
     for pkg in api_pkgs:
+        pkg.curr_bundle_name = curr_bundle.name
         for bundle in bundles:
             for module in bundle.models:
                 if pkg.name == module.pkg_name:
