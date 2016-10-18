@@ -25,40 +25,6 @@ using namespace ydk;
 using namespace std;
 #define NC_VERB_VERBOSE 2
 
-BOOST_AUTO_TEST_CASE(xr)
-{
-	NetconfClient client{ "admin", "admin", "localhost", 1220, 0};
-	int OK = 0;
-
-	int result = client.connect();
-	BOOST_REQUIRE(result == OK);
-
-    struct timeval t1, t2;
-    double elapsedTime;
-
-    // start timer
-    gettimeofday(&t1, NULL);
-
-	string reply = client.execute_payload(
-	 "<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-	 "<get-config>"
-	 "<source><candidate/></source>"
-	 "</get-config>"
-	 "</rpc>");
-
-    // stop timer
-    gettimeofday(&t2, NULL);
-
-    // compute and print the elapsed time in millisec
-    elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0;      // sec to ms
-    elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000.0;   // us to ms
-    cout << elapsedTime << " ms.\n";
-
-
-
-	result = client.close();
-	BOOST_REQUIRE(result == OK);
-}
 
 
 BOOST_AUTO_TEST_CASE(Create)

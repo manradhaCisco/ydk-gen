@@ -75,7 +75,7 @@ class EntityLookUpPrinter(FilePrinter):
         self.capability_lookup = capability_lookup
 
     def _get_module_revision(self, package):
-        module_name, revision = None, ""
+        revision = None, ""
         revision_stmt = package.stmt.search_one('revision')
         if revision_stmt:
             revision = revision_stmt.arg

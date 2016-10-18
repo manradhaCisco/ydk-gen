@@ -348,22 +348,38 @@ BOOST_AUTO_TEST_CASE( bgp_xr  )
     auto s = ydk::core::CodecService{};
 
     auto bgp = schema->create("openconfig-bgp:bgp", "");
-
     BOOST_REQUIRE( bgp != nullptr );
-
     //get the root
     std::unique_ptr<const ydk::core::DataNode> data_root{bgp->root()};
-
     BOOST_REQUIRE( data_root != nullptr );
-//call read
+
+    //call create
+    auto as = bgp->create("global/config/as", "65172");
+	BOOST_REQUIRE( as != nullptr );
+	auto l3vpn_ipv4_unicast = bgp->create("global/afi-safis/afi-safi[afi-safi-name='openconfig-bgp-types:L3VPN-IPV4-UNICAST']", "");
+	BOOST_REQUIRE( l3vpn_ipv4_unicast != nullptr );
+	auto afi_safi_name = l3vpn_ipv4_unicast->create("config/afi-safi-name", "openconfig-bgp-types:L3VPN-IPV4-UNICAST");
+	BOOST_REQUIRE( afi_safi_name != nullptr );
+	auto enable = l3vpn_ipv4_unicast->create("config/enabled","true");
+	BOOST_REQUIRE( enable != nullptr );
+
+	std::unique_ptr<ydk::core::Rpc> create_rpc { schema->rpc("ydk:create") };
+	auto xml = s.encode(bgp, ydk::core::CodecService::Format::XML, false);
+	BOOST_REQUIRE( !xml.empty() );
+	create_rpc->input()->create("entity", xml);
+
+	auto res = (*create_rpc)(sp);
+
+	//call read
     std::unique_ptr<ydk::core::Rpc> read_rpc { schema->rpc("ydk:read") };
     auto bgp_read = schema->create("openconfig-bgp:bgp", "");
     BOOST_REQUIRE( bgp_read != nullptr );
     std::unique_ptr<const ydk::core::DataNode> data_root2{bgp_read->root()};
 
-    auto xml = s.encode(bgp_read, ydk::core::CodecService::Format::XML, false);
+    xml = s.encode(bgp_read, ydk::core::CodecService::Format::XML, false);
     BOOST_REQUIRE( !xml.empty() );
     read_rpc->input()->create("filter", xml);
+    read_rpc->input()->create("only-config");
 
     auto read_result = (*read_rpc)(sp);
 

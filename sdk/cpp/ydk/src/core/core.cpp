@@ -140,23 +140,21 @@ namespace ydk {
         }
 
 
-        SchemaValueIdentityType* create_identity_type(struct lys_ident *ident)
+        SchemaValueIdentityType* create_identity_type(struct lys_ident **ident, int count)
         {
 
             SchemaValueIdentityType* identity_type = new SchemaValueIdentityType{};
             if(!ident) return identity_type;
 
-            identity_type->module_name = ident->module->name;
-            identity_type->name = ident->name;
+            for(int i=0;i<count && count <= 272;i++) //TODO 272 is needed for interface-type in ietf-interfaces.yang. temporary workaround
+            {
+				identity_type->module_name = ident[i]->module->name;
+				identity_type->name = ident[i]->name;
 
-            if(ident->der) {
-                struct lys_ident *der;
-                int i = 0;
-                while(ident->der && ident->der[i] && i<=272) {
-                	der = ident->der[i];
-                	identity_type->derived.push_back(create_identity_type(der));
-                	i+=1;
-                }
+				if(ident[i]->der_size > 0)
+				{
+					identity_type->derived.push_back(create_identity_type(ident[i]->der, ident[i]->der_size));
+				}
             }
             return identity_type;
 
@@ -219,19 +217,21 @@ namespace ydk {
                     } else if(type->der){
                         m_type = create_schema_value_type(leaf, &(type->der->type));
                     } else {
-                        BOOST_LOG_TRIVIAL(error) << "Unable to determine union's types";
+                        BOOST_LOG_TRIVIAL(error) << "Unable to determine union's types: " << leaf->name <<", module: "<< leaf->module->name;
                         throw ydk::YDKIllegalStateException{"Unable to determine union's types"};
                     }
                     break;
                 }
                 case LY_TYPE_IDENT: {
                     if(type->info.ident.ref) {
-                        m_type = create_identity_type(type->info.ident.ref);
+                        m_type = create_identity_type(type->info.ident.ref, type->info.ident.count);
                     } else if(type->der){
                         m_type = create_schema_value_type(leaf, &(type->der->type));
                     } else {
-                        BOOST_LOG_TRIVIAL(error) << "Unable to determine identity type";
-                        throw ydk::YDKIllegalStateException{"Unable to determine identity type"};
+                        BOOST_LOG_TRIVIAL(error) << "Unable to determine identity type: " << leaf->name <<", module: "<< leaf->module->name;
+                        std::ostringstream os;
+                        os << "Unable to determine identity type: " << leaf->name <<", module: "<< leaf->module->name;
+                        throw ydk::YDKIllegalStateException{os.str()};
                     }
                     break;
                 }
@@ -246,8 +246,12 @@ namespace ydk {
                     } else if(type->der) {
                         m_type = create_schema_value_type(leaf, &(type->der->type));
                     } else {
-                        BOOST_LOG_TRIVIAL(error) << "Unable to determine leafref type";
-                        throw ydk::YDKIllegalStateException{"Unable to determine leafref type"};
+                    	SchemaValueStringType* stringType = new SchemaValueStringType{};
+                    	m_type = stringType; //TODO temporary workaround
+//                        BOOST_LOG_TRIVIAL(error) << "Unable to determine leafref type: " << leaf->name <<", module: "<< leaf->module->name;
+//                        std::ostringstream os;
+//                        os << "Unable to determine leafref type: " << leaf->name <<", module: "<< leaf->module->name;
+//                        throw ydk::YDKIllegalStateException{os.str()};
                     }
                     break;
                 }
@@ -291,8 +295,10 @@ namespace ydk {
                     } else if(type->der){
                         m_type = create_schema_value_type(leaf, &(type->der->type));
                     } else {
-                        BOOST_LOG_TRIVIAL(error) << "Unable to determine union's types";
-                        throw ydk::YDKIllegalStateException{"Unable to determine union's types"};
+                        BOOST_LOG_TRIVIAL(error) << "Unable to determine union's types: " << leaf->name <<", module: "<< leaf->module->name;
+                        std::ostringstream os;
+                        os<<"Unable to determine union's types: " << leaf->name <<", module: "<< leaf->module->name;
+                        throw ydk::YDKIllegalStateException{os.str()};
                     }
 
 
@@ -413,8 +419,10 @@ namespace ydk {
                     break;
                 }
                 default:
-                    BOOST_LOG_TRIVIAL(error) << "Unknown type to process for schema";
-                    throw YDKIllegalStateException{"Unknown type to process for schema"};
+                    BOOST_LOG_TRIVIAL(error) << "Unknown type to process for schema: " << leaf->name <<", module: "<< leaf->module->name;
+                    std::ostringstream os;
+                    os<<"Unknown type to process for schema: " << leaf->name <<", module: "<< leaf->module->name;
+                    throw YDKIllegalStateException{os.str()};
 
             }
 
@@ -467,7 +475,7 @@ ydk::core::ValidationService::validate(const ydk::core::DataNode* dn, ydk::core:
     const ydk::core::DataNodeImpl* dn_impl = dynamic_cast<const ydk::core::DataNodeImpl*>(dn);
     if(dn_impl){
         struct lyd_node* lynode = dn_impl->m_node;
-        int rc = lyd_validate(&lynode,ly_option);
+        int rc = lyd_validate(&lynode,ly_option, NULL);
         if(rc) {
             BOOST_LOG_TRIVIAL(debug) << "Data validation failed";
             throw ydk::core::YDKDataValidationException{};
@@ -508,13 +516,19 @@ ydk::core::CodecService::encode(const ydk::core::DataNode* dn, ydk::core::CodecS
     }
     m_node = impl->m_node;
 
-
     if(m_node == nullptr){
         throw YDKInvalidArgumentException{"No data in data node"};
     }
     char* buffer;
 
-    if(!lyd_print_mem(&buffer, m_node,scheme, pretty ? LYP_FORMAT : 0)) {
+    if(!lyd_print_mem(&buffer, m_node,scheme, (pretty ? LYP_FORMAT : 0)|LYP_WD_ALL|LYP_KEEPEMPTYCONT)) {
+    	if(!buffer)
+    	{
+    		std::ostringstream os;
+    		os << "Could not encode datanode: "<< m_node->schema->name;
+			BOOST_LOG_TRIVIAL(debug) << os.str();
+			throw YDKCoreException{os.str()};
+    	}
         ret = buffer;
         std::free(buffer);
     }
@@ -536,8 +550,8 @@ ydk::core::CodecService::decode(const RootSchemaNode* root_schema, const std::st
         throw YDKCoreException{"Root Schema Node is null"};
     }
 
-    struct lyd_node *root = lyd_parse_mem(rs_impl->m_ctx, buffer.c_str(), scheme, LYD_OPT_TRUSTED |  LYD_OPT_KEEPEMPTYCONT | LYD_WD_TRIM | LYD_OPT_GET);
-    if( ly_errno ) {
+    struct lyd_node *root = lyd_parse_mem(rs_impl->m_ctx, buffer.c_str(), scheme, LYD_OPT_TRUSTED |  LYD_OPT_GET);
+    if( root == nullptr || ly_errno ) {
 
         BOOST_LOG_TRIVIAL(debug) << "Parsing failed with message " << ly_errmsg();
         throw YDKCodecException{YDKCodecException::Error::XML_INVAL};
@@ -551,7 +565,7 @@ ydk::core::CodecService::decode(const RootSchemaNode* root_schema, const std::st
         DataNodeImpl* nodeImpl = new DataNodeImpl{rd, dnode};
         rd->child_map.insert(std::make_pair(root, nodeImpl));
         dnode = dnode->next;
-    } while(dnode != nullptr && dnode != root);
+    } while(dnode && dnode != nullptr && dnode != root);
 
     return rd;
 }

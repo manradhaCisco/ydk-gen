@@ -54,6 +54,10 @@ string NetconfModelProvider::get_model(const string& name, const string& version
        return ydk::core::YDK_MODULE;
     }
 
+    if(name == ydk::IETF_NETCONF_MODULE_NAME && version == ydk::IETF_NETCONF_MODULE_REVISION) {
+       return ydk::IETF_NETCONF_MODULE;
+    }
+
     //have to craft and send the raw payload since the schema might
     //not be available
 

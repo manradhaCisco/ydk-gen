@@ -27,7 +27,7 @@ START_FLAGS ?=
 
 all:  ydktest-filterread.fxs ydktest-sanity-augm.fxs ydktest-sanity-types.fxs ydktest-sanity.fxs\
     ydktest-types.fxs openconfig-bgp-types.fxs openconfig-bgp-policy.fxs openconfig-extensions.fxs openconfig-policy-types.fxs\
-    ietf-interfaces.fxs ietf-netconf-monitoring.fxs openconfig-types.fxs openconfig-routing-policy.fxs openconfig-interfaces.fxs openconfig-bgp.fxs\
+    ietf-interfaces.fxs openconfig-types.fxs openconfig-routing-policy.fxs openconfig-interfaces.fxs openconfig-bgp.fxs\
     oc-pattern.fxs main.fxs main-aug1.fxs main-aug2.fxs main-aug3.fxs\
 		$(CDB_DIR) ssh-keydir
 	@echo "Build complete"

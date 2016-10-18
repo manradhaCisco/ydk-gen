@@ -34,5 +34,9 @@ namespace ydk {
        extern const char* YDK_MODULE_REVISION;
        extern const char* YDK_MODULE;
     }
+
+    extern const char* IETF_NETCONF_MODULE_NAME;
+    extern const char* IETF_NETCONF_MODULE_REVISION;
+    extern const char* IETF_NETCONF_MODULE;
 }
 #endif //YDK_YANG_H

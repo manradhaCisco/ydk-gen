@@ -69,7 +69,7 @@ ydk::core::RootDataImpl::create(const std::string& path, const std::string& valu
 
     std::string start_seg = m_path + segments[0];
     struct lyd_node* dnode = lyd_new_path(m_node, m_ctx, start_seg.c_str(),
-                                          segments.size() == 1 ? value.c_str():nullptr,0);
+                                          segments.size() == 1 ? (void*)value.c_str():nullptr, LYD_ANYDATA_SXML, 0);
 
     if( dnode == nullptr){
         BOOST_LOG_TRIVIAL(debug) << "Path " << path << " is invalid";
@@ -187,7 +187,7 @@ ydk::core::RootDataImpl::find(const std::string& path) const
     ly_ctx_get_node(m_node->schema->module->ctx, nullptr, schema_path.c_str());
 
     if(found_snode) {
-        struct ly_set* result_set = lyd_get_node2(m_node, found_snode);
+        struct ly_set* result_set = lyd_find_instance(m_node, found_snode);
         if( result_set ){
             if (result_set->number > 0){
                 for(size_t i=0; i < result_set->number; i++){

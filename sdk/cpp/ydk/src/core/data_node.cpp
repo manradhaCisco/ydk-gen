@@ -140,9 +140,9 @@ ydk::core::DataNodeImpl::create(const std::string& path, const std::string& valu
 
     for(size_t i=start_index; i< segments.size(); i++){
         if (i != segments.size() - 1) {
-            cn = lyd_new_path(cn, nullptr, segments[i].c_str(), nullptr, 0);
+            cn = lyd_new_path(cn, nullptr, segments[i].c_str(), nullptr, LYD_ANYDATA_SXML, 0);
 	} else {
-            cn = lyd_new_path(cn, nullptr, segments[i].c_str(), value.c_str(), 0);
+            cn = lyd_new_path(cn, nullptr, segments[i].c_str(), (void*)value.c_str(), LYD_ANYDATA_SXML, 0);
 	}
 
 	if (cn == nullptr) {
@@ -185,8 +185,7 @@ ydk::core::DataNodeImpl::set(const std::string& value)
             throw YDKInvalidArgumentException{"Invalid value"};
         }
     } else if (s_node->nodetype == LYS_ANYXML) {
-        struct lyd_node_anyxml* anyxml = reinterpret_cast<struct lyd_node_anyxml *>(m_node);
-        anyxml->xml_struct = 0;
+        struct lyd_node_anydata* anyxml = reinterpret_cast<struct lyd_node_anydata *>(m_node);
         anyxml->value.str = value.c_str();
     }else {
         BOOST_LOG_TRIVIAL(debug) << "Trying to set value " << value << " for a non leaf non anyxml node.";
@@ -203,10 +202,8 @@ ydk::core::DataNodeImpl::get() const
         struct lyd_node_leaf_list* leaf= reinterpret_cast<struct lyd_node_leaf_list *>(m_node);
         return leaf->value_str;
     } else if (s_node->nodetype == LYS_ANYXML ){
-        struct lyd_node_anyxml* anyxml = reinterpret_cast<struct lyd_node_anyxml *>(m_node);
-        if(!anyxml->xml_struct){
-            return anyxml->value.str;
-        }
+        struct lyd_node_anydata* anyxml = reinterpret_cast<struct lyd_node_anydata *>(m_node);
+        return anyxml->value.str;
     }
     return ret;
 }
@@ -229,7 +226,7 @@ ydk::core::DataNodeImpl::find(const std::string& path) const
         ly_ctx_get_node(m_node->schema->module->ctx, m_node->schema, spath.c_str());
 
     if(found_snode) {
-        struct ly_set* result_set = lyd_get_node(m_node, path.c_str());
+        struct ly_set* result_set = lyd_find_xpath(m_node, path.c_str());
         if( result_set ){
             if (result_set->number > 0){
                 for(size_t i=0; i < result_set->number; i++){

@@ -86,12 +86,7 @@ NetconfServiceProvider::NetconfServiceProvider(core::Repository* repo, string ad
 	std::vector<core::Capability> yang_caps {};
 	for(std::string c : server_capabilities )
 	{
-		if(c.find("calvados") != std::string::npos || c.find("tailf") != std::string::npos
-			|| (c.find("Cisco-IOS-XR-ifmgr-oper") != std::string::npos
-			|| c.find("Cisco-IOS-XR-bundlemgr-oper")!=std::string::npos
-			|| c.find("Cisco-IOS-XR-mpls-te-oper")!=std::string::npos
-			|| c.find("Cisco-IOS-XR-ip-tcp-oper")!=std::string::npos
-			|| c.find("Cisco-IOS-XR-ip-udp-oper")!=std::string::npos))
+		if(c.find("calvados") != std::string::npos || c.find("tailf") != std::string::npos)
 		{
 			continue;
 		}
@@ -178,6 +173,12 @@ NetconfServiceProvider::NetconfServiceProvider(core::Repository* repo, string ad
 	auto result = std::find(yang_caps.begin(), yang_caps.end(), ydk_cap);
 	if(result == yang_caps.end()){
 		yang_caps.push_back(ydk_cap);
+	}
+	//add ietf-netconf capability
+	core::Capability ietf_netconf_cap{ydk::IETF_NETCONF_MODULE_NAME, ydk::IETF_NETCONF_MODULE_REVISION, {}, {}};
+	result = std::find(yang_caps.begin(), yang_caps.end(), ietf_netconf_cap);
+	if(result == yang_caps.end()){
+		yang_caps.push_back(ietf_netconf_cap);
 	}
 
     root_schema = std::unique_ptr<ydk::core::RootSchemaNode>(m_repo->create_root_schema
@@ -498,6 +499,7 @@ static core::SchemaNode* get_schema_for_operation(core::RootSchemaNode & root_sc
 	return c[0];
 }
 
+//TODO fix and uncomment
 /*
 static std::string get_parameter(const std::string & capability, const std::string & parameter_name)
 {
