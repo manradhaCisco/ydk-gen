@@ -47,8 +47,16 @@ class Element(object):
 
     def __init__(self):
         self.owned_elements = []
-        self.owner = None
+        self._owner = None
         self.comment = None
+
+    @property
+    def owner(self):
+        return self._owner
+
+    @owner.setter
+    def owner(self, owner):
+        self._owner = owner
 
 
 class Deviation(Element):
@@ -545,6 +553,15 @@ class Class(NamedElement):
         else:
             return False
 
+    @NamedElement.owner.getter
+    def owner(self):
+        return self._owner
+
+    @NamedElement.owner.setter
+    def owner(self, owner):
+        self._owner = owner
+        self.name = _modify_nested_container_with_same_name(self)
+
     __hash__ = NamedElement.__hash__
 
 
@@ -850,3 +867,9 @@ def get_properties(owned_elements):
     props.extend(sorted(non_key_props, key=lambda p: p.name))
 
     return props
+
+def _modify_nested_container_with_same_name(named_element):
+    if named_element.owner.name.rstrip('_') == named_element.name:
+        return '%s_' % named_element.owner.name
+    else:
+        return named_element.name
