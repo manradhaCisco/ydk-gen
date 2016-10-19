@@ -828,7 +828,7 @@ class EnumLiteral(NamedElement):
         self.name = self.name.replace('!', '__BANG__')
         self.name = self.name.replace(';', '__SEMICOLON__')
 
-        if iskeyword(self.name):
+        if self.iskeyword(self.name):
             self.name += '_literal'
 
         if self.name[0:1].isdigit():
