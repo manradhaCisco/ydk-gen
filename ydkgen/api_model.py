@@ -87,6 +87,10 @@ class Deviation(Element):
 
         return '.'.join(reversed(names))
 
+
+
+
+
     def convert_prop_name(self, stmt):
         name = snake_case(stmt.arg)
         if self.iskeyword(name):
@@ -99,14 +103,14 @@ class Deviation(Element):
     def convert_owner_name(self, stmt):
         name = escape_name(stmt.arg)
         if stmt.keyword == 'grouping':
-            name = '%s_Grouping' % camel_case(name)
+            name = '%sGrouping' % camel_case(name)
         elif stmt.keyword == 'identity':
-            name = '%s_Identity' % camel_case(name)
+            name = '%sIdentity' % camel_case(name)
         elif stmt.keyword == 'rpc':
             name = camel_case(name) + 'Rpc'
         else:
             name = camel_case(name)
-        if self.iskeyword(name):
+        if self.iskeyword(name.lower()):
             name = '%s_' % name
 
         if name.startswith('_'):
