@@ -70,10 +70,6 @@ class CppBindingsPrinter(LanguageBindingsPrinter):
                         emit_entity_lookup_source,
                         _EmitArgs(self.ypy_ctx, packages, self.bundle_name))
 
-        self.print_file(get_entity_lookup_header_file_name(path),
-                        emit_entity_lookup_header,
-                        _EmitArgs(self.ypy_ctx, packages, self.bundle_name))
-
     def _print_cpp_rst_doc(self, package):
         if self.ydk_doc_dir is None:
             return
@@ -109,10 +105,6 @@ def get_header_file_name(path, package):
 
 def get_entity_lookup_source_file_name(path):
     return '%s/entity_lookup.cpp' % (path)
-
-
-def get_entity_lookup_header_file_name(path):
-    return '%s/entity_lookup.hpp' % (path)
 
 
 def get_table_of_contents_file_name(path):

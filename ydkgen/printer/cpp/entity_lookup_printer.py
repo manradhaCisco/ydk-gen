@@ -28,6 +28,7 @@ class EntityLookUpPrinter(FilePrinter):
         super(EntityLookUpPrinter, self).__init__(ctx)
         self.headers = None
         self.entity_lookup = None
+        self.capability_lookup = None
 
     def print_source(self, packages, bundle_name):
         self.bundle_name = bundle_name
@@ -39,25 +40,7 @@ class EntityLookUpPrinter(FilePrinter):
         self._print_get_entity_lookup_func()
 
     def print_header(self, packages, bundle_name):
-        self.ctx.str("""
-#ifndef _TOP_ENTITY_LOOKUP_HPP_
-#define _TOP_ENTITY_LOOKUP_HPP_
-
-#include "ydk/types.hpp"
-#include "ydk/entity_lookup.hpp"
-
-namespace ydk
-{
-
-namespace %s
-{
-    TopEntityLookUp get_entity_lookup();
-}
-
-}
-
-# endif /* _TOP_ENTITY_LOOKUP_HPP_ */
-""" % bundle_name)
+        pass
 
     def _init_headers(self, packages):
         unique_headers = set()
@@ -67,9 +50,9 @@ namespace %s
         self.headers = list(sorted(unique_headers))
 
     def _add_common_headers(self, unique_headers):
+        unique_headers.add('#include "ydk/core.hpp"')
         unique_headers.add('#include "ydk/types.hpp"')
-        unique_headers.add('#include "ydk/entity_lookup.hpp"')
-        unique_headers.add('#include "entity_lookup.hpp"')
+        unique_headers.add('#include "ydk/codec_provider.hpp"')
 
     def _add_package_headers(self, unique_headers, package):
         self._add_import_statement(unique_headers, package)
@@ -82,10 +65,23 @@ namespace %s
 
     def _init_insert_stmts(self, packages):
         entity_lookup = {}
+        capability_lookup = set()
         for package in packages:
             top_level_entities = self._get_top_level_entities(package)
             self._add_top_level_entities(top_level_entities, entity_lookup)
+            mod_rev_tuple = self._get_module_revision(package)
+            capability_lookup.add(mod_rev_tuple)
         self.entity_lookup = entity_lookup
+        self.capability_lookup = capability_lookup
+
+    def _get_module_revision(self, package):
+        module_name, revision = None, ""
+        revision_stmt = package.stmt.search_one('revision')
+        if revision_stmt:
+            revision = revision_stmt.arg
+        module_name = package.stmt.arg
+
+        return (module_name, revision)
 
     def _get_top_level_entities(self, package):
         return [entity
@@ -115,25 +111,32 @@ namespace %s
     def _print_get_entity_lookup_func_header(self):
         self.ctx.bline()
         self.ctx.writelns(["namespace ydk {\n",
-                           "namespace %s {\n" % self.bundle_name,
-                           "TopEntityLookUp",
-                           "get_entity_lookup()",
+                           "void",
+                           "augment_lookup_tables()",
                            "{"])
+
         self.ctx.bline()
         self.ctx.lvl_inc()
 
     def _print_get_entity_lookup_func_body(self):
-        self.ctx.writeln("TopEntityLookUp entity_lookup;")
         for path in self.entity_lookup:
             self._print_insert_statement(path)
-        self.ctx.writeln("return entity_lookup;")
+
+        for (module_name, revision) in self.capability_lookup:
+            self._print_emplace_statement(module_name, revision)
 
     def _print_insert_statement(self, path):
         qualified_name = self.entity_lookup[path]
-        self.ctx.writeln("entity_lookup.insert(std::string{\"%s\"}, "
+        self.ctx.writeln("ydk_global_entities.insert(std::string{\"%s\"},"
                          "std::make_unique<%s>());"
                          % (path, qualified_name))
 
+    def _print_emplace_statement(self, module_name, revision):
+        self.ctx.writeln("ydk_global_caps.emplace_back("
+                         "core::Capability{std::string{\"%s\"},"
+                         "\"%s\", {}, {}});"
+                         % (module_name, revision))
+
     def _print_get_entity_lookup_func_trailer(self):
         self.ctx.lvl_dec()
-        self.ctx.writelns(['}\n'] * 3)
+        self.ctx.writelns(['}\n'] * 2)

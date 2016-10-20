@@ -57,6 +57,7 @@ namespace ydk
         private:
             void copy(const TopEntityLookUp & rhs);
     };
+    void augment_lookup_tables();
 }
 
 #endif /* ENTITY_LOOKUP_HPP */

@@ -18,16 +18,14 @@
 
 #include <iostream>
 #include <boost/test/unit_test.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
 #include <string.h>
 
 #include "ydk/codec_provider.hpp"
 #include "ydk/codec_service.hpp"
 #include "ydk_ydktest/ydktest_sanity.hpp"
 #include "ydk_ydktest/ydktest_sanity_types.hpp"
-#include "ydk_ydktest/entity_lookup.hpp"
 #include "ydk_ydktest/oc_pattern.hpp"
+
 #include "config.hpp"
 
 using namespace ydk;
@@ -260,75 +258,66 @@ config_runner_1(ydktest_sanity::Runner *runner)
 
 BOOST_AUTO_TEST_CASE(test_single_encode)
 {
-   TopEntityLookUp entity_lookup = ydktest::get_entity_lookup();
-   std::vector<std::string> models{"ydktest-sanity", "ydktest-sanity-types"};
-   CodecServiceProvider codec_provider{TEST_HOME, models, CodecServiceProvider::Encoding::XML, true, entity_lookup};
-   CodecService codec_service{};
+    CodecServiceProvider codec_provider{TEST_HOME, CodecServiceProvider::Encoding::XML, true};
 
-   auto runner = std::make_unique<ydktest_sanity::Runner>();
+    CodecService codec_service{};
 
-   config_runner_1(runner.get());
+    auto runner = std::make_unique<ydktest_sanity::Runner>();
 
-   std::string xml = codec_service.encode(codec_provider, *runner);
-   std::cout << xml << std::endl;
+    config_runner_1(runner.get());
+
+    std::string xml = codec_service.encode(codec_provider, *runner);
+    std::cout << xml << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(test_multiple_encode)
 {
-   TopEntityLookUp entity_lookup = ydktest::get_entity_lookup();
-   std::vector<std::string> models{"ydktest-sanity", "ydktest-sanity-types"};
-   CodecServiceProvider codec_provider{TEST_HOME, models, CodecServiceProvider::Encoding::XML, true, entity_lookup};
-   CodecService codec_service{};
+    CodecServiceProvider codec_provider{TEST_HOME, CodecServiceProvider::Encoding::XML, true};
+    CodecService codec_service{};
 
-   auto runner1 = std::make_unique<ydktest_sanity::Runner>();
-   auto runner2 = std::make_unique<ydktest_sanity::Runner>();
+    auto runner1 = std::make_unique<ydktest_sanity::Runner>();
+    auto runner2 = std::make_unique<ydktest_sanity::Runner>();
 
-   config_runner_1(runner1.get());
-   config_runner_2(runner2.get());
+    config_runner_1(runner1.get());
+    config_runner_2(runner2.get());
 
-   runner2->two_list->ldata[0]->name = "modified";
+    runner2->two_list->ldata[0]->name = "modified";
 
-   std::map<std::string, std::unique_ptr<Entity>> entity_map;
-   entity_map["runner1"] = std::move(runner1);
-   entity_map["runner2"] = std::move(runner2);
+    std::map<std::string, std::unique_ptr<Entity>> entity_map;
+    entity_map["runner1"] = std::move(runner1);
+    entity_map["runner2"] = std::move(runner2);
 
-   std::map<std::string, std::string> payload_map = codec_service.encode(codec_provider, entity_map);
+    std::map<std::string, std::string> payload_map = codec_service.encode(codec_provider, entity_map);
 
-   BOOST_CHECK_EQUAL(payload_map["runner1"], XML_RUNNER_PAYLOAD_1);
-   BOOST_CHECK_EQUAL(payload_map["runner2"], XML_RUNNER_PAYLOAD_2);
+    BOOST_CHECK_EQUAL(payload_map["runner1"], XML_RUNNER_PAYLOAD_1);
+    BOOST_CHECK_EQUAL(payload_map["runner2"], XML_RUNNER_PAYLOAD_2);
 }
 
 BOOST_AUTO_TEST_CASE(test_oc_pattern)
 {
-   TopEntityLookUp entity_lookup = ydktest::get_entity_lookup();
-   std::vector<std::string> models{"oc-pattern"};
-   CodecServiceProvider codec_provider{TEST_HOME, models, CodecServiceProvider::Encoding::XML, true, entity_lookup};
-   CodecService codec_service{};
+    CodecServiceProvider codec_provider{TEST_HOME, CodecServiceProvider::Encoding::XML, true};
+    CodecService codec_service{};
 
-   auto entity = codec_service.decode(codec_provider, XML_OC_PATTERN_PAYLOAD);
+    auto entity = codec_service.decode(codec_provider, XML_OC_PATTERN_PAYLOAD);
 
-   oc_pattern::OcA * entity_ptr = dynamic_cast<oc_pattern::OcA*>(entity.get());
-   BOOST_CHECK_EQUAL(entity_ptr->a.get(), "Hello");
+    oc_pattern::OcA * entity_ptr = dynamic_cast<oc_pattern::OcA*>(entity.get());
+    BOOST_CHECK_EQUAL(entity_ptr->a.get(), "Hello");
 }
 
 BOOST_AUTO_TEST_CASE(test_enum_2)
 {
-   TopEntityLookUp entity_lookup = ydktest::get_entity_lookup();
-   std::vector<std::string> models{"ydktest-sanity", "ydktest-sanity-types"};
-   CodecServiceProvider codec_provider{TEST_HOME, models, CodecServiceProvider::Encoding::XML, true, entity_lookup};
-   CodecService codec_service{};
+    CodecServiceProvider codec_provider{TEST_HOME, CodecServiceProvider::Encoding::XML, true};
+    CodecService codec_service{};
 
-   auto entity = codec_service.decode(codec_provider, XML_ENUM_PAYLOAD_2);
-   ydktest_sanity::Runner * entity_ptr = dynamic_cast<ydktest_sanity::Runner*>(entity.get());
-   BOOST_CHECK_EQUAL(entity_ptr->ytypes->built_in_t->enum_value.get(), "local");
+    auto entity = codec_service.decode(codec_provider, XML_ENUM_PAYLOAD_2);
+    ydktest_sanity::Runner * entity_ptr = dynamic_cast<ydktest_sanity::Runner*>(entity.get());
+    BOOST_CHECK_EQUAL(entity_ptr->ytypes->built_in_t->enum_value.get(), "local");
 }
 
 
 BOOST_AUTO_TEST_CASE(test_single_encode_decode)
 {
-    // TopEntityLookUp entity_lookup = ydktest::get_entity_lookup();
-    // std::vector<std::string> models{"ydktest-sanity", "ydktest-sanity-types"};
-    // CodecServiceProvider codec_provider{TEST_HOME, models, CodecServiceProvider::Encoding::JSON, true, entity_lookup};
+    // CodecServiceProvider codec_provider{TEST_HOME, CodecServiceProvider::Encoding::JSON, true};
     // CodecService codec_service{};
 
     // auto entity = codec_service.decode(codec_provider, JSON_RUNNER_PAYLOAD_1);
@@ -340,9 +329,7 @@ BOOST_AUTO_TEST_CASE(test_single_encode_decode)
 
 BOOST_AUTO_TEST_CASE(test_single_decode)
 {
-    TopEntityLookUp entity_lookup = ydktest::get_entity_lookup();
-    std::vector<std::string> models{"ydktest-sanity", "ydktest-sanity-types"};
-    CodecServiceProvider codec_provider{TEST_HOME, models, CodecServiceProvider::Encoding::JSON, true, entity_lookup};
+    CodecServiceProvider codec_provider{TEST_HOME, CodecServiceProvider::Encoding::JSON, true};
     CodecService codec_service{};
 
     auto entity = codec_service.decode(codec_provider, JSON_RUNNER_PAYLOAD_1);

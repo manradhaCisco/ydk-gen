@@ -35,7 +35,7 @@ set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0")
 
 
 set(libydk_@BRIEF_NAME@_src ydk/models/entity_lookup.cpp @SOURCE_FILES@)
-set(libydk_@BRIEF_NAME@_headers ydk/models/entity_lookup.hpp @HEADER_FILES@)
+set(libydk_@BRIEF_NAME@_headers @HEADER_FILES@)
 
 find_package(LibYDK REQUIRED)
 

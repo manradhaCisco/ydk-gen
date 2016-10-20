@@ -30,22 +30,14 @@ namespace re = boost::xpressive;
 namespace ydk
 {
 
+TopEntityLookUp ydk_global_entities;
+std::vector<core::Capability> ydk_global_caps;
+
 re::sregex XML_LOOKUP_KEY = re::sregex::compile("<(?P<entity>[^ ]+) xmlns=\"(?P<ns>[^\"]+)\"");
 re::sregex JSON_LOOKUP_KEY = re::sregex::compile("{[^\"]+\"(?P<key>[^\"]+)\"");
 std::string ERROR_MSG{"Failed to find namespace from %1% payload,"
                       " please make sure payload format is consistent with encoding format."};
 
-
-std::vector<core::Capability>
-create_capability(std::vector<std::string> models)
-{
-    std::vector<core::Capability> caps;
-    for (std::string m: models)
-    {
-        caps.emplace_back(core::Capability{m, "", {}, {}});
-    }
-    return caps;
-}
 
 std::string get_xml_lookup_key(std::string & payload)
 {
@@ -84,13 +76,13 @@ std::string get_json_lookup_key(std::string & payload)
     return lookup_key;
 }
 
-CodecServiceProvider::CodecServiceProvider(const char * path, std::vector<std::string> & models,
-    Encoding encoding, bool pretty, TopEntityLookUp & lookup)
-    : m_pretty{pretty}, m_encoding{encoding}, m_lookup{lookup}
+CodecServiceProvider::CodecServiceProvider(const char * path, Encoding encoding, bool pretty)
+    : m_pretty{pretty}, m_encoding{encoding}
 {
+    augment_lookup_tables();
+    m_lookup = ydk_global_entities;
     m_repo = std::make_unique<core::Repository>(path);
-    std::vector<core::Capability> caps = create_capability(models);
-    m_root_schema = std::unique_ptr<ydk::core::RootSchemaNode>(m_repo->create_root_schema(caps));
+    m_root_schema = std::unique_ptr<ydk::core::RootSchemaNode>(m_repo->create_root_schema(ydk::ydk_global_caps));
 }
 
 CodecServiceProvider::~CodecServiceProvider() {}

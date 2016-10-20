@@ -31,6 +31,9 @@
 
 namespace ydk
 {
+    extern TopEntityLookUp ydk_global_entities;
+    extern std::vector<core::Capability> ydk_global_caps;
+
     class CodecServiceProvider
     {
     public:
@@ -44,8 +47,7 @@ namespace ydk
         Encoding m_encoding;
         std::unique_ptr<core::Repository> m_repo;
 
-        CodecServiceProvider(const char * path, std::vector<std::string> & models,
-            Encoding encoding, bool pretty, TopEntityLookUp & lookup);
+        CodecServiceProvider(const char * path, Encoding encoding, bool pretty);
         ~CodecServiceProvider();
 
         void add_lookup_table(TopEntityLookUp & lookup);
