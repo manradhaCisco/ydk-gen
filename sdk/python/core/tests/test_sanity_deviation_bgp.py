@@ -23,7 +23,7 @@ from ydk.providers import NetconfServiceProvider, NativeNetconfServiceProvider
 from ydk.types import Empty, DELETE, Decimal64
 from compare import is_equal
 from ydk.errors import YPYError, YPYModelError
-from ydk.models import bgp
+from ydk.models import bgp, bgp_types
 from ydk.models.routing_policy import DefaultPolicyTypeEnum, RoutingPolicy
 
 
@@ -60,7 +60,7 @@ class SanityTest(unittest.TestCase):
         # Bgp.Global.AfiSafis.AfiSafi.ApplyPolicy is not supported
         bgp_cfg = bgp.Bgp()
         ipv4_afsf = bgp_cfg.global_.afi_safis.AfiSafi()
-        ipv4_afsf.afi_safi_name = 'ipv4-unicast'
+        ipv4_afsf.afi_safi_name = bgp_types.AfiSafiTypeIdentity()
         ipv4_afsf.apply_policy.config.default_export_policy = \
             DefaultPolicyTypeEnum.ACCEPT_ROUTE
         bgp_cfg.global_.afi_safis.afi_safi.append(ipv4_afsf)
