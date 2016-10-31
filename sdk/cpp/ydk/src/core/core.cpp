@@ -140,21 +140,47 @@ namespace ydk {
         }
 
 
+        SchemaValueIdentityType* create_identity_type(struct ly_set *ident)
+        {
+
+            SchemaValueIdentityType* identity_type = new SchemaValueIdentityType{};
+            if(!ident) return identity_type;
+
+            for(unsigned int i=0;i<ident->number && i<=272;i++) //272 temporary workaround for ietf-interfaces
+            {
+				identity_type->module_name = ident->set.s[i]->module->name;
+				identity_type->name = ident->set.s[i]->name;
+                                struct lys_ident* iden = ((struct lys_ident*)ident->set.s[i]);
+
+                if(iden->der && iden->der->number > 0)
+				{
+					identity_type->derived.push_back(create_identity_type(iden->der));
+				}
+
+            }
+            return identity_type;
+
+
+        }
+
+
+
         SchemaValueIdentityType* create_identity_type(struct lys_ident **ident, int count)
         {
 
             SchemaValueIdentityType* identity_type = new SchemaValueIdentityType{};
             if(!ident) return identity_type;
 
-            for(int i=0;i<count && count <= 272;i++) //TODO 272 is needed for interface-type in ietf-interfaces.yang. temporary workaround
+            for(int i=0;i<count;i++)
             {
 				identity_type->module_name = ident[i]->module->name;
 				identity_type->name = ident[i]->name;
 
-				if(ident[i]->der_size > 0)
+                if(ident[i]->der && ident[i]->der->number > 0)
 				{
-					identity_type->derived.push_back(create_identity_type(ident[i]->der, ident[i]->der_size));
+					identity_type->derived.push_back(create_identity_type(ident[i]->der));
 				}
+
             }
             return identity_type;
 

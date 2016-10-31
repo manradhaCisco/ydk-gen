@@ -23,6 +23,7 @@
 
 
 #include <iostream>
+#include <sstream>
 #include <stdio.h>
 
 #include <libnetconf.h>
@@ -63,6 +64,13 @@ int NetconfClient::connect()
 	perform_session_check("Could not connect to " + hostname);
 	init_capabilities();
 	return EXIT_SUCCESS;
+}
+
+std::string NetconfClient::get_hostname_port()
+{
+	ostringstream os;
+	os<<hostname<<":"<<port;
+	return os.str();
 }
 
 void NetconfClient::init_capabilities()

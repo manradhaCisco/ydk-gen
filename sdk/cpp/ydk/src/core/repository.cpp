@@ -34,12 +34,14 @@ namespace fs = boost::filesystem;
 //////////////////////////////////////////////////////////////////////////
 
 ydk::core::Repository::Repository()
+  : using_temp_directory(true)
 {
     path = fs::temp_directory_path();
 }
 
 
-ydk::core::Repository::Repository(const std::string& search_dir) : path{search_dir}
+ydk::core::Repository::Repository(const std::string& search_dir)
+  : path{search_dir}, using_temp_directory(false)
 {
     if(!fs::exists(path) || !fs::is_directory(path)) {
         BOOST_LOG_TRIVIAL(debug) << "Path " << search_dir << " is not a valid directory.";
@@ -184,8 +186,17 @@ namespace ydk {
 }
 
 ydk::core::RootSchemaNode*
-ydk::core::Repository::create_root_schema(const std::vector<core::Capability> & capabilities) const
+ydk::core::Repository::create_root_schema(const std::vector<core::Capability> & capabilities)
 {
+	if(using_temp_directory)
+	{
+		for(auto model_provider : get_model_providers()) {
+			path+="/"+model_provider->get_hostname_port();
+			boost::filesystem::create_directory(path);
+			BOOST_LOG_TRIVIAL(debug) << "Path where models are to be downloaded: " << path.string();
+			break;
+		}
+	}
     std::string path_str = path.string();
     BOOST_LOG_TRIVIAL(trace) << "creating libyang context in path "<<path_str;
     struct ly_ctx* ctx = ly_ctx_new(path_str.c_str());
