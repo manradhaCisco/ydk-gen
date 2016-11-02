@@ -37,6 +37,7 @@ ydk::core::Repository::Repository()
   : using_temp_directory(true)
 {
     path = fs::temp_directory_path();
+    ly_verb(LY_LLSILENT);
 }
 
 
@@ -44,7 +45,7 @@ ydk::core::Repository::Repository(const std::string& search_dir)
   : path{search_dir}, using_temp_directory(false)
 {
     if(!fs::exists(path) || !fs::is_directory(path)) {
-        BOOST_LOG_TRIVIAL(debug) << "Path " << search_dir << " is not a valid directory.";
+        BOOST_LOG_TRIVIAL(error) << "Path " << search_dir << " is not a valid directory.";
         throw YDKInvalidArgumentException{"path is not a valid directory"};
     }
 
@@ -90,7 +91,7 @@ namespace ydk {
 
 
                 //first check our directory for a file of the form <module-module_name>@<module_rev-date>.yang
-                BOOST_LOG_TRIVIAL(debug) << "Looking for file in folder: " << repo->path.string();
+                BOOST_LOG_TRIVIAL(trace) << "Looking for file in folder: " << repo->path.string();
                 std::string yang_file_path_str{repo->path.string()};
                 std::string yang_file_path_no_revision_str{repo->path.string()};
                 yang_file_path_str += '/';
@@ -105,11 +106,11 @@ namespace ydk {
                     yang_file_path_str += sub_rev;
                 }
                 yang_file_path_str += ".yang";
-                BOOST_LOG_TRIVIAL(debug) << "Opening file " << yang_file_path_str;
+                BOOST_LOG_TRIVIAL(trace) << "Opening file " << yang_file_path_str;
 
                 fs::path yang_file_path{yang_file_path_str};
                 fs::path yang_file_path_no_revision{yang_file_path_no_revision_str};
-                BOOST_LOG_TRIVIAL(debug) << "Path found with rev: " << fs::is_regular_file(yang_file_path) << ". Path without rev: " << fs::is_regular_file(yang_file_path_no_revision);
+                BOOST_LOG_TRIVIAL(trace) << "Path found with rev: " << fs::is_regular_file(yang_file_path) << ". Path without rev: " << fs::is_regular_file(yang_file_path_no_revision);
                 if(fs::is_regular_file(yang_file_path) || fs::is_regular_file(yang_file_path_no_revision)) {
                     //open the file read the data and return it
                     std::string model_data {""};
@@ -136,7 +137,7 @@ namespace ydk {
                         enlarged_data[len] = enlarged_data[len + 1] = '\0';
                         return enlarged_data;
                     } else {
-                        BOOST_LOG_TRIVIAL(debug) << "Cannot open file " << yang_file_path_str;
+                        BOOST_LOG_TRIVIAL(error) << "Cannot open file " << yang_file_path_str;
                         throw YDKIllegalStateException("Cannot open file");
                     }
 
@@ -147,12 +148,12 @@ namespace ydk {
                 	std::string model_data{};
                 	if(submod_name)
                 	{
-                		BOOST_LOG_TRIVIAL(debug) << "Getting submodule using get-schema " << submod_name;
+                		BOOST_LOG_TRIVIAL(trace) << "Getting submodule using get-schema " << submod_name;
                 		model_data = model_provider->get_model(submod_name, sub_rev != nullptr ? sub_rev : "", m_format);
                 	}
                 	else
                 	{
-                		BOOST_LOG_TRIVIAL(debug) << "Getting module using get-schema " << module_name;
+                		BOOST_LOG_TRIVIAL(trace) << "Getting module using get-schema " << module_name;
                 		model_data = model_provider->get_model(module_name, module_rev != nullptr ? module_rev : "", m_format);
                 	}
                     if(!model_data.empty()){
@@ -171,13 +172,13 @@ namespace ydk {
                         enlarged_data[len] = enlarged_data[len + 1] = '\0';
                         return enlarged_data;
                     } else {
-                        BOOST_LOG_TRIVIAL(error) << "Cannot find model with module_name:- " << module_name << " module_rev:-" << (module_rev !=nullptr ? module_rev : "");
+                        BOOST_LOG_TRIVIAL(trace) << "Cannot find model with module_name:- " << module_name << " module_rev:-" << (module_rev !=nullptr ? module_rev : "");
 //                        throw YDKIllegalStateException{"Cannot find model"};
                         return "";
                     }
                 }
             }
-            BOOST_LOG_TRIVIAL(error) << "Cannot find model with module_name:- " << module_name;
+            BOOST_LOG_TRIVIAL(trace) << "Cannot find model with module_name:- " << module_name;
 //            throw YDKIllegalStateException{"Cannot find model"};
             return "";
         }
@@ -198,7 +199,7 @@ ydk::core::Repository::create_root_schema(const std::vector<core::Capability> & 
 		}
 	}
     std::string path_str = path.string();
-    BOOST_LOG_TRIVIAL(trace) << "creating libyang context in path "<<path_str;
+    BOOST_LOG_TRIVIAL(trace) << "Creating libyang context in path "<<path_str;
     struct ly_ctx* ctx = ly_ctx_new(path_str.c_str());
 
     if(!ctx) {
@@ -228,7 +229,7 @@ ydk::core::Repository::create_root_schema(const std::vector<core::Capability> & 
         }
 
         if (!p) {
-            BOOST_LOG_TRIVIAL(debug) << "Unable to parse module " << c.module;
+            BOOST_LOG_TRIVIAL(trace) << "Unable to parse module " << c.module;
             continue;
         }
         for (auto f : c.features)

@@ -44,7 +44,7 @@ ydk::core::RpcImpl::RpcImpl(SchemaNodeImpl* sn, struct ly_ctx* ctx) : m_sn{sn}
     struct lyd_node* dnode = lyd_new_path(nullptr, ctx, sn->path().c_str(), (void*)"", LYD_ANYDATA_SXML, 0);
 
     if(!dnode){
-        BOOST_LOG_TRIVIAL(debug) << "Cannot find DataNode with path " << sn->path();
+        BOOST_LOG_TRIVIAL(error) << "Cannot find DataNode with path " << sn->path();
         throw YDKIllegalStateException{"Illegal state"};
     }
 

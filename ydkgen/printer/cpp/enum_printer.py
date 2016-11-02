@@ -91,5 +91,5 @@ class EnumPrinter(object):
         self.ctx.bline()
 
     def _print_enum_literal_to_string(self, enum_class, enum_literal):
-        self.ctx.writeln('const Enum::Value %s::%s {%s, "%s"};' % (enum_class.qualified_cpp_name(), enum_literal.name, enum_literal.value, enum_literal.name))
+        self.ctx.writeln('const Enum::Value %s::%s {%s, "%s"};' % (enum_class.qualified_cpp_name(), enum_literal.name, enum_literal.value, enum_literal.stmt.arg))
 

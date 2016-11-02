@@ -52,7 +52,7 @@ std::string get_xml_lookup_key(std::string & payload)
     else
     {
         std::string error_msg{boost::str(boost::format(ERROR_MSG) % "XML")};
-        BOOST_LOG_TRIVIAL(debug) << error_msg;
+        BOOST_LOG_TRIVIAL(error) << error_msg;
         throw YDKServiceProviderException(error_msg);
     }
     return lookup_key;
@@ -70,7 +70,7 @@ std::string get_json_lookup_key(std::string & payload)
     else
     {
         std::string error_msg{boost::str(boost::format(ERROR_MSG) % "JSON")};
-        BOOST_LOG_TRIVIAL(debug) << error_msg;
+        BOOST_LOG_TRIVIAL(error) << error_msg;
         throw YDKServiceProviderException(error_msg);
     }
     return lookup_key;

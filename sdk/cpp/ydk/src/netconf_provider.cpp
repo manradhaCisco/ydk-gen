@@ -66,8 +66,9 @@ NetconfServiceProvider::NetconfServiceProvider(core::Repository* repo, string ad
     : m_repo{repo}, client(make_unique<NetconfClient>(username, password, address, port, 0)),
 	  model_provider(make_unique<NetconfModelProvider>(*client))
 {
-    if(m_repo == nullptr) {
-        BOOST_LOG_TRIVIAL(debug) << "Repo passed in is nullptr";
+    if(m_repo == nullptr)
+    {
+        BOOST_LOG_TRIVIAL(error) << "Repo passed in is nullptr";
         throw YDKInvalidArgumentException{"repo is null"};
     }
 
@@ -188,8 +189,9 @@ NetconfServiceProvider::NetconfServiceProvider(core::Repository* repo, string ad
 									)
 								);
 
-    if(root_schema.get() == nullptr) {
-        BOOST_LOG_TRIVIAL(debug) << "Root schema cannot be obtained";
+    if(root_schema.get() == nullptr)
+    {
+        BOOST_LOG_TRIVIAL(error) << "Root schema cannot be obtained";
         throw YDKIllegalStateException{"Root schema cannot be obtained"};
     }
 }
@@ -322,12 +324,12 @@ static void create_input_target(core::DataNode & input, bool candidate_supported
 {
     if(candidate_supported){
         if(!input.create("target/candidate", "")){
-            BOOST_LOG_TRIVIAL(debug) << "Failed setting target datastore";
+            BOOST_LOG_TRIVIAL(error) << "Failed setting target datastore";
             throw YDKIllegalStateException{"Failed setting target datastore"};
         }
     } else {
         if(!input.create("target/running", "")){
-            BOOST_LOG_TRIVIAL(debug) << "Failed setting running datastore";
+            BOOST_LOG_TRIVIAL(error) << "Failed setting running datastore";
             throw YDKIllegalStateException{"Failed setting running datastore"};
         }
     }
@@ -336,7 +338,7 @@ static void create_input_target(core::DataNode & input, bool candidate_supported
 static void create_input_error_option(core::DataNode & input)
 {
 	if(!input.create("error-option", "rollback-on-error")){
-            BOOST_LOG_TRIVIAL(debug) << "Failed to set rollback-on-error";
+            BOOST_LOG_TRIVIAL(error) << "Failed to set rollback-on-error";
             throw YDKIllegalStateException{"Failed to set rollback-on-error option"};
 	}
 }
@@ -345,7 +347,7 @@ static void create_input_source(core::DataNode & input, bool config)
 {
 	if(config && !input.create("source/running"))
 	{
-            BOOST_LOG_TRIVIAL(debug) << "Failed setting source";
+            BOOST_LOG_TRIVIAL(error) << "Failed setting source";
             throw YDKIllegalStateException{"Failed setting source"};
 	}
 }
@@ -356,7 +358,7 @@ static string get_annotated_config_payload(core::RootSchemaNode* root_schema,
     core::CodecService codec_service{};
     auto entity = rpc.input()->find("entity");
     if(entity.empty()){
-        BOOST_LOG_TRIVIAL(debug) << "Failed to get entity node";
+        BOOST_LOG_TRIVIAL(error) << "Failed to get entity node";
         throw YDKInvalidArgumentException{"Failed to get entity node"};
     }
 
@@ -367,7 +369,7 @@ static string get_annotated_config_payload(core::RootSchemaNode* root_schema,
     core::DataNode* datanode = codec_service.decode(root_schema, entity_value, core::CodecService::Format::XML);
 
     if(!datanode){
-        BOOST_LOG_TRIVIAL(debug) << "Failed to decode entity node";
+        BOOST_LOG_TRIVIAL(error) << "Failed to decode entity node";
         throw YDKInvalidArgumentException{"Failed to decode entity node"};
     }
 
@@ -385,7 +387,7 @@ static string get_filter_payload(core::Rpc & ydk_rpc)
 {
     auto entity = ydk_rpc.input()->find("filter");
     if(entity.empty()){
-        BOOST_LOG_TRIVIAL(debug) << "Failed to get entity node.";
+        BOOST_LOG_TRIVIAL(error) << "Failed to get entity node.";
         throw YDKInvalidArgumentException{"Failed to get entity node"};
     }
 
@@ -399,7 +401,7 @@ static string get_netconf_payload(core::DataNode* input, string data_value, stri
     auto config_node = input->create(data_tag, data_value);
     if(!config_node)
     {
-        BOOST_LOG_TRIVIAL(debug) << "Failed to create data tree";
+        BOOST_LOG_TRIVIAL(error) << "Failed to create data tree";
         throw YDKIllegalStateException{"Failed to create data tree"};
     }
 
@@ -423,12 +425,15 @@ static core::DataNode* handle_edit_reply(string reply, NetconfClient & client, b
 	if(candidate_supported)
 	{
 		//need to send the commit request
-		reply = client.execute_payload(get_commit_rpc_payload());
+		string commit_payload = get_commit_rpc_payload();
+		reply = client.execute_payload(commit_payload);
+		BOOST_LOG_TRIVIAL(debug) << "Executing commit RPC: " << commit_payload;
 		if(reply.find("<ok/>") == std::string::npos)
 		{
-			BOOST_LOG_TRIVIAL(debug) << "No ok in reply " << reply;
+			BOOST_LOG_TRIVIAL(error) << "RPC error occurred: " << reply;
 		    throw YDKServiceProviderException{reply};
 		}
+		BOOST_LOG_TRIVIAL(debug) <<"=========================="<<endl;
 	}
 
 	//no error no output for edit-config

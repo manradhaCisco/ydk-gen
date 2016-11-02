@@ -20,73 +20,96 @@
 #include "ydk/types.hpp"
 #include "ydk/netconf_provider.hpp"
 #include "ydk/crud_service.hpp"
+
 #include "ydk_cisco_ios_xr/Cisco_IOS_XR_ipv4_bgp_cfg.hpp"
 #include "ydk_cisco_ios_xr/Cisco_IOS_XR_ipv4_bgp_datatypes.hpp"
 
 #include "args_parser.h"
 
 using namespace ydk;
+using namespace ydk::Cisco_IOS_XR_ipv4_bgp_cfg;
+using namespace ydk::Cisco_IOS_XR_ipv4_bgp_datatypes;
 using namespace std;
 
-void config_bgp(Cisco_IOS_XR_ipv4_bgp_cfg::Bgp* bgp)
+void config_bgp(Bgp* bgp)
 {
-	auto instance = make_unique<Cisco_IOS_XR_ipv4_bgp_cfg::Bgp::Instance>();
-	instance->instance_name = "default";
-	auto instance_as = make_unique<Cisco_IOS_XR_ipv4_bgp_cfg::Bgp::Instance::InstanceAs>();
-	instance_as->as = 65001;
-	auto four_byte_as = make_unique<Cisco_IOS_XR_ipv4_bgp_cfg::Bgp::Instance::InstanceAs::FourByteAs>();
-	four_byte_as->as = 65001;
-	four_byte_as->bgp_running = Empty{};
-	// global address family
-	auto global_af = make_unique<Cisco_IOS_XR_ipv4_bgp_cfg::Bgp::Instance::InstanceAs::FourByteAs::DefaultVrf::Global::GlobalAfs::GlobalAf>();
-	global_af->af_name = Cisco_IOS_XR_ipv4_bgp_datatypes::BgpAddressFamilyEnum::ipv4_unicast;
-	global_af->enable = Empty{};
-	four_byte_as->default_vrf->global->global_afs->global_af.push_back(move(global_af));
-	instance_as->four_byte_as.push_back(move(four_byte_as));
-	instance->instance_as.push_back(move(instance_as));
-	bgp->instance.push_back(move(instance));
+    // Add config data to bgp object.
+    // global configuration
+    auto instance = make_unique<Bgp::Instance>();
+    instance->instance_name = "test";
+    auto instance_as = make_unique<Bgp::Instance::InstanceAs>();
+    instance_as->as = 65001;
+    auto four_byte_as = make_unique<Bgp::Instance::InstanceAs::FourByteAs>();
+    four_byte_as->as = 65001;
+    four_byte_as->bgp_running = Empty();
 
-	// configure IBGP neighbor group
-//	neighbor_groups = four_byte_as.default_vrf.bgp_entity.neighbor_groups;
-//	neighbor_group = neighbor_groups.NeighborGroup();
-//	neighbor_group.neighbor_group_name = "IBGP";
-//	neighbor_group.create = Empty();
-//	// remote AS
-//	neighbor_group.remote_as.as_xx = 0;
-//	neighbor_group.remote_as.as_yy = 65001;
-//	neighbor_group.update_source_interface = "Loopback0";
-//	neighbor_groups.neighbor_group.append(neighbor_group);
-//	// ipv4 unicast
-//	neighbor_group_af = neighbor_group.neighbor_group_afs.NeighborGroupAf();
-//	neighbor_group_af.af_name = BgpAddressFamilyEnum.IPV4_UNICAST;
-//	neighbor_group_af.activate = Empty();
-//	neighbor_group_afs = neighbor_group.neighbor_group_afs;
-//	neighbor_group_afs.neighbor_group_af.append(neighbor_group_af);
-//
-//	// configure IBGP neighbor
-//	neighbor = four_byte_as.default_vrf.bgp_entity.neighbors.Neighbor();
-//	neighbor.neighbor_address = "172.16.255.3";
-//	neighbor.neighbor_group_add_member = "IBGP";
-//	four_byte_as.default_vrf.bgp_entity.neighbors.neighbor.append(neighbor);
+    // global address family
+    auto global_af = make_unique<Bgp::Instance::InstanceAs::FourByteAs::DefaultVrf::Global::GlobalAfs::GlobalAf>();
+    global_af->af_name = BgpAddressFamilyEnum::ipv4_unicast;
+    global_af->enable = Empty();
+    global_af->parent = four_byte_as->default_vrf->global->global_afs.get();
+    four_byte_as->default_vrf->global->global_afs->global_af.push_back(move(global_af));
+
+    // configure IBGP neighbor group
+    auto neighbor_group = make_unique<Bgp::Instance::InstanceAs::FourByteAs::DefaultVrf::BgpEntity::NeighborGroups::NeighborGroup>();
+    neighbor_group->neighbor_group_name = "IBGP";
+    neighbor_group->create = Empty();
+    // remote AS
+    neighbor_group->remote_as->as_xx = 0;
+    neighbor_group->remote_as->as_yy = 65001;
+    neighbor_group->update_source_interface = "Loopback0";
+    // ipv4 unicast
+    auto neighbor_group_af = make_unique<Bgp::Instance::InstanceAs::FourByteAs::DefaultVrf::BgpEntity::NeighborGroups::NeighborGroup::NeighborGroupAfs::NeighborGroupAf>();
+    neighbor_group_af->af_name = BgpAddressFamilyEnum::ipv4_unicast;
+    neighbor_group_af->activate = Empty();
+    neighbor_group_af->parent = neighbor_group->neighbor_group_afs.get();
+    neighbor_group->parent = four_byte_as->default_vrf->bgp_entity->neighbor_groups.get();
+    neighbor_group->neighbor_group_afs->neighbor_group_af.push_back(move(neighbor_group_af));
+    four_byte_as->default_vrf->bgp_entity->neighbor_groups->neighbor_group.push_back(move(neighbor_group));
+
+    // configure IBGP neighbor
+    auto neighbor = make_unique<Bgp::Instance::InstanceAs::FourByteAs::DefaultVrf::BgpEntity::Neighbors::Neighbor>();
+    neighbor->neighbor_address = "172.16.255.2";
+    neighbor->neighbor_group_add_member = "IBGP";
+    neighbor->parent = four_byte_as->default_vrf->bgp_entity->neighbors.get();
+    four_byte_as->default_vrf->bgp_entity->neighbors->neighbor.push_back(move(neighbor));
+
+    four_byte_as->parent = instance_as.get();
+    instance_as->parent = instance.get();
+    instance->parent = bgp;
+    instance_as->four_byte_as.push_back(move(four_byte_as));
+    instance->instance_as.push_back(move(instance_as));
+    bgp->instance.push_back(move(instance));
 }
 
 int main(int argc, char* argv[])
 {
-	boost::log::core::get()->set_filter(
-		        boost::log::trivial::severity >= boost::log::trivial::debug
-		    );
-
 	vector<string> args = parse_args(argc, argv);
 	if(args.empty()) return 1;
 	string host, username, password;
 	int port;
+
 	username = args[0]; password = args[1]; host = args[2]; port = stoi(args[3]);
+
+	bool verbose=(args[4]=="--verbose");
+	if(verbose)
+	{
+		boost::log::core::get()->set_filter(
+			        boost::log::trivial::severity >= boost::log::trivial::debug
+			    );
+	}
+	else
+	{
+		boost::log::core::get()->set_filter(
+					        boost::log::trivial::severity >= boost::log::trivial::error
+					    );
+	}
 
 	ydk::core::Repository repo{};
 	NetconfServiceProvider provider{&repo, host, username, password, port};
 	CrudService crud{};
 
-	auto bgp = make_unique<Cisco_IOS_XR_ipv4_bgp_cfg::Bgp>();
+	auto bgp = make_unique<Bgp>();
 	config_bgp(bgp.get());
 	bool reply = crud.create(provider, *bgp);
 

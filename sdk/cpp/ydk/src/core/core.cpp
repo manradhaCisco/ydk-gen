@@ -38,13 +38,19 @@ ydk::core::segmentalize(const std::string& path)
     const std::string token {"/"};
     std::vector<std::string> output;
     size_t pos = std::string::npos; // size_t to avoid improbable overflow
+    size_t prev_pos = 0;
     std::string data{path};
     do
     {
         pos = data.find(token);
+        size_t first_quote_pos = data.find("'", prev_pos+1);
+        size_t second_quote_pos = data.find("'", first_quote_pos+1);
+        while((pos<second_quote_pos) && (pos>first_quote_pos))
+        	pos = data.find(token, pos+1);
         output.push_back(data.substr(0, pos));
         if (std::string::npos != pos)
             data = data.substr(pos + token.size());
+        prev_pos = pos;
     } while (std::string::npos != pos);
     return output;
 }
@@ -503,7 +509,7 @@ ydk::core::ValidationService::validate(const ydk::core::DataNode* dn, ydk::core:
         struct lyd_node* lynode = dn_impl->m_node;
         int rc = lyd_validate(&lynode,ly_option, NULL);
         if(rc) {
-            BOOST_LOG_TRIVIAL(debug) << "Data validation failed";
+            BOOST_LOG_TRIVIAL(error) << "Data validation failed";
             throw ydk::core::YDKDataValidationException{};
         }
 
@@ -537,7 +543,7 @@ ydk::core::CodecService::encode(const ydk::core::DataNode* dn, ydk::core::CodecS
 
     const DataNodeImpl* impl = dynamic_cast<const DataNodeImpl *>(dn);
     if( !impl) {
-        BOOST_LOG_TRIVIAL(debug) << "DataNode is nullptr";
+        BOOST_LOG_TRIVIAL(error) << "DataNode is nullptr";
         throw YDKCoreException{"DataNode is null"};
     }
     m_node = impl->m_node;
@@ -546,13 +552,14 @@ ydk::core::CodecService::encode(const ydk::core::DataNode* dn, ydk::core::CodecS
         throw YDKInvalidArgumentException{"No data in data node"};
     }
     char* buffer;
+    BOOST_LOG_TRIVIAL(trace) << "Performing encode operation";
 
     if(!lyd_print_mem(&buffer, m_node,scheme, (pretty ? LYP_FORMAT : 0)|LYP_WD_ALL|LYP_KEEPEMPTYCONT)) {
     	if(!buffer)
     	{
     		std::ostringstream os;
     		os << "Could not encode datanode: "<< m_node->schema->name;
-			BOOST_LOG_TRIVIAL(debug) << os.str();
+			BOOST_LOG_TRIVIAL(error) << os.str();
 			throw YDKCoreException{os.str()};
     	}
         ret = buffer;
@@ -572,17 +579,17 @@ ydk::core::CodecService::decode(const RootSchemaNode* root_schema, const std::st
     }
     const RootSchemaNodeImpl* rs_impl = dynamic_cast<const RootSchemaNodeImpl*>(root_schema);
     if(!rs_impl){
-        BOOST_LOG_TRIVIAL(debug) << "Root Schema Node is nullptr";
+        BOOST_LOG_TRIVIAL(error) << "Root Schema Node is nullptr";
         throw YDKCoreException{"Root Schema Node is null"};
     }
 
     struct lyd_node *root = lyd_parse_mem(rs_impl->m_ctx, buffer.c_str(), scheme, LYD_OPT_TRUSTED |  LYD_OPT_GET);
     if( root == nullptr || ly_errno ) {
 
-        BOOST_LOG_TRIVIAL(debug) << "Parsing failed with message " << ly_errmsg();
+        BOOST_LOG_TRIVIAL(error) << "Parsing failed with message " << ly_errmsg();
         throw YDKCodecException{YDKCodecException::Error::XML_INVAL};
     }
-
+    BOOST_LOG_TRIVIAL(trace) << "Performing decode operation";
     RootDataImpl* rd = new RootDataImpl{rs_impl, rs_impl->m_ctx, "/"};
     rd->m_node = root;
 

@@ -24,6 +24,9 @@
 #include "../ydk/src/crud_service.hpp"
 #include "ydk_ydktest/openconfig_bgp.hpp"
 
+#include "ydk_cisco_ios_xr/Cisco_IOS_XR_ipv4_bgp_cfg.hpp"
+#include "ydk_cisco_ios_xr/Cisco_IOS_XR_ipv4_bgp_datatypes.hpp"
+
 using namespace ydk;
 using namespace std;
 
@@ -140,5 +143,21 @@ BOOST_AUTO_TEST_CASE(bgp_set_leaf)
 
 	bgp->global->config->as = 65210;
 	reply = crud.update(provider, *bgp);
+	BOOST_REQUIRE(reply);
+}
+
+BOOST_AUTO_TEST_CASE(bgp_xr)
+{
+	ydk::core::Repository repo{};
+	NetconfServiceProvider provider{&repo, "localhost", "admin", "admin", 1220};
+	CrudService crud{};
+	auto bgp = make_unique<Cisco_IOS_XR_ipv4_bgp_cfg::Bgp>();
+//	bool reply = crud.delete_(provider, *bgp);
+//	BOOST_REQUIRE(reply);
+
+	auto instance = make_unique<Cisco_IOS_XR_ipv4_bgp_cfg::Bgp::Instance>();
+	instance->instance_name = "default";
+	bgp->instance.push_back(move(instance));
+	bool reply = crud.create(provider, *bgp);
 	BOOST_REQUIRE(reply);
 }

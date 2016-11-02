@@ -89,9 +89,9 @@ string NetconfModelProvider::get_model(const string& name, const string& version
     payload+="</get-schema>";
     payload+="</rpc>";
 
-    BOOST_LOG_TRIVIAL(debug) << "Get schema request " << payload;
+    BOOST_LOG_TRIVIAL(trace) << "Get schema request " << payload;
     string reply = client.execute_payload(payload);
-    BOOST_LOG_TRIVIAL(debug) << "Get schema reply " << reply;
+    BOOST_LOG_TRIVIAL(trace) << "Get schema reply " << reply;
 
 
     auto data_start = reply.find("<data ");
@@ -123,7 +123,7 @@ string NetconfModelProvider::get_model(const string& name, const string& version
         }
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "Model " << model;
+    BOOST_LOG_TRIVIAL(trace) << "Model " << model;
 
     return model;
 }

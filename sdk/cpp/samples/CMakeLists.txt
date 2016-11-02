@@ -6,7 +6,7 @@ project(bgp_samples)
 set(SAMPLE_DESCRIPTION "BGP sample application using YANG Development Kit Library, the library for YDK API.")
 
 
-set(bgp_samples bgp_create; bgp_update;bgp_read;bgp_delete;bgp_routing_policy_create)
+set(bgp_samples bgp_create; bgp_update;bgp_read;bgp_delete;bgp_routing_policy_create;isis_xr_create;isis_xr_read;bgp_xr_create;bgp_xr_delete;bgp_xr_read)
 
 # set default build type if not specified by user
 set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wall -Wextra")
@@ -16,6 +16,7 @@ set(CMAKE_CXX_FLAGS_DEBUG   "-g -O0")
 # Find dependent libraries
 find_library(ydk_location ydk)
 find_library(ydk_ydktest_location ydk_ydktest)
+find_library(ydk_cisco_ios_xr_location ydk_cisco_ios_xr)
 find_library(xml2_location xml2)
 find_library(curl_location curl)
 find_library(ssh_location ssh)
@@ -39,6 +40,7 @@ foreach(sample IN LISTS bgp_samples)
     target_link_libraries(${sample}
             ${ydk_location} 
             ${ydk_ydktest_location} 
+            ${ydk_cisco_ios_xr_location} 
             ${xml2_location}
             ${curl_location}
             ${ssh_location}

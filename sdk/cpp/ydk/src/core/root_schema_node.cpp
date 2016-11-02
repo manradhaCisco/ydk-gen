@@ -95,13 +95,13 @@ std::vector<ydk::core::SchemaNode*>
 ydk::core::RootSchemaNodeImpl::find(const std::string& path) const
 {
     if(path.empty()) {
-        BOOST_LOG_TRIVIAL(debug) << "path is empty";
+        BOOST_LOG_TRIVIAL(error) << "path is empty";
         throw YDKInvalidArgumentException{"path is empty"};
     }
 
     //has to be a relative path
     if(path.at(0) == '/') {
-        BOOST_LOG_TRIVIAL(debug) << "path must be a relative path";
+        BOOST_LOG_TRIVIAL(error) << "path must be a relative path";
         throw YDKInvalidArgumentException{"path must be a relative path"};
     }
 
@@ -180,7 +180,7 @@ ydk::core::RootSchemaNodeImpl::rpc(const std::string& path) const
     }
 
     if(!found){
-        BOOST_LOG_TRIVIAL(debug) << "Path " << path << " does not refer to an rpc node.";
+        BOOST_LOG_TRIVIAL(error) << "Path " << path << " does not refer to an rpc node.";
         throw YDKInvalidArgumentException{"Path does not refer to an rpc node"};
     }
     SchemaNodeImpl* sn = dynamic_cast<SchemaNodeImpl*>(rpc_sn);

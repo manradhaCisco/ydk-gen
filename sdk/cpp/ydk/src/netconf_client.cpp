@@ -115,12 +115,15 @@ nc_rpc* NetconfClient::build_rpc_request(const string & payload)
 {
 	nc_rpc* rpc = nc_rpc_build(payload.c_str(), session);
 
-	if (rpc == NULL) {
-              BOOST_LOG_TRIVIAL(debug) << "Could not build rpc payload:-" << payload ;
+	if (rpc == NULL)
+	{
+          BOOST_LOG_TRIVIAL(error) << "Could not build rpc payload:-" << payload ;
 	      throw YDKClientException{"Could not build payload"};
-	} else if(NC_RPC_UNKNOWN==nc_rpc_get_type(rpc)) {
+	}
+	else if(NC_RPC_UNKNOWN==nc_rpc_get_type(rpc))
+	{
 		nc_rpc_free(rpc);
-                BOOST_LOG_TRIVIAL(debug)<< "Rpc type is unknown";
+        BOOST_LOG_TRIVIAL(error)<< "Rpc type is unknown";
 		throw YDKClientException{"Could not build payload"};
 	}
 	return rpc;
@@ -136,7 +139,7 @@ string NetconfClient::process_rpc_reply(int reply_type, const nc_reply* reply)
 		default:
 		case NC_MSG_NONE:
 		case NC_MSG_UNKNOWN:
-                        BOOST_LOG_TRIVIAL(debug) << "RPC error occurred";
+            BOOST_LOG_TRIVIAL(error) << "RPC error occurred";
 			throw YDKClientException{"RPC error occured"};
 	}
 }

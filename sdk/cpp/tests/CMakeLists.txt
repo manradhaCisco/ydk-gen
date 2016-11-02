@@ -16,6 +16,7 @@ find_library(pcre_location pcre)
 find_library(xslt_location xslt)
 find_library(ydk_location ydk)
 find_library(ydk_ydktest_location ydk_ydktest)
+find_library(ydk_cisco_ios_xr_location ydk_cisco_ios_xr)
 find_package(BOOST REQUIRED)
 find_package(Boost COMPONENTS log_setup log thread date_time system filesystem unit_test_framework REQUIRED)
 
@@ -41,7 +42,7 @@ foreach(test_name IN LISTS netconf_tests)
     target_compile_definitions(${test_name} PRIVATE "BOOST_TEST_DYN_LINK=1")
     target_compile_definitions(${test_name} PRIVATE "BOOST_LOG_DYN_LINK=1")
     target_link_libraries(${test_name}
-        ${xml2_location}
+        ${xml2_location}        
         ${curl_location}
         ${ssh_location}
         ${ssh_threads_location}
@@ -49,6 +50,7 @@ foreach(test_name IN LISTS netconf_tests)
         ${xslt_location}
         ${ydk_location}
         ${ydk_ydktest_location}
+        ${ydk_cisco_ios_xr_location}
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
         ${Boost_LOG_SETUP_LIBRARY}
         ${Boost_LOG_LIBRARY}
